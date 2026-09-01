@@ -21,6 +21,7 @@ import { Product, ProductVariant } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/storefront/ProductCard";
+import Image from "next/image";
 
 export function ProductDetailClient({
   product,
@@ -110,7 +111,7 @@ export function ProductDetailClient({
                       : "border-transparent opacity-70 hover:opacity-100"
                   }`}
                 >
-                  <img src={img.url} alt={img.alt_text || product.name} className="h-full w-full object-cover" />
+                  <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={img.url} alt={img.alt_text || product.name} className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
@@ -118,7 +119,7 @@ export function ProductDetailClient({
 
           {/* Main Hero Image */}
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-brand-xl bg-slate-50 shadow-subtle border border-slate-100 flex-1">
-            <img
+            <Image fill sizes="(max-width: 768px) 100vw, 33vw"
               src={images[selectedImageIndex]?.url || images[0]?.url}
               alt={images[selectedImageIndex]?.alt_text || product.name}
               className="h-full w-full object-cover object-center"

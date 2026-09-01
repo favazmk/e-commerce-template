@@ -4,6 +4,7 @@ import { Plus, Search, Edit3, Trash2, ExternalLink } from "lucide-react";
 import { ProductService } from "@/services/product.service";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 export default async function AdminProductsPage({
   searchParams,
@@ -55,7 +56,7 @@ export default async function AdminProductsPage({
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 flex-shrink-0 rounded-brand bg-slate-100 overflow-hidden border border-slate-100">
                         {product.images?.[0]?.url && (
-                          <img
+                          <Image fill sizes="(max-width: 768px) 100vw, 33vw"
                             src={product.images[0].url}
                             alt={product.name}
                             className="h-full w-full object-cover"

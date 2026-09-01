@@ -6,6 +6,7 @@ import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, ShieldCheck, Tag } from "
 import { useCart } from "@/features/cart/CartContext";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import Image from "next/image";
 
 export default function CartPage() {
   const {
@@ -64,7 +65,7 @@ export default function CartPage() {
                 {/* Thumbnail */}
                 <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100 border border-slate-100">
                   {item.image ? (
-                    <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                    <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={item.image} alt={item.name} className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full bg-slate-200" />
                   )}

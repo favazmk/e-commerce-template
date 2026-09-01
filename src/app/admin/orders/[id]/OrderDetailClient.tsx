@@ -7,6 +7,7 @@ import { ArrowLeft, Clock, Package, Check, RefreshCw } from "lucide-react";
 import { Order, OrderStatus } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 export function OrderDetailClient({ initialOrder }: { initialOrder: Order }) {
   const router = useRouter();
@@ -99,7 +100,7 @@ export function OrderDetailClient({ initialOrder }: { initialOrder: Order }) {
                 <div key={item.id} className="py-4 flex gap-4 items-center">
                   <div className="h-16 w-16 flex-shrink-0 rounded-brand bg-slate-100 overflow-hidden border border-slate-100">
                     {item.image_snapshot && (
-                      <img
+                      <Image fill sizes="(max-width: 768px) 100vw, 33vw"
                         src={item.image_snapshot}
                         alt={item.product_name_snapshot}
                         className="h-full w-full object-cover"

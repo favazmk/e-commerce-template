@@ -17,6 +17,7 @@ import { useCart } from "@/features/cart/CartContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
+import Image from "next/image";
 
 declare global {
   interface Window {
@@ -423,7 +424,7 @@ export default function CheckoutPage() {
               {calculatedCart.items.map((item) => (
                 <div key={`${item.productId}_${item.variantId || "default"}`} className="pt-3 flex gap-3 items-center">
                   <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100">
-                    {item.image && <img src={item.image} alt={item.name} className="h-full w-full object-cover" />}
+                    {item.image && <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={item.image} alt={item.name} className="h-full w-full object-cover" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-slate-900 truncate">{item.name}</p>

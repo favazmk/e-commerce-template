@@ -6,6 +6,7 @@ import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Truck } from "lucide-reac
 import { useCart } from "@/features/cart/CartContext";
 import { Drawer } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export function MiniCart() {
   const {
@@ -72,7 +73,7 @@ export function MiniCart() {
                 {/* Thumbnail */}
                 <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100 border border-slate-100">
                   {item.image ? (
-                    <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                    <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={item.image} alt={item.name} className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full bg-slate-200" />
                   )}

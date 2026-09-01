@@ -4,6 +4,7 @@ import { User, Package, MapPin, Heart, Shield, Clock, ArrowRight } from "lucide-
 import { OrderService } from "@/services/order.service";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 export default async function CustomerAccountPage() {
   // Fetch customer orders (seed demo customer)
@@ -14,7 +15,7 @@ export default async function CustomerAccountPage() {
       {/* Account Profile Header */}
       <div className="rounded-brand-xl bg-slate-900 text-white p-8 mb-10 shadow-float flex flex-col md:flex-row items-center md:items-start gap-6">
         <div className="h-20 w-20 rounded-full bg-slate-800 border-2 border-emerald-500 overflow-hidden flex-shrink-0">
-          <img
+          <Image fill sizes="(max-width: 768px) 100vw, 33vw"
             src="/placeholder-avatar.png"
             alt="Customer avatar"
             className="h-full w-full object-cover"
@@ -103,7 +104,7 @@ export default async function CustomerAccountPage() {
                       <div key={item.id} className="flex items-center gap-3">
                         <div className="h-12 w-12 rounded-brand bg-slate-100 overflow-hidden flex-shrink-0">
                           {item.image_snapshot && (
-                            <img src={item.image_snapshot} alt={item.product_name_snapshot} className="h-full w-full object-cover" />
+                            <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={item.image_snapshot} alt={item.product_name_snapshot} className="h-full w-full object-cover" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">

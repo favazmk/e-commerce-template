@@ -6,6 +6,7 @@ import { ArrowRight, Star, Mail, CheckCircle2 } from "lucide-react";
 import { Category, HomepageSection, Product } from "@/types/database";
 import { ProductCard } from "../ProductCard";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export function DynamicSectionRenderer({
   sections,
@@ -62,7 +63,7 @@ function HeroSection({ section }: { section: HomepageSection }) {
       {/* Background Image with Gradient Overlay */}
       {section.image_url && (
         <div className="absolute inset-0 z-0">
-          <img
+          <Image fill sizes="(max-width: 768px) 100vw, 33vw"
             src={section.image_url}
             alt={section.title || "Hero Banner"}
             className="h-full w-full object-cover object-center opacity-40 scale-105 animate-in fade-in zoom-in duration-1000"
@@ -136,7 +137,7 @@ function CategoriesSection({
             className="group relative overflow-hidden rounded-brand-xl aspect-[4/5] bg-slate-100 shadow-subtle hover:shadow-float transition-all duration-500"
           >
             {cat.image_url && (
-              <img
+              <Image fill sizes="(max-width: 768px) 100vw, 33vw"
                 src={cat.image_url}
                 alt={cat.name}
                 className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
@@ -202,7 +203,7 @@ function BannerSection({ section }: { section: HomepageSection }) {
       <div className="relative overflow-hidden rounded-brand-xl bg-slate-900 text-white min-h-[420px] flex items-center">
         {section.image_url && (
           <div className="absolute inset-0 z-0">
-            <img
+            <Image fill sizes="(max-width: 768px) 100vw, 33vw"
               src={section.image_url}
               alt="Promotional Banner"
               className="h-full w-full object-cover opacity-35"

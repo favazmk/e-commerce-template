@@ -6,6 +6,7 @@ import { Plus, Trash2, Image as ImageIcon, Sparkles, Check, ArrowLeft } from "lu
 import { Category, Product, ProductImage, ProductVariant } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Image from "next/image";
 
 export function ProductForm({
   initialProduct,
@@ -381,7 +382,7 @@ export function ProductForm({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
           {images.map((img, i) => (
             <div key={i} className="relative aspect-[3/4] rounded-brand overflow-hidden border border-slate-200 bg-slate-50 group">
-              <img src={img.url} alt="Product image preview" className="h-full w-full object-cover" />
+              <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={img.url || ""} alt="Product image preview" className="h-full w-full object-cover" />
               {img.is_primary && (
                 <span className="absolute top-2 left-2 bg-slate-900 text-white text-[10px] uppercase px-2 py-0.5 rounded-full font-bold">
                   Primary

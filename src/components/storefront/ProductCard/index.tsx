@@ -8,6 +8,7 @@ import { useWishlist } from "@/features/wishlist/WishlistContext";
 import { ProductCardVariant } from "@/theme/theme.config";
 import { Product } from "@/types/database";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 export interface ProductCardProps {
   product: Product;
@@ -50,7 +51,7 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
     return (
       <div className="group relative flex flex-col">
         <Link href={`/products/${product.slug}`} className="block overflow-hidden rounded-brand bg-slate-50">
-          <img
+          <Image fill sizes="(max-width: 768px) 100vw, 33vw"
             src={isHovered ? hoverImage : primaryImage}
             alt={product.name}
             className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -76,7 +77,7 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
     return (
       <div className="flex items-center space-x-4 p-3 bg-white rounded-brand border border-slate-100 shadow-subtle hover:border-slate-300 transition-colors">
         <Link href={`/products/${product.slug}`} className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100">
-          <img src={primaryImage} alt={product.name} className="h-full w-full object-cover" />
+          <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={primaryImage} alt={product.name} className="h-full w-full object-cover" />
         </Link>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-semibold text-slate-900 truncate">
@@ -104,7 +105,7 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
       {/* Image Container with Badges */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-50">
         <Link href={`/products/${product.slug}`} className="block h-full w-full">
-          <img
+          <Image fill sizes="(max-width: 768px) 100vw, 33vw"
             src={isHovered ? hoverImage : primaryImage}
             alt={product.name}
             className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"

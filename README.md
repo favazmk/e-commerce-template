@@ -3,7 +3,7 @@
 > **Live Deployment**: [https://aura-luxury-ecommerce.vercel.app](https://aura-luxury-ecommerce.vercel.app)  
 > **Merchant Dashboard**: [https://aura-luxury-ecommerce.vercel.app/admin](https://aura-luxury-ecommerce.vercel.app/admin)
 
-![Aura Luxury Storefront Preview](/public/logo.svg)
+![Aura Luxury Storefront Preview](/public/assets/img/screenshot.png)
 
 ---
 

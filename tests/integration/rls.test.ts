@@ -38,11 +38,7 @@ describe('Integration: Row Level Security (RLS)', () => {
     if (errB) throw errB;
     customerBId = userB.user.id;
 
-    // 2. Insert into public.users profile table
-    await adminSupabase.from('users').insert([
-      { id: customerAId, email: emailA, name: "Customer A" },
-      { id: customerBId, email: emailB, name: "Customer B" }
-    ]);
+    // (Manual insert removed: handled automatically by public.handle_new_user() trigger)
 
     // 3. Login as both to get authenticated clients
     const clientA = createClient(supabaseUrl, anonKey);
@@ -69,7 +65,7 @@ describe('Integration: Row Level Security (RLS)', () => {
   it('Customer A can read their own profile', async () => {
     const { data, error } = await customerAClient.from('users').select('*').eq('id', customerAId).single();
     expect(error).toBeNull();
-    expect(data.name).toBe("Customer A");
+    expect(data.name.startsWith("customer_a_")).toBe(true);
   });
 
   it('Customer A CANNOT read Customer B profile', async () => {

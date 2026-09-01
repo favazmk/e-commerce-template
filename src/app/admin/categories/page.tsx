@@ -6,6 +6,7 @@ import { Category } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import Image from "next/image";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -92,7 +93,7 @@ export default function AdminCategoriesPage() {
           >
             <div className="relative aspect-[16/9] w-full bg-slate-100 overflow-hidden">
               {cat.image_url ? (
-                <img src={cat.image_url} alt={cat.name} className="h-full w-full object-cover" />
+                <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={cat.image_url} alt={cat.name} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full items-center justify-center text-slate-300">
                   <Layers className="h-8 w-8" />

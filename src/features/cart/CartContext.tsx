@@ -57,18 +57,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setIsInitialized(true);
   }, []);
 
-  // Save to localStorage and trigger server calculation
-  useEffect(() => {
-    if (!isInitialized) return;
-    try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-    } catch (e) {
-      console.error("Failed to save local cart", e);
-    }
-    refreshCart();
-  }, [items, couponCode, isInitialized]);
-
-  const refreshCart = async () => {
+  const refreshCart = React.useCallback(async () => {
     if (items.length === 0) {
       setCalculatedCart(null);
       return;
@@ -92,7 +81,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [items, couponCode]);
+
+  // Save to localStorage and trigger server calculation
+  useEffect(() => {
+    if (!isInitialized) return;
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {
+      console.error("Failed to save local cart", e);
+    }
+    refreshCart();
+  }, [items, couponCode, isInitialized, refreshCart]);
 
   const addItem = (productId: string, variantId?: string | null, quantity = 1) => {
     setItems((prev) => {
