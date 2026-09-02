@@ -52,6 +52,14 @@ export class SupabaseProductRepository extends SupabaseRepository implements IPr
       .from('products')
       .select('*, category:categories(*), images:product_images(*), variants:product_variants(*)', { count: 'exact' });
 
+    // Publish state. Without this the storefront lists drafts and archived
+    // products, because catalog reads bypass RLS by design (see catalog()).
+    if (params.status === undefined) {
+      query = query.eq('status', 'active');
+    } else if (params.status !== 'all') {
+      query = query.eq('status', params.status);
+    }
+
     if (params.categorySlug) {
       const { data: cat } = await this.catalog().from('categories').select('id').eq('slug', params.categorySlug).single();
       if (cat) {

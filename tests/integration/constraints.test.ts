@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Environment is loaded globally via tests/setupEnv.ts
@@ -11,15 +11,32 @@ const adminSupabase = createClient(supabaseUrl, serviceRoleKey);
 describe('Integration: Database Constraints', () => {
   let testSku: string;
   let testOrderNumber: string;
-  
+  let testProductSlug: string;
+
+  // Integration tests write to a shared database that also backs the demo
+  // storefront. Without cleanup every run leaves a product behind, and those
+  // accumulate into the live catalog.
+  afterAll(async () => {
+    if (testProductSlug) {
+      await adminSupabase.from('products').delete().like('slug', `${testProductSlug}%`);
+    }
+    if (testSku) {
+      await adminSupabase.from('products').delete().eq('sku', testSku);
+    }
+    if (testOrderNumber) {
+      await adminSupabase.from('orders').delete().eq('order_number', testOrderNumber);
+    }
+  });
+
   beforeAll(async () => {
     testSku = `SKU-CONST-${Date.now()}`;
     testOrderNumber = `ORD-CONST-${Date.now()}`;
-    
+    testProductSlug = `const-test-${Date.now()}`;
+
     // Create base records
     await adminSupabase.from('products').insert({
       name: "Constraint Test Product",
-      slug: `const-test-${Date.now()}`,
+      slug: testProductSlug,
       sku: testSku,
       price: 100,
       currency: "USD",

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatPrice } from "@/lib/config/store.config";
-import Image from "next/image";
+import { ProductImage } from "@/components/storefront/ProductImage";
 
 declare global {
   interface Window {
@@ -480,9 +480,7 @@ export default function CheckoutPage() {
                   className="pt-3 flex gap-3 items-center"
                 >
                   <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100">
-                    {item.image && (
-                      <Image fill sizes="56px" src={item.image} alt="" className="object-cover" />
-                    )}
+                    <ProductImage src={item.image} seed={item.name} alt="" sizes="56px" compact className="object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-slate-900 truncate">{item.name}</p>

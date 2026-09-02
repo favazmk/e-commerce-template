@@ -5,7 +5,7 @@ import { CheckCircle2, Package, Truck, ArrowRight, Printer, ShieldCheck } from "
 import { OrderService } from "@/services/order.service";
 import { getSessionUser } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { ProductImage } from "@/components/storefront/ProductImage";
 
 export interface OrderSuccessPageProps {
   params: Promise<{ orderNumber: string }>;
@@ -78,7 +78,7 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
             <div key={item.id} className="py-4 flex gap-4 items-center">
               <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100 border border-slate-100">
                 {item.image_snapshot ? (
-                  <Image fill sizes="64px" src={item.image_snapshot} alt={item.product_name_snapshot} className="h-full w-full object-cover" />
+                  <ProductImage src={item.image_snapshot} seed={item.product_name_snapshot} alt="" sizes="64px" compact className="object-cover" />
                 ) : (
                   <div className="h-full w-full bg-slate-200" />
                 )}

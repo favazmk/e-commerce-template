@@ -18,9 +18,17 @@ const VALUE_PILLARS = [
   { icon: Award, title: "Quality Assured", body: "Every item checked before it ships." },
 ];
 
-export function Footer() {
+export interface FooterProps {
+  categories?: { name: string; slug: string }[];
+}
+
+export function Footer({ categories = [] }: FooterProps) {
   const { theme } = useTheme();
-  const navigation = theme.navigation ?? [];
+  const configured = theme.navigation ?? [];
+  const navigation =
+    configured.length > 1
+      ? configured
+      : categories.map((c) => ({ label: c.name, href: `/products?category=${c.slug}` }));
 
   return (
     <footer className="border-t border-slate-200 bg-slate-900 text-slate-400 text-sm">

@@ -9,7 +9,7 @@ import { ProductCardVariant } from "@/theme/theme.config";
 import { Product } from "@/types/database";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/config/store.config";
-import Image from "next/image";
+import { ProductImage } from "../ProductImage";
 
 export interface ProductCardProps {
   product: Product;
@@ -23,7 +23,7 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
   const [isAdded, setIsAdded] = useState(false);
 
   const isFavorite = isInWishlist(product.id);
-  const primaryImage = product.images?.[0]?.url || "/placeholder-product.png";
+  const primaryImage = product.images?.[0]?.url;
   const hoverImage = product.images?.[1]?.url || primaryImage;
 
   const hasDiscount =
@@ -57,11 +57,11 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <Image
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          <ProductImage
             src={isHovered ? hoverImage : primaryImage}
+            seed={product.name}
             alt={product.name}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </Link>
@@ -83,7 +83,7 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
     return (
       <div className="flex items-center space-x-4 p-3 bg-white rounded-brand border border-slate-100 shadow-subtle hover:border-slate-300 transition-colors">
         <Link href={`/products/${product.slug}`} className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100">
-          <Image fill sizes="80px" src={primaryImage} alt={product.name} className="object-cover" />
+          <ProductImage src={primaryImage} seed={product.name} alt={product.name} sizes="80px" compact className="object-cover" />
         </Link>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-semibold text-slate-900 truncate">
@@ -111,11 +111,11 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
       {/* Image Container with Badges */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-50">
         <Link href={`/products/${product.slug}`} className="block h-full w-full">
-          <Image
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          <ProductImage
             src={isHovered ? hoverImage : primaryImage}
+            seed={product.name}
             alt={product.name}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
           />
         </Link>

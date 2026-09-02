@@ -70,7 +70,7 @@ export default async function AdminProductsPage({
                         >
                           {product.name}
                         </Link>
-                        <span className="text-[10px] text-slate-400">{product.brand || "Aura Studio"}</span>
+                        <span className="text-[10px] text-slate-400">{product.brand || "—"}</span>
                       </div>
                     </div>
                   </td>

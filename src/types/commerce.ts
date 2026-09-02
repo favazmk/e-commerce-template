@@ -1,6 +1,15 @@
 import { Address, Coupon, Order, Product, ProductVariant } from "./database";
 
 export interface ProductFilterParams {
+  /**
+   * Catalog reads default to published products only. Admin screens pass
+   * "all" to include drafts and archived items.
+   *
+   * This filter is load-bearing: catalog queries run through the service-role
+   * client to keep ISR pages cacheable, so the "Public can view active
+   * products" RLS policy does not apply to them.
+   */
+  status?: "active" | "draft" | "archived" | "out_of_stock" | "all";
   categorySlug?: string;
   searchQuery?: string;
   minPrice?: number;

@@ -21,7 +21,7 @@ import { Product, ProductVariant } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/storefront/ProductCard";
-import Image from "next/image";
+import { ProductImage } from "@/components/storefront/ProductImage";
 
 export function ProductDetailClient({
   product,
@@ -45,7 +45,7 @@ export function ProductDetailClient({
   const isFavorite = isInWishlist(product.id);
   const images = product.images && product.images.length > 0
     ? product.images
-    : [{ id: "def", product_id: product.id, url: "/placeholder-product.png", display_order: 1, is_primary: true, created_at: "" }];
+    : [];
 
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
   const currentCompareAt = selectedVariant?.compare_at_price || product.compare_at_price;
@@ -111,7 +111,7 @@ export function ProductDetailClient({
                       : "border-transparent opacity-70 hover:opacity-100"
                   }`}
                 >
-                  <Image fill sizes="80px" src={img.url} alt={img.alt_text || product.name} className="object-cover" />
+                  <ProductImage src={img.url} seed={product.name} alt="" sizes="80px" compact className="object-cover" />
                 </button>
               ))}
             </div>
@@ -119,10 +119,13 @@ export function ProductDetailClient({
 
           {/* Main Hero Image */}
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-brand-xl bg-slate-50 shadow-subtle border border-slate-100 flex-1">
-            <Image fill sizes="(max-width: 1024px) 100vw, 50vw"
+            <ProductImage
               src={images[selectedImageIndex]?.url || images[0]?.url}
-              alt={images[selectedImageIndex]?.alt_text || product.name}
-              className="h-full w-full object-cover object-center"
+              seed={product.name}
+              alt={product.name}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              priority
+              className="object-cover object-center"
             />
             {hasDiscount && (
               <div className="absolute top-4 left-4">
@@ -139,7 +142,7 @@ export function ProductDetailClient({
           <div className="space-y-6">
             <div>
               <span className="text-xs font-bold uppercase tracking-widest text-emerald-600">
-                {product.brand || "Aura Studio"}
+                {product.brand || ""}
               </span>
               <h1 className="text-3xl sm:text-4xl font-bold font-heading text-slate-900 mt-1">
                 {product.name}
@@ -341,7 +344,7 @@ export function ProductDetailClient({
               )}
               {activeTab === "specs" && (
                 <ul className="list-disc pl-4 space-y-1">
-                  <li>Brand: {product.brand || "Aura Studio"}</li>
+                  <li>Brand: {product.brand || ""}</li>
                   <li>SKU: {currentSku}</li>
                   <li>Tags: {product.tags?.join(", ") || "Artisanal, Heritage"}</li>
                   <li>Care: Professional dry clean only. Store in protective cotton garment bag.</li>

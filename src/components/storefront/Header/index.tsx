@@ -9,7 +9,16 @@ import { useWishlist } from "@/features/wishlist/WishlistContext";
 import { useTheme } from "@/theme/ThemeProvider";
 import { SearchModal } from "../SearchModal";
 
-export function Header() {
+export interface HeaderProps {
+  /**
+   * Storefront categories resolved on the server. Used as the default
+   * navigation so a new client store has a populated menu without editing
+   * code; an explicit `theme.navigation` overrides it.
+   */
+  categories?: { name: string; slug: string }[];
+}
+
+export function Header({ categories = [] }: HeaderProps) {
   const { theme } = useTheme();
   const { totalItemCount, openMiniCart } = useCart();
   const { totalWishlistCount } = useWishlist();
@@ -22,9 +31,17 @@ export function Header() {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  // Navigation is theme configuration, not a component constant: category
-  // slugs are client-specific (AGENTS.md sections 2 and 9).
-  const navigation = theme.navigation ?? [];
+  // Navigation is data, not a component constant: category slugs are
+  // client-specific (AGENTS.md sections 2 and 9). An explicitly configured
+  // theme.navigation wins; otherwise the live category list is used.
+  const configured = theme.navigation ?? [];
+  const navigation =
+    configured.length > 1
+      ? configured
+      : [
+          ...configured,
+          ...categories.map((c) => ({ label: c.name, href: `/products?category=${c.slug}` })),
+        ];
 
   return (
     <>

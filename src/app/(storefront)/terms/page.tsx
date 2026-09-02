@@ -1,3 +1,4 @@
+import { getStoreDisplayName } from "@/lib/config/store.config";
 import React from "react";
 
 export default function TermsOfServicePage() {
@@ -9,7 +10,7 @@ export default function TermsOfServicePage() {
       <div className="prose prose-slate max-w-none text-sm text-slate-600 space-y-6 leading-relaxed">
         <p>
           Please review these Terms of Service prior to acquiring products or utilizing services
-          offered by AURA LUXURY. By accessing our platform, you agree to be bound by these provisions.
+          offered by {getStoreDisplayName()}. By accessing our platform, you agree to be bound by these provisions.
         </p>
 
         <h2 className="text-lg font-bold text-slate-900 mt-6">1. Commercial Transactions & Pricing</h2>

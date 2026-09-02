@@ -103,8 +103,15 @@ export class MockProductRepository implements IProductRepository {
   async findBySlug(slug: string): Promise<Product | null> {
     return mockData.products.find(p => p.slug === slug) || null;
   }
-  async findAll(params: any): Promise<any> {
-    return { items: mockData.products, total: mockData.products.length, page: 1, limit: 10, totalPages: 1 };
+  async findAll(params: any = {}): Promise<any> {
+    // Mirror the real repository: published-only unless the caller opts out.
+    let items = mockData.products;
+    if (params.status === undefined) {
+      items = items.filter((p: any) => p.status === "active");
+    } else if (params.status !== "all") {
+      items = items.filter((p: any) => p.status === params.status);
+    }
+    return { items, total: items.length, page: 1, limit: params.limit ?? 10, totalPages: 1 };
   }
   async getFeaturedProducts(): Promise<Product[]> { return []; }
   async getVariantsByProductId(productId: string): Promise<ProductVariant[]> {

@@ -7,6 +7,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { formatPrice } from "@/lib/config/store.config";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ProductImage } from "@/components/storefront/ProductImage";
 import Image from "next/image";
 
 export const dynamic = "force-dynamic";
@@ -129,15 +130,7 @@ export default async function CustomerAccountPage() {
                     {order.items?.map((item) => (
                       <div key={item.id} className="flex items-center gap-3">
                         <div className="relative h-12 w-12 rounded-brand bg-slate-100 overflow-hidden flex-shrink-0">
-                          {item.image_snapshot && (
-                            <Image
-                              fill
-                              sizes="48px"
-                              src={item.image_snapshot}
-                              alt=""
-                              className="object-cover"
-                            />
-                          )}
+                          <ProductImage src={item.image_snapshot} seed={item.product_name_snapshot} alt="" sizes="48px" compact className="object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="text-xs font-semibold text-slate-900 truncate">

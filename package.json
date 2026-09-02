@@ -12,7 +12,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run tests/integration",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "images:sync": "node scripts/sync-product-images.mjs",
+    "images:check": "node scripts/sync-product-images.mjs --dry-run",
+    "demo:seed": "node scripts/seed-demo-catalog.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -6,7 +6,7 @@ import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Truck } from "lucide-reac
 import { useCart } from "@/features/cart/CartContext";
 import { Drawer } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { ProductImage } from "../ProductImage";
 
 export function MiniCart() {
   const {
@@ -72,11 +72,14 @@ export function MiniCart() {
               <div key={`${item.productId}_${item.variantId || "default"}`} className="py-4 flex gap-4">
                 {/* Thumbnail */}
                 <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100 border border-slate-100">
-                  {item.image ? (
-                    <Image fill sizes="80px" src={item.image} alt={item.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="h-full w-full bg-slate-200" />
-                  )}
+                  <ProductImage
+                    src={item.image}
+                    seed={item.name}
+                    alt=""
+                    sizes="80px"
+                    compact
+                    className="object-cover"
+                  />
                 </div>
 
                 {/* Details */}

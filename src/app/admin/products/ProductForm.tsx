@@ -21,7 +21,7 @@ export function ProductForm({
   // Form State
   const [name, setName] = useState(initialProduct?.name || "");
   const [slug, setSlug] = useState(initialProduct?.slug || "");
-  const [brand, setBrand] = useState(initialProduct?.brand || "Aura Studio");
+  const [brand, setBrand] = useState(initialProduct?.brand || "");
   const [categoryId, setCategoryId] = useState(initialProduct?.category_id || categories[0]?.id || "");
   const [shortDescription, setShortDescription] = useState(initialProduct?.short_description || "");
   const [description, setDescription] = useState(initialProduct?.description || "");
@@ -46,7 +46,7 @@ export function ProductForm({
   const [images, setImages] = useState<Partial<ProductImage>[]>(
     initialProduct?.images || [
       {
-        url: "/placeholder-product.png",
+        url: "",
         alt_text: "Product Primary Image",
         display_order: 1,
         is_primary: true,
@@ -489,7 +489,7 @@ export function ProductForm({
             Google Search Preview
           </span>
           <p className="text-xs text-blue-800 font-medium hover:underline cursor-pointer">
-            {seoTitle || name || "Product Title"} | AURA LUXURY
+            {seoTitle || name || "Product Title"}
           </p>
           <p className="text-[11px] text-emerald-800 font-mono">
             https://auraluxury.com/products/{slug || "product-slug"}

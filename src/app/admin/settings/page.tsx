@@ -10,7 +10,7 @@ export default function AdminSettingsPage() {
   const { theme, updateThemeColors } = useTheme();
 
   // General Settings
-  const [storeName, setStoreName] = useState("AURA LUXURY");
+  const [storeName, setStoreName] = useState("");
   const [tagline, setTagline] = useState("Artisanal Goods & Timeless Essentials");
   const [email, setEmail] = useState("concierge@auraluxury.com");
   const [phone, setPhone] = useState("+1 (800) 555-0199");

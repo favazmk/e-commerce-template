@@ -6,7 +6,7 @@ import { ArrowRight, Star, Mail, CheckCircle2 } from "lucide-react";
 import { Category, HomepageSection, Product } from "@/types/database";
 import { ProductCard } from "../ProductCard";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { SafeImage } from "../ProductImage";
 
 export function DynamicSectionRenderer({
   sections,
@@ -17,8 +17,11 @@ export function DynamicSectionRenderer({
   categories: Category[];
   featuredProducts: Product[];
 }) {
+  // Block, not flex-column: a flex item with `mx-auto` sizes to its content
+  // instead of stretching, which collapsed every `max-w-7xl mx-auto` section to
+  // a few hundred pixels wide. `space-y-*` stacks these just as well.
   return (
-    <div className="flex flex-col space-y-16 sm:space-y-24 pb-20">
+    <div className="space-y-16 sm:space-y-24 pb-20">
       {sections
         .filter((s) => s.is_enabled)
         .sort((a, b) => a.display_order - b.display_order)
@@ -63,8 +66,7 @@ function HeroSection({ section }: { section: HomepageSection }) {
       {/* Background Image with Gradient Overlay */}
       {section.image_url && (
         <div className="absolute inset-0 z-0">
-          <Image
-            fill
+          <SafeImage
             priority
             sizes="100vw"
             src={section.image_url}
@@ -139,13 +141,12 @@ function CategoriesSection({
             href={`/categories/${cat.slug}`}
             className="group relative overflow-hidden rounded-brand-xl aspect-[4/5] bg-slate-100 shadow-subtle hover:shadow-float transition-all duration-500"
           >
-            {cat.image_url && (
-              <Image fill sizes="100vw"
-                src={cat.image_url}
-                alt={cat.name}
-                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-              />
-            )}
+            <SafeImage
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              src={cat.image_url}
+              alt=""
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 text-white">
               <h3 className="text-xl font-bold font-heading">{cat.name}</h3>
@@ -206,10 +207,11 @@ function BannerSection({ section }: { section: HomepageSection }) {
       <div className="relative overflow-hidden rounded-brand-xl bg-slate-900 text-white min-h-[420px] flex items-center">
         {section.image_url && (
           <div className="absolute inset-0 z-0">
-            <Image fill sizes="100vw"
+            <SafeImage
+              sizes="100vw"
               src={section.image_url}
-              alt="Promotional Banner"
-              className="h-full w-full object-cover opacity-35"
+              alt=""
+              className="object-cover opacity-35"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/70 to-transparent" />
           </div>

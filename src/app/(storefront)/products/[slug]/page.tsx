@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductService } from "@/services/product.service";
+import { getStoreDisplayName } from "@/lib/config/store.config";
 import { ProductDetailClient } from "./ProductDetailClient";
 
 export interface ProductPageProps {
@@ -18,22 +19,17 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     };
   }
 
-  const primaryImage = product.images?.[0]?.url || "/placeholder-product.png";
+  const primaryImage = product.images?.[0]?.url;
 
   return {
-    title: product.seo_title || `${product.name} | AURA LUXURY`,
+    title: product.seo_title || product.name,
     description: product.seo_description || product.short_description || product.description,
     openGraph: {
       title: product.seo_title || product.name,
       description: product.seo_description || product.short_description,
-      images: [
-        {
-          url: primaryImage,
-          width: 1000,
-          height: 1000,
-          alt: product.name,
-        },
-      ],
+      images: primaryImage
+        ? [{ url: primaryImage, width: 1000, height: 1000, alt: product.name }]
+        : undefined,
     },
   };
 }
@@ -58,7 +54,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     sku: product.sku,
     brand: {
       "@type": "Brand",
-      name: product.brand || "AURA LUXURY",
+      name: product.brand || getStoreDisplayName(),
     },
     offers: {
       "@type": "Offer",
