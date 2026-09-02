@@ -1,15 +1,28 @@
 import { IProductRepository } from "../interfaces/product.repository.interface";
 import { Product, ProductVariant } from "../../types/database";
 import { PaginatedResult, ProductFilterParams } from "../../types/commerce";
-import { createAdminClient } from "../../lib/supabase/server";
+import { SupabaseRepository } from "./base.repository";
 
-export class SupabaseProductRepository implements IProductRepository {
-  private getClient() {
-    return createAdminClient();
+export class SupabaseProductRepository extends SupabaseRepository implements IProductRepository {
+  /**
+   * Catalog reads render in cached/ISR routes. Reading session cookies
+   * there would force every catalog page dynamic, and the public RLS policy
+   * (`status = 'active'`) adds nothing a service-layer filter does not already
+   * do. Draft/archived visibility is decided in ProductService.
+   */
+  private catalog() {
+    return this.serviceClient("public-catalog-cached");
+  }
+
+  /**
+   * Catalog writes. Every route reaching these is gated by requireAdmin().
+   */
+  private admin() {
+    return this.serviceClient("admin-authorised");
   }
 
   async findById(id: string): Promise<Product | null> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.catalog()
       .from('products')
       .select('*, category:categories(*), images:product_images(*), variants:product_variants(*)')
       .eq('id', id)
@@ -20,7 +33,7 @@ export class SupabaseProductRepository implements IProductRepository {
   }
 
   async findBySlug(slug: string): Promise<Product | null> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.catalog()
       .from('products')
       .select('*, category:categories(*), images:product_images(*), variants:product_variants(*)')
       .eq('slug', slug)
@@ -35,12 +48,20 @@ export class SupabaseProductRepository implements IProductRepository {
     const page = params.page || 1;
     const offset = (page - 1) * limit;
 
-    let query = this.getClient()
+    let query = this.catalog()
       .from('products')
       .select('*, category:categories(*), images:product_images(*), variants:product_variants(*)', { count: 'exact' });
 
+    // Publish state. Without this the storefront lists drafts and archived
+    // products, because catalog reads bypass RLS by design (see catalog()).
+    if (params.status === undefined) {
+      query = query.eq('status', 'active');
+    } else if (params.status !== 'all') {
+      query = query.eq('status', params.status);
+    }
+
     if (params.categorySlug) {
-      const { data: cat } = await this.getClient().from('categories').select('id').eq('slug', params.categorySlug).single();
+      const { data: cat } = await this.catalog().from('categories').select('id').eq('slug', params.categorySlug).single();
       if (cat) {
         query = query.eq('category_id', cat.id);
       } else {
@@ -105,7 +126,7 @@ export class SupabaseProductRepository implements IProductRepository {
   }
 
   async getFeaturedProducts(limit = 4): Promise<Product[]> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.catalog()
       .from('products')
       .select('*, category:categories(*), images:product_images(*), variants:product_variants(*)')
       .eq('featured', true)
@@ -118,7 +139,7 @@ export class SupabaseProductRepository implements IProductRepository {
   }
 
   async getVariantsByProductId(productId: string): Promise<ProductVariant[]> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.catalog()
       .from('product_variants')
       .select('*')
       .eq('product_id', productId)
@@ -131,7 +152,7 @@ export class SupabaseProductRepository implements IProductRepository {
   async create(data: Partial<Product>): Promise<Product> {
     const { images, variants, category, ...productData } = data as any;
     
-    const { data: created, error } = await this.getClient()
+    const { data: created, error } = await this.admin()
       .from('products')
       .insert([productData])
       .select()
@@ -141,7 +162,7 @@ export class SupabaseProductRepository implements IProductRepository {
   }
 
   async update(id: string, data: Partial<Product>): Promise<Product | null> {
-    const { data: updated, error } = await this.getClient()
+    const { data: updated, error } = await this.admin()
       .from('products')
       .update(data)
       .eq('id', id)
@@ -152,7 +173,7 @@ export class SupabaseProductRepository implements IProductRepository {
   }
 
   async delete(id: string): Promise<boolean> {
-    const { error } = await this.getClient()
+    const { error } = await this.admin()
       .from('products')
       .delete()
       .eq('id', id);

@@ -1,14 +1,24 @@
 import { ICategoryRepository } from "../interfaces/category.repository.interface";
 import { Category } from "../../types/database";
-import { createAdminClient } from "../../lib/supabase/server";
+import { SupabaseRepository } from "./base.repository";
 
-export class SupabaseCategoryRepository implements ICategoryRepository {
-  private getClient() {
-    return createAdminClient();
+export class SupabaseCategoryRepository extends SupabaseRepository implements ICategoryRepository {
+  /**
+   * Category reads render in cached/ISR routes; see ProductRepository.
+   */
+  private catalog() {
+    return this.serviceClient("public-catalog-cached");
+  }
+
+  /**
+   * Category writes are gated by requireAdmin().
+   */
+  private admin() {
+    return this.serviceClient("admin-authorised");
   }
 
   async findById(id: string): Promise<Category | null> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.catalog()
       .from('categories')
       .select('*')
       .eq('id', id)
@@ -19,7 +29,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
   }
 
   async findBySlug(slug: string): Promise<Category | null> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.catalog()
       .from('categories')
       .select('*')
       .eq('slug', slug)
@@ -30,7 +40,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
   }
 
   async findAll(includeSubcategories = true): Promise<Category[]> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.catalog()
       .from('categories')
       .select('*')
       .eq('is_active', true)
@@ -52,7 +62,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
   }
 
   async getMainCategories(): Promise<Category[]> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.catalog()
       .from('categories')
       .select('*')
       .is('parent_id', null)
@@ -64,7 +74,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
   }
 
   async create(data: Partial<Category>): Promise<Category> {
-    const { data: created, error } = await this.getClient()
+    const { data: created, error } = await this.admin()
       .from('categories')
       .insert([data])
       .select()
@@ -74,7 +84,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
   }
 
   async update(id: string, data: Partial<Category>): Promise<Category | null> {
-    const { data: updated, error } = await this.getClient()
+    const { data: updated, error } = await this.admin()
       .from('categories')
       .update(data)
       .eq('id', id)
@@ -85,7 +95,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
   }
 
   async delete(id: string): Promise<boolean> {
-    const { error } = await this.getClient()
+    const { error } = await this.admin()
       .from('categories')
       .delete()
       .eq('id', id);

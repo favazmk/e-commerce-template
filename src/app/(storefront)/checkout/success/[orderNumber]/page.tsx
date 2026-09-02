@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2, Package, Truck, ArrowRight, Printer, ShieldCheck } from "lucide-react";
 import { OrderService } from "@/services/order.service";
+import { getSessionUser } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { ProductImage } from "@/components/storefront/ProductImage";
 
 export interface OrderSuccessPageProps {
   params: Promise<{ orderNumber: string }>;
@@ -12,7 +13,12 @@ export interface OrderSuccessPageProps {
 
 export default async function OrderSuccessPage({ params }: OrderSuccessPageProps) {
   const { orderNumber } = await params;
-  const order = await OrderService.getOrderById(orderNumber);
+
+  // A receipt carries the customer's address, email and phone. Knowing the
+  // order number is only sufficient for guest orders; an order attached to an
+  // account is released to its owner (or an admin) and nobody else.
+  const viewer = await getSessionUser();
+  const order = await OrderService.getOrderForViewer(orderNumber, viewer);
 
   if (!order) {
     notFound();
@@ -22,7 +28,7 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
       {/* Top Success Banner */}
       <div className="text-center space-y-4 mb-12">
-        <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-2 shadow-xs">
+        <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-2 shadow-sm">
           <CheckCircle2 className="h-10 w-10" />
         </div>
         <span className="text-xs uppercase font-bold tracking-widest text-emerald-600 block">
@@ -70,9 +76,9 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
           </h3>
           {order.items?.map((item) => (
             <div key={item.id} className="py-4 flex gap-4 items-center">
-              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100 border border-slate-100">
+              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100 border border-slate-100">
                 {item.image_snapshot ? (
-                  <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={item.image_snapshot} alt={item.product_name_snapshot} className="h-full w-full object-cover" />
+                  <ProductImage src={item.image_snapshot} seed={item.product_name_snapshot} alt="" sizes="64px" compact className="object-cover" />
                 ) : (
                   <div className="h-full w-full bg-slate-200" />
                 )}

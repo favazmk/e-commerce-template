@@ -1,14 +1,31 @@
 import { IReviewRepository } from "../interfaces/review.repository.interface";
 import { Review, ReviewStatus } from "../../types/database";
-import { createAdminClient } from "../../lib/supabase/server";
+import { SupabaseRepository } from "./base.repository";
 
-export class SupabaseReviewRepository implements IReviewRepository {
-  private getClient() {
-    return createAdminClient();
+export class SupabaseReviewRepository extends SupabaseRepository implements IReviewRepository {
+  /**
+   * Approved reviews are public and render on cached product pages.
+   */
+  private catalog() {
+    return this.serviceClient("public-catalog-cached");
+  }
+
+  /**
+   * Review submission accepts guest reviews, which have no session.
+   */
+  private system() {
+    return this.serviceClient("system-no-session");
+  }
+
+  /**
+   * Moderation is an admin action.
+   */
+  private admin() {
+    return this.serviceClient("admin-authorised");
   }
 
   async findByProductId(productId: string, status?: ReviewStatus): Promise<Review[]> {
-    let query = this.getClient()
+    let query = this.catalog()
       .from('reviews')
       .select('*')
       .eq('product_id', productId)
@@ -24,7 +41,7 @@ export class SupabaseReviewRepository implements IReviewRepository {
   }
 
   async create(review: Omit<Review, "id" | "created_at" | "updated_at">): Promise<Review> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.system()
       .from('reviews')
       .insert([review])
       .select()
@@ -35,7 +52,7 @@ export class SupabaseReviewRepository implements IReviewRepository {
   }
 
   async updateStatus(reviewId: string, status: ReviewStatus): Promise<void> {
-    const { error } = await this.getClient()
+    const { error } = await this.admin()
       .from('reviews')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', reviewId);

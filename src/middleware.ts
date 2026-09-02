@@ -1,5 +1,28 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+
+const ADMIN_ROLES = ['admin', 'super_admin']
+
+/** Baseline hardening headers applied to every response. */
+function applySecurityHeaders(response: NextResponse): NextResponse {
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set('X-DNS-Prefetch-Control', 'off')
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()')
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
+  }
+  return response
+}
+
+function isProtectedApi(pathname: string): boolean {
+  return pathname.startsWith('/api/admin')
+}
+
+function isProtectedAdminPage(pathname: string): boolean {
+  return pathname.startsWith('/admin')
+}
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -16,8 +39,8 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet: any[]) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
           })
@@ -29,18 +52,24 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  const { pathname } = request.nextUrl
+
   try {
     // Refresh session if expired - required for Server Components
     // https://supabase.com/docs/guides/auth/server-side/nextjs
     const { data: { user } } = await supabase.auth.getUser()
 
     // Admin route protection
-    if (request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/api/admin')) {
+    if (isProtectedAdminPage(pathname) || isProtectedApi(pathname)) {
       if (!user) {
-        if (request.nextUrl.pathname.startsWith('/api/admin')) {
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        if (isProtectedApi(pathname)) {
+          return applySecurityHeaders(
+            NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+          )
         }
-        return NextResponse.redirect(new URL('/login?redirectTo=/admin', request.url))
+        const loginUrl = new URL('/login', request.url)
+        loginUrl.searchParams.set('redirectTo', pathname)
+        return applySecurityHeaders(NextResponse.redirect(loginUrl))
       }
 
       // Server-side role authorization
@@ -50,26 +79,41 @@ export async function middleware(request: NextRequest) {
         .eq('id', user.id)
         .single()
 
-      if (!userData || !['admin', 'super_admin'].includes(userData.role)) {
-        // Not an admin, redirect to home
-        return NextResponse.redirect(new URL('/', request.url))
+      if (!userData || !ADMIN_ROLES.includes(userData.role)) {
+        if (isProtectedApi(pathname)) {
+          return applySecurityHeaders(
+            NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+          )
+        }
+        return applySecurityHeaders(NextResponse.redirect(new URL('/', request.url)))
       }
     }
 
     // Account route protection
-    if (request.nextUrl.pathname.startsWith('/account') || request.nextUrl.pathname.startsWith('/checkout')) {
+    if (pathname.startsWith('/account')) {
       if (!user) {
-        // Let checkout handle guest logic, but normally account requires login
-        if (request.nextUrl.pathname.startsWith('/account')) {
-          return NextResponse.redirect(new URL('/login', request.url))
-        }
+        const loginUrl = new URL('/login', request.url)
+        loginUrl.searchParams.set('redirectTo', pathname)
+        return applySecurityHeaders(NextResponse.redirect(loginUrl))
       }
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Unknown middleware error', stack: error.stack }, { status: 500 })
+  } catch (error) {
+    // Never leak internal error detail (message/stack) to the client, and never
+    // fail open on a protected route.
+    console.error('[Middleware Error]', error)
+
+    if (isProtectedApi(pathname)) {
+      return applySecurityHeaders(
+        NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
+      )
+    }
+    if (isProtectedAdminPage(pathname) || pathname.startsWith('/account')) {
+      return applySecurityHeaders(NextResponse.redirect(new URL('/login', request.url)))
+    }
+    // Public pages stay reachable if the auth service is briefly unavailable.
   }
 
-  return supabaseResponse
+  return applySecurityHeaders(supabaseResponse)
 }
 
 export const config = {
@@ -81,6 +125,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

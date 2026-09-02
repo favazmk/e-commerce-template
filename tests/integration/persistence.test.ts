@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { createClient } from '@supabase/supabase-js';
 import { RepositoryFactory } from '../../src/repositories/repository.factory';
 
 describe('Integration: Persistence', () => {
@@ -14,6 +15,19 @@ describe('Integration: Persistence', () => {
   });
 
   let testProductSlug: string;
+
+  // Integration tests write to a shared database that also backs the demo
+  // storefront. Without cleanup every run leaves an active product behind, and
+  // those accumulate into the live catalog.
+  afterAll(async () => {
+    const db = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    if (testProductSlug) {
+      await db.from('products').delete().eq('slug', testProductSlug);
+    }
+  });
 
   it('should successfully save and retrieve a product from the real database', async () => {
     // Create a product dynamically

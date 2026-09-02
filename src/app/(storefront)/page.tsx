@@ -7,7 +7,7 @@ import { DynamicSectionRenderer } from "@/components/storefront/sections/Dynamic
 export const revalidate = 60; // ISR revalidation
 
 export default async function HomePage() {
-  const sections = SettingsService.getHomepageSections(true);
+  const sections = await SettingsService.getHomepageSections(true);
   const categories = await CategoryService.getCategories(true);
   const { items: featuredProducts } = await ProductService.getProducts({
     featuredOnly: true,

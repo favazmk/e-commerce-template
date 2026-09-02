@@ -62,8 +62,8 @@ export default function AdminMediaLibraryPage() {
             key={i}
             className="group relative rounded-brand-xl border border-slate-200 bg-white overflow-hidden shadow-subtle flex flex-col justify-between"
           >
-            <div className="aspect-[3/4] w-full bg-slate-100 overflow-hidden">
-              <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={url} alt="Media Asset" className="h-full w-full object-cover" />
+            <div className="relative aspect-[3/4] w-full bg-slate-100 overflow-hidden">
+              <Image fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px" src={url} alt="Media Asset" className="h-full w-full object-cover" />
             </div>
             <div className="p-3 border-t border-slate-100 flex items-center justify-between bg-white">
               <span className="text-[10px] text-slate-400 font-mono truncate max-w-[120px]">

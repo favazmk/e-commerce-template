@@ -10,7 +10,7 @@ export default function AdminSettingsPage() {
   const { theme, updateThemeColors } = useTheme();
 
   // General Settings
-  const [storeName, setStoreName] = useState("AURA LUXURY");
+  const [storeName, setStoreName] = useState("");
   const [tagline, setTagline] = useState("Artisanal Goods & Timeless Essentials");
   const [email, setEmail] = useState("concierge@auraluxury.com");
   const [phone, setPhone] = useState("+1 (800) 555-0199");
@@ -62,7 +62,7 @@ export default function AdminSettingsPage() {
             Store & Theme Settings
           </h1>
         </div>
-        <Button type="submit" variant="primary" size="md" className="gap-2 shadow-xs">
+        <Button type="submit" variant="primary" size="md" className="gap-2 shadow-sm">
           <Save className="h-4 w-4" /> Save Settings
         </Button>
       </div>

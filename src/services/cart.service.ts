@@ -1,4 +1,5 @@
 import { RepositoryFactory } from "@/repositories/repository.factory";
+import { getDefaultCurrency } from "@/lib/config/store.config";
 import { CartCalculationResult } from "@/types/commerce";
 import { CouponService } from "./coupon.service";
 import { ShippingService } from "./shipping.service";
@@ -9,6 +10,9 @@ export interface CartItemInput {
   variantId?: string | null;
   quantity: number;
 }
+
+/** Upper bound for a single cart line, guards against absurd quantities. */
+const MAX_QUANTITY_PER_LINE = 999;
 
 export class CartService {
   /**
@@ -29,7 +33,16 @@ export class CartService {
     const productRepo = RepositoryFactory.getProductRepository();
 
     for (const item of items) {
-      if (item.quantity <= 0) continue;
+      // Quantity is client supplied: coerce to a sane positive integer before
+      // it reaches pricing or stock arithmetic.
+      const quantity = Math.floor(Number(item.quantity));
+      if (!Number.isFinite(quantity) || quantity <= 0) continue;
+      if (quantity > MAX_QUANTITY_PER_LINE) {
+        validationErrors.push(
+          `Maximum ${MAX_QUANTITY_PER_LINE} units per item. Please reduce the quantity.`
+        );
+        continue;
+      }
 
       const product = await productRepo.findById(item.productId);
       if (!product || product.status !== "active") {
@@ -58,14 +71,14 @@ export class CartService {
         }
       }
 
-      const inStock = availableStock >= item.quantity;
+      const inStock = availableStock >= quantity;
       if (!inStock) {
         validationErrors.push(
-          `Insufficient stock for "${product.name}". Available: ${availableStock}, in cart: ${item.quantity}`
+          `Insufficient stock for "${product.name}". Available: ${availableStock}, in cart: ${quantity}`
         );
       }
 
-      const itemTotal = unitPrice * item.quantity;
+      const itemTotal = unitPrice * quantity;
       subtotal += itemTotal;
 
       calculatedItems.push({
@@ -75,7 +88,7 @@ export class CartService {
         sku,
         image,
         unitPrice,
-        quantity: item.quantity,
+        quantity,
         totalPrice: itemTotal,
         attributes,
         inStock,
@@ -124,13 +137,14 @@ export class CartService {
         title: shippingCalc.selectedMethod.name,
         amount: shippingCalc.shippingAmount,
       },
+      availableShippingMethods: shippingCalc.availableMethods,
       tax: {
         rate: taxCalc.taxRate,
         amount: taxCalc.taxAmount,
         isInclusive: taxCalc.isInclusive,
       },
       total: Math.round(finalTotal * 100) / 100,
-      currency: "USD",
+      currency: getDefaultCurrency(),
       isValid: validationErrors.length === 0,
       validationErrors,
     };

@@ -1,149 +1,196 @@
-# ⚡ Aura Luxury — Production-Ready Reusable E-Commerce Starter Engine
+# ⚡ Agency E-Commerce Starter — Reusable Multi-Client Commerce Engine
 
-> **Live Deployment**: [https://aura-luxury-ecommerce.vercel.app](https://aura-luxury-ecommerce.vercel.app)  
-> **Merchant Dashboard**: [https://aura-luxury-ecommerce.vercel.app/admin](https://aura-luxury-ecommerce.vercel.app/admin)
+A modular, production-oriented e-commerce engine built with **Next.js 15 (App Router)**, **TypeScript**, **Tailwind CSS**, and **PostgreSQL / Supabase**.
 
-![Aura Luxury Storefront Preview](/public/assets/img/screenshot.png)
+This repository is the **MASTER template**. Client stores are created from it and customised through
+configuration and the theme layer — not by editing the Commerce Core. See [AGENTS.md](agents.md) for the
+rules that keep this repository generic.
+
+![Storefront Preview](/public/assets/img/screenshot.png)
 
 ---
 
-## 📖 Executive Summary
+## 📖 Overview
 
-**Aura Luxury** is an agency-grade, modular, and production-ready e-commerce platform engine engineered with **Next.js 15 (App Router)**, **TypeScript**, **Tailwind CSS**, and **PostgreSQL / Supabase**.
+The system enforces separation between:
 
-Engineered specifically for digital agencies that onboard multiple e-commerce retail clients, this system enforces strict architectural decoupling between the **Commerce Core** (orders, inventory, payment verification, cart mathematics, taxes, shipping, coupon engines) and the **Dynamic Theme / Presentation Layer** (branding, tokens, product card layouts, and section builders). A brand new client store can be fully launched and customized in minutes via configuration without touching core commerce logic.
+| Layer | Responsibility | Location |
+|-------|----------------|----------|
+| **Commerce Core** | Orders, inventory, cart maths, tax, shipping, coupons, payment orchestration | `src/services/` |
+| **Theme / Presentation** | Branding, tokens, layouts, product card variants, navigation | `src/theme/`, `src/components/storefront/` |
+| **Providers** | Payment and email adapters behind stable interfaces | `src/lib/payments/`, `src/lib/email/` |
+| **Repositories** | Data access behind interfaces; no queries in UI code | `src/repositories/` |
+
+Everything client-specific — store name, tagline, colours, currency, order-number prefix, navigation —
+is configuration. Nothing in this repository hard-codes a client identity.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Framework**: [Next.js 15 (App Router)](https://nextjs.org/) with React 19
-- **Language**: [TypeScript (Strict Mode)](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) with Dynamic CSS Variable Token Mapping
-- **Database & Storage**: [PostgreSQL](https://www.postgresql.org/) / [Supabase](https://supabase.com/) with Row Level Security (RLS) & Migrations
-- **Payment Providers**: Razorpay (implemented, tested with mock, tested with real gateway)
-- **Email Provider**: Resend (production provider), Console Logger (development provider)
-- **State & Forms**: React Context, Zod Schema Validation, React Hook Form
-- **Testing Suite**: [Vitest](https://vitest.dev/) with automated unit, integration, and security anti-tampering suites
-- **Icons & UI**: Lucide React, Radix UI accessibility standards
+- **Framework**: Next.js 15 (App Router) with React 19
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS 3.4 with CSS-variable design tokens
+- **Database**: PostgreSQL / Supabase with Row Level Security and SQL migrations
+- **Payments**: Razorpay adapter (implemented) + a simulated gateway for demo deployments
+- **Email**: Resend (production) or a console logger (development)
+- **Testing**: Vitest (unit + integration) and Playwright (E2E)
+- **UI**: Lucide React icons, custom component primitives
 
 ---
 
-## ✨ Key Capabilities & Architectural Features
+## ✨ Capabilities
 
-### 🛒 High-End Customer Storefront
-- **Dynamic Homepage Builder**: Modular sections (Hero, Curated Categories, Featured Essentials, Promotional Banners, Testimonials, Newsletter) reorderable via database/settings.
-- **Facet Catalog & Instant Search**: Fast debounced multi-keyword search, category filtering, price sliders, brand facets, in-stock filters, and sorting.
-- **Product Detail Engine**: High-res multi-image gallery with zoom, multi-attribute variant matrix selector (Size, Color, Material), live stock trackers, accordions, and related products recommendations.
-- **Anti-Tampering Cart & Mini-Cart**: Server-side price and stock validation, localStorage guest cart persistence with seamless login cart merging, and slide-over mini-cart drawer.
-- **Multi-Step Streamlined Checkout**: Contact address book, zone-based shipping calculator (UAE, US, Europe, Worldwide), coupon code engine, and Razorpay modal integration.
-- **Customer Account Portal**: Profile management, saved shipping addresses, order receipt viewing, and live lifecycle status timelines.
-- **Full SEO & Structured Data**: Dynamic OpenGraph, Twitter Cards, Canonical URLs, and JSON-LD `Product` and `BreadcrumbList` schemas.
+### Customer storefront
+- **Database-driven homepage sections** — hero, featured products, categories, banners, testimonials, newsletter; ordered and toggled from `homepage_sections`.
+- **Catalog & search** — debounced search, category filtering, price and brand facets, in-stock filter, sorting.
+- **Product detail** — multi-image gallery, variant matrix selector, live stock indicators, related products.
+- **Cart** — server-recalculated pricing and stock, guest cart in `localStorage`, slide-over mini-cart.
+- **Checkout** — server-validated address, server-configured shipping methods, coupon engine, Razorpay modal.
+- **Account portal** — session-scoped order history, receipts, and status timelines.
 
-### 👔 Comprehensive Merchant Admin Dashboard
-- **Executive Analytics**: Real-time sales revenue, order volumes, average order value (AOV), low-stock alerts, and recent customer orders.
-- **Product Management**: Intuitive product creator with dynamic multi-attribute variant matrix generator, drag-and-drop media manager, SKU tracker, and SEO snippet preview.
-- **Nested Category Manager**: Parent/child hierarchy manager with slugs and banner images.
-- **Inventory Ledger**: Live stock tracker, manual stock adjustment modal with audit notes, and immutable `inventory_transactions` history.
-- **Order Lifecycle Manager**: Detailed order inspection with frozen price snapshots, customer information, delivery address, and one-click status transitions (`Pending` ➔ `Paid` ➔ `Confirmed` ➔ `Processing` ➔ `Packed` ➔ `Shipped` ➔ `Delivered` ➔ `Cancelled`).
-- **Promotions & Coupons**: Percentage and fixed discount rules with minimum spend limits, maximum discount caps, and usage counters.
-- **Store & Brand Configuration**: Centralized settings to update brand logos, theme color tokens, tax rules, shipping zones, and feature flags without touching code.
+### Merchant admin
+- **Analytics overview** — revenue, order volume, AOV, low-stock alerts.
+- **Product management** — variant matrix generator, media manager, SKU tracking.
+- **Nested categories**, **inventory ledger** with an immutable `inventory_transactions` history.
+- **Order lifecycle** — frozen price snapshots and status transitions.
+- **Coupons** — percentage/fixed rules, minimum spend, discount caps, usage limits.
+- **Store settings & homepage builder** — persisted to the database.
 
-### 🔒 Enterprise Commerce Security
-- **Zero Client Trust**: All product prices, discounts, taxes, and shipping rates are strictly recalculated server-side.
-- **Cryptographic Payment Verification**: Server-side HMAC-SHA256 signature verification for Razorpay payment captures and webhooks.
-- **Atomic Stock Reservation**: Database transaction row-locking prevents overselling and race conditions.
-- **Row Level Security (RLS)**: Customer data isolation for profiles, orders, and addresses at the PostgreSQL level.
+### Security model
+- **Zero client trust** — prices, discounts, tax, and shipping are always recalculated server-side from
+  the database; client-supplied amounts are ignored.
+- **Session-derived identity** — user identity comes from the Supabase session cookie only. Request
+  headers and JSON bodies are never trusted to identify a user.
+- **Authorised writes** — every mutating API route is guarded by `requireAdmin()` in
+  `src/lib/auth/session.ts`, independently of the route-matcher middleware.
+- **Cryptographic payment verification** — HMAC-SHA256 signature checks with constant-time comparison.
+  Verification **fails closed**: a missing key secret or webhook secret rejects the request rather
+  than approving it. The verified gateway order id is bound to the order being settled, so a signature
+  valid for one order cannot settle another.
+- **Row Level Security** — enabled on every table; commercially sensitive tables (payments, refunds,
+  coupons, coupon usage, inventory movements, webhook payloads) are unreachable with the public anon key.
+- **Atomic stock reservation** — row locking prevents overselling under concurrency.
+- **Baseline security headers** — set for every response in `src/middleware.ts`.
 
 ---
 
-## 🚀 Local Setup & Quickstart
+## 🚀 Local Setup
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/your-org/agency-ecommerce-starter.git
-cd agency-ecommerce-starter
-```
-
-### 2. Install dependencies
+### 1. Clone and install
 ```bash
 npm install
 ```
 
-### 3. Configure environment variables
-Copy the template configuration file:
+### 2. Configure environment
 ```bash
 cp .env.example .env.local
 ```
+Fill in Supabase credentials and, for a real store, the Razorpay keys.
+Every variable is documented inline in `.env.example`.
 
-### 4. Run database migrations (Supabase / Postgres)
+> **Demo mode**: setting `APP_MODE=demo` and `NEXT_PUBLIC_APP_MODE=demo` enables a simulated gateway
+> that approves payments **without charging anything**. Use it for previews and design review only.
+> It is never enabled implicitly — missing production credentials cause a clear failure, not a silent
+> fallback.
+
+### 3. Run migrations
 ```bash
-# Apply initial schema and realistic demo seeds
 supabase db push
-# or run SQL from /supabase/migrations/20260101000000_init_schema.sql
 ```
 
-### 5. Launch local development server
+> If `db push` reports *"Remote migration versions not found in local migrations directory"*, the
+> remote's migration history diverges from this repo and pushing would try to reconcile it. To apply a
+> single migration without touching that history, split it into statements and run them through the
+> CLI (`supabase db query` sends one command at a time):
+>
+> ```bash
+> node scripts/apply-sql-statements.mjs supabase/migrations/<file>.sql --split-to .tmp/stmts
+> ```
+>
+> then apply each generated file with `supabase db query --db-url "$DATABASE_URL" -f <file>`.
+> The RLS hardening migration is idempotent, so a partial run is safe to repeat.
+
+### 4. Start the dev server
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) for the storefront and [http://localhost:3000/admin](http://localhost:3000/admin) for the admin dashboard.
-
-### 6. Run automated test suite
-The platform enforces strict safety nets before deployments. Run the verification pipeline:
-```bash
-# Core logic & mathematically critical functions (32/32 PASS)
-npm run test
-
-# Real DB interactions, webhooks, locking (13/13 PASS)
-npm run test:integration
-
-# Real Browser automation via Playwright (5/5 PASS)
-npx playwright test
-```
+Storefront at `http://localhost:3000`, admin at `http://localhost:3000/admin`
+(requires a user whose `users.role` is `admin` or `super_admin`).
 
 ---
 
-## 📂 Project Architecture
+## 🧪 Verification pipeline
+
+Run all of these before declaring a change complete:
+
+```bash
+npm run lint
+```
+```bash
+npx tsc --noEmit
+```
+```bash
+npm run test
+```
+```bash
+npm run build
+```
+```bash
+npx playwright test
+```
+
+`npm run test` covers the unit and integration suites (integration tests hit a real database and are
+included in the default run). The E2E suite builds the app with `APP_MODE=demo` so it can complete a
+purchase without a live gateway — see `playwright.config.ts`.
+
+---
+
+## 📂 Project Structure
 
 ```text
 src/
 ├── app/
-│   ├── (storefront)/         # Customer Storefront Routes (Home, Catalog, PDP, Cart, Checkout, Account)
-│   ├── admin/                # Merchant Dashboard Routes (Overview, Products, Orders, Inventory, Settings)
-│   └── api/                  # Secure REST API & Payment Webhook Handlers
+│   ├── (storefront)/         # Storefront routes (home, catalog, PDP, cart, checkout, account)
+│   ├── admin/                # Merchant dashboard routes
+│   └── api/                  # REST API routes and payment webhook handler
 ├── components/
-│   ├── ui/                   # Reusable UI Design System (Button, Input, Modal, Drawer, Card, Badge)
-│   └── storefront/           # Storefront Components (Header, Footer, MiniCart, ProductCard, SearchModal)
+│   ├── ui/                   # UI primitives (Button, Input, Modal, Drawer, Card, Badge)
+│   └── storefront/           # Header, Footer, MiniCart, ProductCard, SearchModal, Analytics, sections
 ├── features/
-│   ├── cart/                 # Cart Context & State Management
-│   └── wishlist/             # Wishlist State Management
+│   ├── cart/                 # Cart context and state
+│   └── wishlist/             # Wishlist state
 ├── lib/
-│   ├── payments/             # PaymentProvider Interface & Adapters (Razorpay, Stripe, Mock)
-│   ├── integrations/pos/     # POSProvider Interface & Sunmi POS Adapter
-│   └── db/                   # Database Repository Bridge
-├── repositories/             # Store Repository with seed bootstrapping
-├── services/                 # Commerce Core Services (Product, Cart, Order, Inventory, Tax, Shipping, Coupon)
-├── theme/                    # Theme Engine, Token Injector, and Card Variant Switcher
-├── types/                    # TypeScript Database & Domain Contracts
-└── validations/              # Zod Validation Schemas
+│   ├── auth/                 # Session resolution and route guards
+│   ├── config/               # Store configuration (name, currency, order prefix, demo mode)
+│   ├── email/                # EmailProvider interface + Resend / console adapters
+│   ├── hooks/                # Shared client hooks (focus trap)
+│   ├── payments/             # PaymentProvider interface + Razorpay / simulated adapters
+│   └── supabase/             # Browser, server, and service-role clients
+├── repositories/
+│   ├── interfaces/           # Repository contracts
+│   └── supabase/             # Supabase implementations
+├── services/                 # Commerce Core (product, cart, order, inventory, tax, shipping, coupon)
+├── theme/                    # Theme config, provider, token injection
+└── types/                    # Database and domain contracts
 ```
 
 ---
 
-## 📚 Complete Technical Documentation
+## 📚 Documentation
 
-- 🏛️ [System Architecture & Core vs Theme Separation](docs/ARCHITECTURE.md)
-- 🚀 [Production Deployment Guide](docs/DEPLOYMENT.md)
-- 📋 [17-Step Client Onboarding Checklist](docs/CLIENT-ONBOARDING.md)
-- 🗄️ [Database Schema & Migration Docs](docs/DATABASE.md)
-- 💳 [Payment Gateways & Razorpay Setup](docs/PAYMENTS.md)
-- 🎨 [Theme Customization & Visual Variants](docs/THEMING.md)
-- 🔌 [Hardware POS & Cloud Integrations](docs/INTEGRATIONS.md)
-- 🧪 [Automated Testing Strategy](docs/TESTING.md)
-- 🛡️ [Commerce Security & Anti-Tampering](docs/SECURITY.md)
+- 🏛️ [Architecture & Core/Theme Separation](docs/ARCHITECTURE.md)
+- 🚀 [Deployment Guide](docs/DEPLOYMENT.md)
+- 📋 [Client Onboarding Checklist](docs/CLIENT-ONBOARDING.md)
+- 🗄️ [Database Schema & Migrations](docs/DATABASE.md)
+- 💳 [Payments & Razorpay Setup](docs/PAYMENTS.md)
+- 🎨 [Theme Customisation](docs/THEMING.md)
+- 🔌 [Integrations](docs/INTEGRATIONS.md)
+- 🧪 [Testing Strategy](docs/TESTING.md)
+- 🛡️ [Commerce Security](docs/SECURITY.md)
+- 🤖 [Agent & Contribution Rules](agents.md)
 
 ---
 
 ## 📄 License
-This project is proprietary software developed for multi-client deployment. All rights reserved.
+Proprietary software developed for multi-client deployment. All rights reserved.

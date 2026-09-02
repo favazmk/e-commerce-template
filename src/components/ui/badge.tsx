@@ -22,7 +22,7 @@ export function Badge({
     success: "bg-emerald-50 text-emerald-700 border border-emerald-200/60",
     warning: "bg-amber-50 text-amber-700 border border-amber-200/60",
     danger: "bg-rose-50 text-rose-700 border border-rose-200/60",
-    accent: "bg-emerald-600 text-white shadow-xs",
+    accent: "bg-emerald-600 text-white shadow-sm",
     outline: "border border-slate-300 text-slate-700",
   };
 

@@ -29,17 +29,29 @@ export class SettingsService {
   }
 
   /**
-   * Get dynamic homepage sections
+   * Get dynamic homepage sections from persistent storage.
    */
-  static getHomepageSections(enabledOnly = false): HomepageSection[] {
-    // Left as mock/array for now unless we created a repository for it
-    return [];
+  static async getHomepageSections(enabledOnly = false): Promise<HomepageSection[]> {
+    const repo = RepositoryFactory.getSettingsRepository();
+    return await repo.getHomepageSections(enabledOnly);
   }
 
   /**
-   * Update or reorder homepage sections
+   * Update a single homepage section.
    */
-  static updateHomepageSection(id: string, data: Partial<HomepageSection>): HomepageSection | null {
-    return null;
+  static async updateHomepageSection(
+    id: string,
+    data: Partial<HomepageSection>
+  ): Promise<HomepageSection | null> {
+    const repo = RepositoryFactory.getSettingsRepository();
+    return await repo.updateHomepageSection(id, data);
+  }
+
+  /**
+   * Persist a new section ordering.
+   */
+  static async reorderHomepageSections(orderedIds: string[]): Promise<void> {
+    const repo = RepositoryFactory.getSettingsRepository();
+    await repo.reorderHomepageSections(orderedIds);
   }
 }

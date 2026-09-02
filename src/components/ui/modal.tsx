@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { useFocusTrap } from "@/lib/hooks/use-focus-trap";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -22,6 +23,9 @@ export function Modal({
   children,
   maxWidth = "md",
 }: ModalProps) {
+  const panelRef = useFocusTrap<HTMLDivElement>(isOpen);
+  const titleId = React.useId();
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -50,7 +54,7 @@ export function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -65,10 +69,18 @@ export function Modal({
         )}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        aria-label={title ? undefined : "Dialog"}
+        ref={panelRef}
+        tabIndex={-1}
       >
-        <div className="flex items-start justify-between pb-3">
-          <div>
-            {title && <h3 className="text-lg font-semibold text-slate-900">{title}</h3>}
+        <div className="flex items-start justify-between gap-3 pb-3">
+          <div className="min-w-0">
+            {title && (
+              <h3 id={titleId} className="text-lg font-semibold text-slate-900">
+                {title}
+              </h3>
+            )}
             {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
           </div>
           <button

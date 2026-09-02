@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { ProductImage } from "../ProductImage";
 import { Search, X, ArrowRight, Loader2 } from "lucide-react";
 import { Product } from "@/types/database";
 
@@ -96,21 +96,20 @@ export function SearchModal({
                   className="flex items-center gap-4 rounded-brand p-2.5 transition-colors hover:bg-slate-50 group"
                 >
                   <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100">
-                    {product.images?.[0]?.url ? (
-                      <Image fill sizes="(max-width: 768px) 100vw, 33vw"
-                        src={product.images[0].url}
-                        alt={product.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-slate-200" />
-                    )}
+                    <ProductImage
+                      src={product.images?.[0]?.url}
+                      seed={product.name}
+                      alt=""
+                      sizes="56px"
+                      compact
+                      className="object-cover"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-brand-primary">
                       {product.name}
                     </p>
-                    <p className="text-xs text-slate-500">{product.brand || "Aura Studio"}</p>
+                    <p className="text-xs text-slate-500">{product.brand || ""}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-slate-900">${product.price.toFixed(2)}</p>

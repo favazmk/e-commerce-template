@@ -72,16 +72,12 @@ test.describe('E2E Customer Flow', () => {
     await page.fill('input[name="state"]', 'NY');
     await page.fill('input[name="postalCode"]', '10001');
     
-    const countrySelect = page.locator('select[name="country"]');
-    if (await countrySelect.isVisible()) {
-      await countrySelect.selectOption({ label: 'United States' });
-    }
+    await page.fill('input[name="country"]', 'US');
     
-    // 16. Ensure "Test Payment" is selected if available
+    // 16. Select the simulated gateway (demo-mode only, see playwright.config)
     const mockPayment = page.locator('input[value="mock"]');
-    if (await mockPayment.isVisible()) {
-      await mockPayment.click();
-    }
+    await expect(mockPayment).toBeVisible();
+    await mockPayment.check();
     await page.getByRole('button', { name: /Place Order/i }).click();
     
     // 19. Verifies order confirmation page

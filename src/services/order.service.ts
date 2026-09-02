@@ -2,9 +2,26 @@ import { PaymentFactory } from "@/lib/payments/payment.factory";
 import { RepositoryFactory } from "@/repositories/repository.factory";
 import { CheckoutInput, OrderCreationResult } from "@/types/commerce";
 import { Order, OrderItem, OrderStatus, OrderStatusHistory, Payment, PaymentStatus } from "@/types/database";
+import { randomInt } from "crypto";
+import { getOrderNumberPrefix } from "@/lib/config/store.config";
 import { CartService } from "./cart.service";
 import { CouponService } from "./coupon.service";
 import { EmailService } from "./email.service";
+
+/**
+ * Human-readable order number.
+ *
+ * Uses a CSPRNG rather than Math.random(): order numbers are used as lookup
+ * keys on the success page, so a predictable sequence lets anyone enumerate
+ * other customers' orders. The extra width also makes collisions negligible.
+ */
+function generateOrderNumber(): string {
+  const prefix = getOrderNumberPrefix();
+  const serial = randomInt(0, 1_000_000_000).toString().padStart(9, "0");
+  return `${prefix}-${serial}`;
+}
+
+const ADMIN_ROLES = ["admin", "super_admin"];
 
 export class OrderService {
   /**
@@ -25,7 +42,19 @@ export class OrderService {
       );
     }
 
-    const orderNumber = `AURA-${Math.floor(100000 + Math.random() * 900000)}`;
+    const orderNumber = generateOrderNumber();
+
+    // Signed-in customers may not resubmit their email in the checkout form.
+    let customerAccountEmail: string | undefined;
+    if (userId) {
+      const account = await RepositoryFactory.getUserRepository().findById(userId);
+      customerAccountEmail = account?.email;
+    }
+
+    const contactEmail = input.guestEmail?.trim() || customerAccountEmail;
+    if (!contactEmail) {
+      throw new Error("A contact email address is required to place an order");
+    }
 
     const inventoryRepo = RepositoryFactory.getInventoryRepository();
 
@@ -63,7 +92,7 @@ export class OrderService {
     const newOrderPayload = {
       order_number: orderNumber,
       user_id: userId || null,
-      guest_email: input.guestEmail || null,
+      guest_email: input.guestEmail?.trim() || (userId ? null : contactEmail),
       guest_phone: input.guestPhone || null,
       status: "pending" as OrderStatus,
       payment_status: "pending" as PaymentStatus,
@@ -92,7 +121,7 @@ export class OrderService {
     // 7. Initialize Payment Gateway Provider
     const paymentProvider = PaymentFactory.getProvider(input.paymentProvider);
     const customerName = `${input.shippingAddress.first_name} ${input.shippingAddress.last_name}`.trim();
-    const customerEmail = input.guestEmail || "client@example.com";
+    const customerEmail = contactEmail;
 
     const paymentInit = await paymentProvider.createPayment({
       order: newOrder,
@@ -131,21 +160,47 @@ export class OrderService {
   }
 
   /**
-   * Record successful payment verification and update order status to paid / confirmed
+   * Record successful payment verification and update order status to paid.
+   *
+   * `providerOrderId` is the gateway order id that the verified signature was
+   * computed over. It MUST be matched against the payment record stored at
+   * checkout time — without that binding a caller can replay a signature that
+   * is valid for their own cheap order against somebody else's expensive one.
    */
   static async confirmOrderPayment(
     orderId: string,
     transactionId: string,
     provider: string,
-    signature?: string
+    signature?: string,
+    providerOrderId?: string
   ): Promise<Order | null> {
     const repo = RepositoryFactory.getOrderRepository();
-    const order = await repo.findByOrderNumber(orderId) || await repo.findById(orderId);
+    const order = (await repo.findByOrderNumber(orderId)) || (await repo.findById(orderId));
     if (!order) return null;
+
+    const payments = order.payments?.length
+      ? order.payments
+      : await repo.getOrderPayments(order.id);
+
+    // Bind the verified gateway order id to this order's payment record.
+    let payment = payments?.[0];
+    if (providerOrderId) {
+      const matched = payments?.find((p) => p.provider_order_id === providerOrderId);
+      if (!matched) {
+        throw new Error(
+          "Payment verification rejected: the verified gateway order does not belong to this order"
+        );
+      }
+      payment = matched;
+    }
+
+    if (order.payment_status === "captured") {
+      // Already settled (webhook and browser callback can both arrive).
+      return await repo.findById(order.id);
+    }
 
     await repo.updateOrderStatus(order.id, "paid", `Payment verified via ${provider} (TX: ${transactionId})`);
 
-    const payment = order.payments?.[0];
     if (payment) {
       await repo.updatePaymentStatus(payment.id, "captured", payment.provider_order_id || undefined, transactionId);
     }
@@ -187,9 +242,46 @@ export class OrderService {
     return updated;
   }
 
+  /**
+   * Unrestricted order lookup. Only for callers that are already authorised
+   * (admin screens) or that have no viewer at all (payment webhook).
+   * Anything a customer can reach by URL must use `getOrderForViewer()`.
+   */
   static async getOrderById(id: string): Promise<Order | null> {
     const repo = RepositoryFactory.getOrderRepository();
     return (await repo.findById(id)) || (await repo.findByOrderNumber(id));
+  }
+
+  /**
+   * Order lookup for a customer-facing page, with the ownership check that
+   * Row Level Security cannot express.
+   *
+   * A guest order has `user_id = null`, so `auth.uid() = user_id` is never true
+   * and no RLS policy can grant the person who placed it access. The order
+   * number is the capability instead — which is why it comes from a CSPRNG.
+   *
+   * An order that *does* belong to an account is a different matter: knowing
+   * the number must not be enough, or one customer could read another's
+   * address, email and phone. That case is enforced here.
+   *
+   * @param viewer  The signed-in user, or null for anonymous traffic.
+   */
+  static async getOrderForViewer(
+    orderRef: string,
+    viewer: { id: string; role?: string } | null
+  ): Promise<Order | null> {
+    const order = await this.getOrderById(orderRef);
+    if (!order) return null;
+
+    // Guest order: the unguessable order number is the access token.
+    if (!order.user_id) return order;
+
+    // Owned order: only the owner, or an admin, may view it.
+    if (viewer && (viewer.id === order.user_id || ADMIN_ROLES.includes(viewer.role || ""))) {
+      return order;
+    }
+
+    return null;
   }
 
   static async getUserOrders(userId: string): Promise<Order[]> {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CategoryService } from "@/services/category.service";
+import { requireAdmin } from "@/lib/auth/session";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,6 +15,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAdmin();
+  if (auth.response) return auth.response;
+
   try {
     const body = await request.json();
     const created = await CategoryService.createCategory(body);

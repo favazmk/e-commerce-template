@@ -6,6 +6,11 @@ export type ProductCardVariant =
   | "compact"
   | "image-focused";
 
+export interface NavigationLink {
+  label: string;
+  href: string;
+}
+
 export interface ThemeConfig {
   brand: {
     name: string;
@@ -25,6 +30,11 @@ export interface ThemeConfig {
     fontHeading: string;
     fontBody: string;
   };
+  /**
+   * Storefront navigation. Category slugs differ per client, so this belongs
+   * in per-client theme configuration and never hard-coded into components.
+   */
+  navigation: NavigationLink[];
   styling: {
     borderRadius: string; // e.g. '0.5rem', '0.75rem', '0px'
     productCardVariant: ProductCardVariant;
@@ -39,8 +49,10 @@ export interface ThemeConfig {
 
 export const defaultThemeConfig: ThemeConfig = {
   brand: {
-    name: "AURA LUXURY",
-    tagline: "Timeless Essentials & Artisanal Craft",
+    // Placeholder values only. Override per client via environment variables
+    // or the client repository's theme configuration (AGENTS.md sections 2, 9).
+    name: process.env.NEXT_PUBLIC_STORE_NAME || "Your Store",
+    tagline: process.env.NEXT_PUBLIC_STORE_TAGLINE || undefined,
   },
   colors: {
     primary: "#0f172a", // Slate 900
@@ -54,13 +66,14 @@ export const defaultThemeConfig: ThemeConfig = {
     fontHeading: "Outfit, Inter, sans-serif",
     fontBody: "Inter, sans-serif",
   },
+  navigation: [{ label: "Shop All", href: "/products" }],
   styling: {
     borderRadius: "0.5rem",
     productCardVariant: "luxury",
     headerSticky: true,
     announcementBar: {
-      enabled: true,
-      text: "✨ Complimentary Global Express Courier on orders over $200",
+      enabled: false,
+      text: "",
       link: "/products",
     },
   },

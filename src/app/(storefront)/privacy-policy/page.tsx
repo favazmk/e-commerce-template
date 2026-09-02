@@ -1,3 +1,4 @@
+import { getStoreDisplayName } from "@/lib/config/store.config";
 import React from "react";
 
 export default function PrivacyPolicyPage() {
@@ -8,7 +9,7 @@ export default function PrivacyPolicyPage() {
 
       <div className="prose prose-slate max-w-none text-sm text-slate-600 space-y-6 leading-relaxed">
         <p>
-          At AURA LUXURY (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;), we respect your privacy and are committed
+          At {getStoreDisplayName()} (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;), we respect your privacy and are committed
           to protecting personal data collected through our e-commerce platform and services.
         </p>
 

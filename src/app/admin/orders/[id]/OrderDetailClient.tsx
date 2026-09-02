@@ -98,9 +98,9 @@ export function OrderDetailClient({ initialOrder }: { initialOrder: Order }) {
             <div className="divide-y divide-slate-100">
               {order.items?.map((item) => (
                 <div key={item.id} className="py-4 flex gap-4 items-center">
-                  <div className="h-16 w-16 flex-shrink-0 rounded-brand bg-slate-100 overflow-hidden border border-slate-100">
+                  <div className="relative h-16 w-16 flex-shrink-0 rounded-brand bg-slate-100 overflow-hidden border border-slate-100">
                     {item.image_snapshot && (
-                      <Image fill sizes="(max-width: 768px) 100vw, 33vw"
+                      <Image fill sizes="64px"
                         src={item.image_snapshot}
                         alt={item.product_name_snapshot}
                         className="h-full w-full object-cover"

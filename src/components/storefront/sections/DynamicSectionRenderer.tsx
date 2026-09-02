@@ -6,7 +6,7 @@ import { ArrowRight, Star, Mail, CheckCircle2 } from "lucide-react";
 import { Category, HomepageSection, Product } from "@/types/database";
 import { ProductCard } from "../ProductCard";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { SafeImage } from "../ProductImage";
 
 export function DynamicSectionRenderer({
   sections,
@@ -17,8 +17,11 @@ export function DynamicSectionRenderer({
   categories: Category[];
   featuredProducts: Product[];
 }) {
+  // Block, not flex-column: a flex item with `mx-auto` sizes to its content
+  // instead of stretching, which collapsed every `max-w-7xl mx-auto` section to
+  // a few hundred pixels wide. `space-y-*` stacks these just as well.
   return (
-    <div className="flex flex-col space-y-16 sm:space-y-24 pb-20">
+    <div className="space-y-16 sm:space-y-24 pb-20">
       {sections
         .filter((s) => s.is_enabled)
         .sort((a, b) => a.display_order - b.display_order)
@@ -63,9 +66,11 @@ function HeroSection({ section }: { section: HomepageSection }) {
       {/* Background Image with Gradient Overlay */}
       {section.image_url && (
         <div className="absolute inset-0 z-0">
-          <Image fill sizes="(max-width: 768px) 100vw, 33vw"
+          <SafeImage
+            priority
+            sizes="100vw"
             src={section.image_url}
-            alt={section.title || "Hero Banner"}
+            alt=""
             className="h-full w-full object-cover object-center opacity-40 scale-105 animate-in fade-in zoom-in duration-1000"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
@@ -136,13 +141,12 @@ function CategoriesSection({
             href={`/categories/${cat.slug}`}
             className="group relative overflow-hidden rounded-brand-xl aspect-[4/5] bg-slate-100 shadow-subtle hover:shadow-float transition-all duration-500"
           >
-            {cat.image_url && (
-              <Image fill sizes="(max-width: 768px) 100vw, 33vw"
-                src={cat.image_url}
-                alt={cat.name}
-                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-              />
-            )}
+            <SafeImage
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              src={cat.image_url}
+              alt=""
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 text-white">
               <h3 className="text-xl font-bold font-heading">{cat.name}</h3>
@@ -203,10 +207,11 @@ function BannerSection({ section }: { section: HomepageSection }) {
       <div className="relative overflow-hidden rounded-brand-xl bg-slate-900 text-white min-h-[420px] flex items-center">
         {section.image_url && (
           <div className="absolute inset-0 z-0">
-            <Image fill sizes="(max-width: 768px) 100vw, 33vw"
+            <SafeImage
+              sizes="100vw"
               src={section.image_url}
-              alt="Promotional Banner"
-              className="h-full w-full object-cover opacity-35"
+              alt=""
+              className="object-cover opacity-35"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/70 to-transparent" />
           </div>
@@ -275,14 +280,39 @@ function TestimonialsSection({ section }: { section: HomepageSection }) {
 function NewsletterSection({ section }: { section: HomepageSection }) {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Set NEXT_PUBLIC_NEWSLETTER_ENDPOINT to the client's list provider.
+  const endpoint = process.env.NEXT_PUBLIC_NEWSLETTER_ENDPOINT;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) {
+    const address = email.trim();
+    if (!address || !endpoint) return;
+
+    setIsSending(true);
+    setError("");
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: address }),
+      });
+      if (!res.ok) throw new Error("Subscription failed");
       setSubscribed(true);
       setEmail("");
+    } catch {
+      // Do not claim success when the request did not succeed.
+      setError("We could not sign you up just now. Please try again later.");
+    } finally {
+      setIsSending(false);
     }
   };
+
+  // No configured provider means there is nowhere to send the address, so the
+  // form would be decorative. Render the copy without a misleading input.
+  if (!endpoint) return null;
 
   return (
     <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -291,17 +321,23 @@ function NewsletterSection({ section }: { section: HomepageSection }) {
           <Mail className="h-6 w-6" />
         </div>
         <h2 className="text-2xl sm:text-3xl font-bold font-heading">
-          {section.title || "Join the Collector's Circle"}
+          {section.title || "Join our mailing list"}
         </h2>
         <p className="mt-2 text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
-          {section.subtitle || "Receive private invitations, archive previews, and complimentary delivery on your first order."}
+          {section.subtitle || "Get new arrivals and offers straight to your inbox."}
         </p>
 
         {subscribed ? (
           <div className="mt-6 flex items-center justify-center gap-2 text-emerald-400 text-sm font-semibold">
-            <CheckCircle2 className="h-5 w-5" /> Thank you for subscribing to our private list.
+            <CheckCircle2 className="h-5 w-5" /> Thanks for subscribing.
           </div>
         ) : (
+          <>
+          {error && (
+            <p role="alert" className="mt-4 text-xs font-medium text-rose-400">
+              {error}
+            </p>
+          )}
           <form onSubmit={handleSubmit} className="mt-8 max-w-md mx-auto flex flex-col sm:flex-row gap-2">
             <input
               type="email"
@@ -309,12 +345,13 @@ function NewsletterSection({ section }: { section: HomepageSection }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email address..."
-              className="flex-1 rounded-brand bg-slate-800 border border-slate-700 px-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="min-w-0 flex-1 rounded-brand bg-slate-800 border border-slate-700 px-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
-            <Button type="submit" variant="accent" size="md">
+            <Button type="submit" variant="accent" size="md" isLoading={isSending}>
               Subscribe
             </Button>
           </form>
+          </>
         )}
       </div>
     </section>

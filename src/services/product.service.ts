@@ -45,10 +45,8 @@ export class ProductService {
    */
   static async getAllAdminProducts(search?: string, status?: string): Promise<Product[]> {
     const repo = RepositoryFactory.getProductRepository();
-    // In a real scenario we might add an admin method to bypass active filter
-    // For now we will rely on findAll returning appropriately if we implemented it to return all for admin
-    // Or we just call the Supabase direct API for Admin if repo doesn't support it yet
-    const result = await repo.findAll({ searchQuery: search, limit: 1000 });
+    // Admin needs every publish state, including drafts and archived items.
+    const result = await repo.findAll({ searchQuery: search, limit: 1000, status: "all" });
     let items = result.items;
     if (status && status !== "all") {
       items = items.filter(p => p.status === status);

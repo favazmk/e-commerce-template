@@ -43,8 +43,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, status: "webhook_received" });
   } catch (error: any) {
     console.error("[Webhook Error]", error);
+    // Do not echo internal error text to an unauthenticated caller.
     return NextResponse.json(
-      { success: false, error: { code: "WEBHOOK_FAILED", message: error.message } },
+      { success: false, error: { code: "WEBHOOK_FAILED", message: "Webhook rejected" } },
       { status: 400 }
     );
   }

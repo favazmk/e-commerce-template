@@ -27,7 +27,7 @@ export default async function AdminProductsPage({
           </h1>
         </div>
         <Link href="/admin/products/new">
-          <Button variant="primary" size="md" className="gap-2 shadow-xs">
+          <Button variant="primary" size="md" className="gap-2 shadow-sm">
             <Plus className="h-4 w-4" /> Create New Product
           </Button>
         </Link>
@@ -54,9 +54,9 @@ export default async function AdminProductsPage({
                   {/* Thumbnail & Name */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 flex-shrink-0 rounded-brand bg-slate-100 overflow-hidden border border-slate-100">
+                      <div className="relative h-10 w-10 flex-shrink-0 rounded-brand bg-slate-100 overflow-hidden border border-slate-100">
                         {product.images?.[0]?.url && (
-                          <Image fill sizes="(max-width: 768px) 100vw, 33vw"
+                          <Image fill sizes="40px"
                             src={product.images[0].url}
                             alt={product.name}
                             className="h-full w-full object-cover"
@@ -70,7 +70,7 @@ export default async function AdminProductsPage({
                         >
                           {product.name}
                         </Link>
-                        <span className="text-[10px] text-slate-400">{product.brand || "Aura Studio"}</span>
+                        <span className="text-[10px] text-slate-400">{product.brand || "—"}</span>
                       </div>
                     </div>
                   </td>

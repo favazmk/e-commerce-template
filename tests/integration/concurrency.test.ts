@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { createClient as createAdminDb } from '@supabase/supabase-js';
 import { RepositoryFactory } from '../../src/repositories/repository.factory';
 import { InventoryService } from '../../src/services/inventory.service';
 
@@ -9,6 +10,20 @@ describe('Integration: Concurrency', () => {
 
   beforeAll(() => {
     RepositoryFactory.clearOverrides();
+  });
+
+  const createdSlugs: string[] = [];
+
+  // Integration tests write to a shared database that also backs the demo
+  // storefront. Without cleanup every run leaves an active product behind, and
+  // those accumulate into the live catalog.
+  afterAll(async () => {
+    if (!createdSlugs.length) return;
+    const db = createAdminDb(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    await db.from('products').delete().in('slug', createdSlugs);
   });
 
   it('should prevent overselling during concurrent checkout requests', async () => {
@@ -33,6 +48,7 @@ describe('Integration: Concurrency', () => {
     };
     
     const { data: newProduct, error } = await supabase.from('products').insert([productData]).select().single();
+    if (newProduct?.slug) createdSlugs.push(newProduct.slug);
     expect(error).toBeNull();
     expect(newProduct).toBeDefined();
 

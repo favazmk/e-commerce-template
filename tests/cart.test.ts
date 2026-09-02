@@ -38,7 +38,9 @@ describe("Commerce Core: Cart Service", () => {
 
   it("should enforce stock limits and flag insufficient inventory", async () => {
     const p1 = mockData.products[0];
-    const excessiveQty = 9999;
+    // Above available stock (10) but within the per-line ceiling, so the
+    // stock check is what must reject it.
+    const excessiveQty = 50;
 
     const result = await CartService.calculateCart([
       { productId: p1.id, variantId: p1.variants?.[0]?.id, quantity: excessiveQty },
@@ -47,6 +49,32 @@ describe("Commerce Core: Cart Service", () => {
     expect(result.isValid).toBe(false);
     expect(result.validationErrors.length).toBeGreaterThan(0);
     expect(result.validationErrors[0]).toContain("Insufficient stock");
+  });
+
+  it("should reject absurd client-supplied quantities before pricing them", async () => {
+    const p1 = mockData.products[0];
+
+    const result = await CartService.calculateCart([
+      { productId: p1.id, variantId: p1.variants?.[0]?.id, quantity: 9999 },
+    ]);
+
+    expect(result.isValid).toBe(false);
+    expect(result.validationErrors[0]).toContain("Maximum");
+    // The line must not reach the totals at all.
+    expect(result.items).toHaveLength(0);
+    expect(result.subtotal).toBe(0);
+  });
+
+  it("should ignore non-numeric and negative quantities", async () => {
+    const p1 = mockData.products[0];
+
+    const result = await CartService.calculateCart([
+      { productId: p1.id, variantId: p1.variants?.[0]?.id, quantity: "abc" as any },
+      { productId: p1.id, variantId: p1.variants?.[0]?.id, quantity: -5 },
+    ]);
+
+    expect(result.items).toHaveLength(0);
+    expect(result.subtotal).toBe(0);
   });
 
   it("should merge guest items into customer cart without duplicate entries", async () => {

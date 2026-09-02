@@ -6,7 +6,7 @@ import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, ShieldCheck, Tag } from "
 import { useCart } from "@/features/cart/CartContext";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import Image from "next/image";
+import { ProductImage } from "@/components/storefront/ProductImage";
 
 export default function CartPage() {
   const {
@@ -63,9 +63,9 @@ export default function CartPage() {
             {calculatedCart.items.map((item) => (
               <div key={`${item.productId}_${item.variantId || "default"}`} className="p-6 flex flex-col sm:flex-row gap-6 items-start sm:items-center">
                 {/* Thumbnail */}
-                <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100 border border-slate-100">
+                <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100 border border-slate-100">
                   {item.image ? (
-                    <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                    <ProductImage src={item.image} seed={item.name} alt="" sizes="96px" className="object-cover" />
                   ) : (
                     <div className="h-full w-full bg-slate-200" />
                   )}
@@ -83,7 +83,7 @@ export default function CartPage() {
                   {item.attributes && (
                     <div className="mt-1 flex flex-wrap gap-1.5">
                       {Object.entries(item.attributes).map(([k, v]) => (
-                        <span key={k} className="inline-block rounded-xs bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                        <span key={k} className="inline-block rounded-sm bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
                           {k}: {v}
                         </span>
                       ))}
@@ -97,7 +97,7 @@ export default function CartPage() {
 
                 {/* Quantity Controls */}
                 <div className="flex items-center gap-6 self-stretch sm:self-auto justify-between sm:justify-start">
-                  <div className="flex items-center rounded-brand border border-slate-200 bg-white shadow-2xs">
+                  <div className="flex items-center rounded-brand border border-slate-200 bg-white shadow-sm">
                     <button
                       onClick={() => updateQuantity(item.productId, item.variantId, item.quantity - 1)}
                       className="p-2 text-slate-500 hover:text-slate-900 transition-colors"
