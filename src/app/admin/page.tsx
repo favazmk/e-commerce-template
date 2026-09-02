@@ -9,11 +9,13 @@ import {
   Package,
   Plus,
   Layers,
+  Image as ImageIcon,
 } from "lucide-react";
 import { OrderService } from "@/services/order.service";
 import { ProductService } from "@/services/product.service";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatPrice } from "@/lib/config/store.config";
 
 export default async function AdminDashboardPage() {
   const orders = await OrderService.getAllAdminOrders();
@@ -60,7 +62,7 @@ export default async function AdminDashboardPage() {
               Total Revenue
             </p>
             <p className="text-2xl font-bold text-slate-900 mt-1 font-heading">
-              ${totalRevenue.toFixed(2)}
+              {formatPrice(totalRevenue)}
             </p>
             <p className="text-[11px] text-emerald-600 mt-1 font-medium flex items-center gap-0.5">
               <TrendingUp className="h-3 w-3" /> +14.2% this month
@@ -94,7 +96,7 @@ export default async function AdminDashboardPage() {
               Average Order Value
             </p>
             <p className="text-2xl font-bold text-slate-900 mt-1 font-heading">
-              ${aov.toFixed(2)}
+              {formatPrice(aov)}
             </p>
             <p className="text-[11px] text-slate-500 mt-1">Per transaction</p>
           </div>
@@ -182,7 +184,7 @@ export default async function AdminDashboardPage() {
                           {ord.payment_status}
                         </td>
                         <td className="py-3.5 px-4 text-right font-bold text-slate-900">
-                          ${ord.total_amount.toFixed(2)}
+                          {formatPrice(ord.total_amount, ord.currency)}
                         </td>
                         <td className="py-3.5 px-4 text-right">
                           <Link
@@ -254,11 +256,11 @@ export default async function AdminDashboardPage() {
               <span>→</span>
             </Link>
             <Link
-              href="/admin/settings"
+              href="/admin/media"
               className="flex items-center justify-between text-xs text-slate-700 hover:text-emerald-600 py-2"
             >
               <span className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-slate-500" /> Tax & Shipping Rules
+                <ImageIcon className="h-4 w-4 text-slate-500" /> Media Library
               </span>
               <span>→</span>
             </Link>

@@ -40,7 +40,10 @@ export class InventoryService {
   }
 
   /**
-   * Admin manual stock adjustment
+   * Admin manual stock adjustment.
+   *
+   * `newQuantity` is the absolute level the admin typed, not a delta. Pass a
+   * `variantId` to adjust one size/variant; omit it to set the product total.
    */
   static async adjustStock(
     productId: string,
@@ -48,17 +51,22 @@ export class InventoryService {
     newQuantity: number,
     reason: string
   ): Promise<boolean> {
+    if (!productId) throw new Error("A product is required to adjust stock.");
+
+    const quantity = Number(newQuantity);
+    if (!Number.isFinite(quantity) || quantity < 0) {
+      throw new Error("Stock quantity must be zero or a positive whole number.");
+    }
+
     const repo = RepositoryFactory.getInventoryRepository();
-    // For now we will overwrite the absolute quantity via decrement/increment, 
-    // though the DB repo is designed for atomic deltas.
-    // A robust impl requires reading current and sending delta.
-    return true;
+    return await repo.setStock(productId, variantId, Math.trunc(quantity), reason);
   }
 
   /**
    * Get inventory transaction audit log
    */
   static async getTransactionHistory(productId?: string): Promise<InventoryTransaction[]> {
-    return [];
+    const repo = RepositoryFactory.getInventoryRepository();
+    return await repo.getTransactions(productId);
   }
 }

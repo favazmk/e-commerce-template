@@ -1,10 +1,12 @@
 import React from "react";
 import Link from "next/link";
-import { Plus, Search, Edit3, Trash2, ExternalLink } from "lucide-react";
+import { Plus } from "lucide-react";
 import { ProductService } from "@/services/product.service";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ProductRowActions } from "./ProductRowActions";
 import Image from "next/image";
+import { formatPrice } from "@/lib/config/store.config";
 
 export default async function AdminProductsPage({
   searchParams,
@@ -82,7 +84,7 @@ export default async function AdminProductsPage({
                   <td className="py-3.5 px-4 font-mono text-slate-500">{product.sku}</td>
 
                   <td className="py-3.5 px-4 font-bold text-slate-900">
-                    ${product.price.toFixed(2)}
+                    {formatPrice(product.price)}
                   </td>
 
                   <td className="py-3.5 px-4">
@@ -109,23 +111,11 @@ export default async function AdminProductsPage({
                   </td>
 
                   <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link
-                        href={`/products/${product.slug}`}
-                        target="_blank"
-                        className="p-1.5 text-slate-400 hover:text-slate-700 rounded-brand"
-                        title="View Live Product Page"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Link>
-                      <Link
-                        href={`/admin/products/${product.id}/edit`}
-                        className="p-1.5 text-slate-400 hover:text-slate-900 rounded-brand"
-                        title="Edit Product"
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </Link>
-                    </div>
+                    <ProductRowActions
+                      productId={product.id}
+                      productName={product.name}
+                      productSlug={product.slug}
+                    />
                   </td>
                 </tr>
               ))}

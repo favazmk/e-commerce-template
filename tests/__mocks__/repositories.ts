@@ -185,6 +185,29 @@ export class MockCouponRepository implements ICouponRepository {
   async findById(id: string): Promise<Coupon | null> {
     return mockData.coupons.find(c => c.id === id) || null;
   }
+  async create(data: Partial<Coupon>): Promise<Coupon> {
+    const coupon = {
+      id: `coup_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      usage_count: 0,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      ...data,
+    } as Coupon;
+    mockData.coupons.push(coupon);
+    return coupon;
+  }
+  async update(id: string, data: Partial<Coupon>): Promise<Coupon | null> {
+    const coupon = mockData.coupons.find(c => c.id === id);
+    if (!coupon) return null;
+    Object.assign(coupon, data, { updated_at: new Date().toISOString() });
+    return coupon;
+  }
+  async delete(id: string): Promise<boolean> {
+    const before = mockData.coupons.length;
+    mockData.coupons = mockData.coupons.filter(c => c.id !== id);
+    return mockData.coupons.length < before;
+  }
   async recordUsage(couponId: string, userId?: string, orderId?: string): Promise<void> {
     const coupon = mockData.coupons.find(c => c.id === couponId);
     if (coupon) coupon.usage_count = (coupon.usage_count || 0) + 1;
@@ -231,6 +254,50 @@ export class MockSettingsRepository implements ISettingsRepository {
 const mockReservations: Record<string, any> = {};
 
 export class MockInventoryRepository implements IInventoryRepository {
+  private transactions: any[] = [];
+
+  async setStock(
+    productId: string,
+    variantId: string | null | undefined,
+    newQuantity: number,
+    reason: string
+  ): Promise<boolean> {
+    const p = mockData.products.find(p => p.id === productId);
+    if (!p) return false;
+
+    const target = Math.max(0, Math.trunc(newQuantity));
+    const current = await this.getStock(productId, variantId || undefined);
+
+    if (variantId) {
+      const v = p.variants?.find(v => v.id === variantId);
+      if (!v) return false;
+      v.stock = target;
+      p.stock_quantity = (p.variants || []).reduce((sum, x) => sum + (x.stock || 0), 0);
+    } else {
+      p.stock_quantity = target;
+    }
+
+    this.transactions.unshift({
+      id: `tx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      product_id: productId,
+      variant_id: variantId || null,
+      quantity_change: target - current,
+      transaction_type: "adjustment",
+      reference_id: null,
+      note: reason,
+      created_at: new Date().toISOString(),
+    });
+
+    return true;
+  }
+
+  async getTransactions(productId?: string, limit = 100): Promise<any[]> {
+    const rows = productId
+      ? this.transactions.filter(t => t.product_id === productId)
+      : this.transactions;
+    return rows.slice(0, limit);
+  }
+
   async getStock(productId: string, variantId?: string): Promise<number> {
     const p = mockData.products.find(p => p.id === productId);
     if (!p) return 0;

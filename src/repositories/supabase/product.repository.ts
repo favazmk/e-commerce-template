@@ -149,30 +149,162 @@ export class SupabaseProductRepository extends SupabaseRepository implements IPr
     return data as unknown as ProductVariant[];
   }
 
+  /**
+   * Columns that live on `products` itself. Anything else in an admin payload
+   * (images, variants, the joined category) belongs to a child table and must
+   * never be forwarded to a `products` insert/update — doing so makes the
+   * whole write fail, which is how product imagery silently stopped saving.
+   */
+  private static readonly PRODUCT_COLUMNS = [
+    "name",
+    "slug",
+    "brand",
+    "category_id",
+    "short_description",
+    "description",
+    "price",
+    "compare_at_price",
+    "cost_price",
+    "sku",
+    "stock_quantity",
+    "low_stock_threshold",
+    "status",
+    "featured",
+    "seo_title",
+    "seo_description",
+    "tags",
+    "currency",
+    "metadata",
+  ] as const;
+
+  private pickProductColumns(data: Record<string, any>): Record<string, any> {
+    const row: Record<string, any> = {};
+    for (const column of SupabaseProductRepository.PRODUCT_COLUMNS) {
+      if (data[column] !== undefined) row[column] = data[column];
+    }
+    return row;
+  }
+
+  /**
+   * Replace a product's image rows with the supplied set.
+   *
+   * Images are edited as a whole list in the admin form, so the simplest
+   * correct persistence is delete-then-insert inside one product.
+   */
+  private async replaceImages(productId: string, images: any[]): Promise<void> {
+    const client = this.admin();
+    await client.from("product_images").delete().eq("product_id", productId);
+
+    const rows = (images || [])
+      .filter((img) => img && typeof img.url === "string" && img.url.trim())
+      .map((img, index) => ({
+        product_id: productId,
+        url: img.url.trim(),
+        alt_text: img.alt_text || "",
+        display_order: Number.isFinite(Number(img.display_order)) ? Number(img.display_order) : index,
+        // Exactly one primary: honour an explicit flag, else promote the first.
+        is_primary: images.some((i: any) => i?.is_primary) ? Boolean(img.is_primary) : index === 0,
+      }));
+
+    if (rows.length === 0) return;
+
+    const { error } = await client.from("product_images").insert(rows);
+    if (error) throw new Error(`Failed to save product images: ${error.message}`);
+  }
+
+  /**
+   * Replace a product's variant rows with the supplied set.
+   *
+   * Variant ids generated client-side (e.g. "var-new-1") are not database ids,
+   * so they are dropped and the row is inserted fresh. Real UUIDs are kept so
+   * that stock ledger references survive an edit.
+   */
+  private async replaceVariants(productId: string, variants: any[]): Promise<void> {
+    const client = this.admin();
+
+    const incoming = (variants || []).filter((v) => v && v.sku);
+    const isUuid = (value: unknown) =>
+      typeof value === "string" &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
+    const keptIds = incoming.map((v) => v.id).filter(isUuid);
+
+    // Remove variants the admin deleted in the form.
+    let deleteQuery = client.from("product_variants").delete().eq("product_id", productId);
+    if (keptIds.length > 0) {
+      deleteQuery = deleteQuery.not("id", "in", `(${keptIds.join(",")})`);
+    }
+    await deleteQuery;
+
+    if (incoming.length === 0) return;
+
+    const rows = incoming.map((v) => {
+      const row: Record<string, any> = {
+        product_id: productId,
+        sku: String(v.sku),
+        price: Number(v.price) || 0,
+        compare_at_price: v.compare_at_price != null ? Number(v.compare_at_price) : null,
+        cost_price: v.cost_price != null ? Number(v.cost_price) : null,
+        stock: Math.max(0, Number(v.stock) || 0),
+        image_url: v.image_url || null,
+        is_active: v.is_active !== undefined ? Boolean(v.is_active) : true,
+        attributes: v.attributes || {},
+        updated_at: new Date().toISOString(),
+      };
+      if (isUuid(v.id)) row.id = v.id;
+      return row;
+    });
+
+    const { error } = await client
+      .from("product_variants")
+      .upsert(rows, { onConflict: "id" });
+
+    if (error) throw new Error(`Failed to save product variants: ${error.message}`);
+  }
+
   async create(data: Partial<Product>): Promise<Product> {
-    const { images, variants, category, ...productData } = data as any;
-    
+    const { images, variants } = data as any;
+
     const { data: created, error } = await this.admin()
       .from('products')
-      .insert([productData])
+      .insert([this.pickProductColumns(data as Record<string, any>)])
       .select()
       .single();
-    if (error || !created) throw new Error("Failed to create product");
-    return created as unknown as Product;
+
+    if (error || !created) {
+      throw new Error(`Failed to create product${error ? `: ${error.message}` : ""}`);
+    }
+
+    const productId = (created as any).id as string;
+
+    if (Array.isArray(images)) await this.replaceImages(productId, images);
+    if (Array.isArray(variants)) await this.replaceVariants(productId, variants);
+
+    // Return the product as it now reads, with its children attached.
+    return (await this.findById(productId)) as Product;
   }
 
   async update(id: string, data: Partial<Product>): Promise<Product | null> {
-    const { data: updated, error } = await this.admin()
-      .from('products')
-      .update(data)
-      .eq('id', id)
-      .select()
-      .single();
-    if (error || !updated) return null;
-    return updated as unknown as Product;
+    const { images, variants } = data as any;
+    const row = this.pickProductColumns(data as Record<string, any>);
+
+    if (Object.keys(row).length > 0) {
+      const { error } = await this.admin()
+        .from('products')
+        .update({ ...row, updated_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw new Error(`Failed to update product: ${error.message}`);
+    }
+
+    if (Array.isArray(images)) await this.replaceImages(id, images);
+    if (Array.isArray(variants)) await this.replaceVariants(id, variants);
+
+    return await this.findById(id);
   }
 
   async delete(id: string): Promise<boolean> {
+    // product_images, product_variants and inventory_transactions all cascade.
     const { error } = await this.admin()
       .from('products')
       .delete()

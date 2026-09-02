@@ -8,6 +8,7 @@ import { Order, OrderStatus } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { formatPrice } from "@/lib/config/store.config";
 
 export function OrderDetailClient({ initialOrder }: { initialOrder: Order }) {
   const router = useRouter();
@@ -112,7 +113,7 @@ export function OrderDetailClient({ initialOrder }: { initialOrder: Order }) {
                       {item.product_name_snapshot}
                     </h4>
                     <p className="text-xs text-slate-400">
-                      SKU: {item.sku_snapshot} • Qty: {item.quantity} × ${item.price_snapshot.toFixed(2)}
+                      SKU: {item.sku_snapshot} • Qty: {item.quantity} × {formatPrice(item.price_snapshot, order.currency)}
                     </p>
                     {item.attributes_snapshot && (
                       <div className="mt-1 flex gap-2 text-[11px] text-slate-500">
@@ -126,7 +127,7 @@ export function OrderDetailClient({ initialOrder }: { initialOrder: Order }) {
                   </div>
                   <div className="text-right">
                     <span className="text-sm font-bold text-slate-900">
-                      ${item.total_price.toFixed(2)}
+                      {formatPrice(item.total_price, order.currency)}
                     </span>
                   </div>
                 </div>
@@ -137,27 +138,27 @@ export function OrderDetailClient({ initialOrder }: { initialOrder: Order }) {
             <div className="border-t border-slate-200 pt-4 space-y-2 text-xs">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal</span>
-                <span className="font-semibold text-slate-900">${order.subtotal.toFixed(2)}</span>
+                <span className="font-semibold text-slate-900">{formatPrice(order.subtotal, order.currency)}</span>
               </div>
               {order.discount_amount > 0 && (
                 <div className="flex justify-between text-emerald-600 font-semibold">
                   <span>Coupon Discount ({order.coupon_code})</span>
-                  <span>-${order.discount_amount.toFixed(2)}</span>
+                  <span>-{formatPrice(order.discount_amount, order.currency)}</span>
                 </div>
               )}
               <div className="flex justify-between text-slate-600">
                 <span>Shipping ({order.shipping_method?.title || "Courier"})</span>
                 <span className="font-semibold text-slate-900">
-                  {order.shipping_amount === 0 ? "FREE" : `$${order.shipping_amount.toFixed(2)}`}
+                  {order.shipping_amount === 0 ? "FREE" : formatPrice(order.shipping_amount, order.currency)}
                 </span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Tax</span>
-                <span className="font-semibold text-slate-900">${order.tax_amount.toFixed(2)}</span>
+                <span className="font-semibold text-slate-900">{formatPrice(order.tax_amount, order.currency)}</span>
               </div>
               <div className="border-t border-slate-200 pt-2 flex justify-between text-base font-bold text-slate-900">
                 <span>Grand Total</span>
-                <span>${order.total_amount.toFixed(2)}</span>
+                <span>{formatPrice(order.total_amount, order.currency)}</span>
               </div>
             </div>
           </div>
