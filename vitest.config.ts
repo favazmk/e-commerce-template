@@ -19,7 +19,10 @@ export default defineConfig({
     environment: "node",
     env: process.env,
     globals: true,
-    testTimeout: 20000,
+    testTimeout: 30000,
+    // Integration setup provisions real auth users and seed rows against a
+    // hosted database; the 10s hook default is not enough for that.
+    hookTimeout: 60000,
     exclude: ["**/node_modules/**", "**/dist/**", "**/tests/e2e/**"],
     setupFiles: ["./tests/setupEnv.ts"],
   },

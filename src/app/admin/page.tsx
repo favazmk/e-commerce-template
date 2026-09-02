@@ -39,7 +39,7 @@ export default async function AdminDashboardPage() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/admin/products/new">
-            <Button variant="primary" size="sm" className="gap-1.5 shadow-xs">
+            <Button variant="primary" size="sm" className="gap-1.5 shadow-sm">
               <Plus className="h-4 w-4" /> Add New Product
             </Button>
           </Link>

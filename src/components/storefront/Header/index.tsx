@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useCart } from "@/features/cart/CartContext";
 import { useWishlist } from "@/features/wishlist/WishlistContext";
@@ -14,12 +15,26 @@ export function Header() {
   const { totalWishlistCount } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Close the drawer on navigation, otherwise it stays open over the new page.
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Navigation is theme configuration, not a component constant: category
+  // slugs are client-specific (AGENTS.md sections 2 and 9).
+  const navigation = theme.navigation ?? [];
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-100 transition-all">
+      <header
+        className={`${
+          theme.styling.headerSticky ? "sticky top-0" : "relative"
+        } z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-100 transition-all`}
+      >
         {/* Announcement Bar */}
-        {theme.styling.announcementBar.enabled && (
+        {theme.styling.announcementBar.enabled && theme.styling.announcementBar.text && (
           <div className="bg-brand-primary text-white text-xs py-2 px-4 text-center font-medium tracking-wider">
             <Link
               href={theme.styling.announcementBar.link || "/products"}
@@ -31,28 +46,30 @@ export function Header() {
         )}
 
         {/* Main Nav Container */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-2 h-16 sm:h-20">
             {/* Mobile Menu Button */}
             <div className="flex items-center lg:hidden">
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 text-slate-700 hover:text-slate-900 focus:outline-none"
-                aria-label="Toggle mobile menu"
+                className="-ml-1 p-2 text-slate-700 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded-brand"
+                aria-label="Toggle navigation menu"
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-navigation"
               >
                 {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
             </div>
 
             {/* Brand Logo */}
-            <div className="flex items-center">
-              <Link href="/" className="group flex flex-col">
-                <span className="text-2xl font-bold tracking-widest font-heading text-slate-900 group-hover:text-brand-primary transition-colors">
+            <div className="flex items-center min-w-0">
+              <Link href="/" className="group flex flex-col min-w-0">
+                <span className="truncate text-lg sm:text-2xl font-bold tracking-widest font-heading text-slate-900 group-hover:text-brand-primary transition-colors">
                   {theme.brand.name}
                 </span>
                 {theme.brand.tagline && (
-                  <span className="text-[9px] uppercase tracking-widest text-slate-400 font-medium">
+                  <span className="hidden sm:block truncate text-[9px] uppercase tracking-widest text-slate-400 font-medium">
                     {theme.brand.tagline}
                   </span>
                 )}
@@ -61,59 +78,38 @@ export function Header() {
 
             {/* Desktop Navigation Links */}
             <nav className="hidden lg:flex items-center space-x-8">
-              <Link
-                href="/products"
-                className="text-sm font-medium text-slate-700 hover:text-brand-primary tracking-wide transition-colors"
-              >
-                All Collections
-              </Link>
-              <Link
-                href="/categories/luxury-apparel"
-                className="text-sm font-medium text-slate-700 hover:text-brand-primary tracking-wide transition-colors"
-              >
-                Apparel
-              </Link>
-              <Link
-                href="/categories/artisanal-footwear"
-                className="text-sm font-medium text-slate-700 hover:text-brand-primary tracking-wide transition-colors"
-              >
-                Footwear
-              </Link>
-              <Link
-                href="/categories/designer-accessories"
-                className="text-sm font-medium text-slate-700 hover:text-brand-primary tracking-wide transition-colors"
-              >
-                Accessories
-              </Link>
-              <Link
-                href="/categories/home-and-living"
-                className="text-sm font-medium text-slate-700 hover:text-brand-primary tracking-wide transition-colors"
-              >
-                Home & Living
-              </Link>
+              {navigation.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm font-medium text-slate-700 hover:text-brand-primary tracking-wide transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </nav>
 
             {/* Right Action Icons */}
-            <div className="flex items-center space-x-4 sm:space-x-6">
+            <div className="flex items-center gap-0.5 sm:gap-3 flex-shrink-0">
               {/* Search Icon */}
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="p-2 text-slate-700 hover:text-brand-primary transition-colors"
+                className="p-2 text-slate-700 hover:text-brand-primary transition-colors rounded-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
                 aria-label="Search catalog"
               >
                 <Search className="h-5 w-5" />
               </button>
 
-              {/* Wishlist */}
+              {/* Wishlist — secondary on the narrowest screens */}
               <Link
                 href="/wishlist"
-                className="relative p-2 text-slate-700 hover:text-brand-primary transition-colors"
-                aria-label="View wishlist"
+                className="relative hidden sm:inline-flex p-2 text-slate-700 hover:text-brand-primary transition-colors rounded-brand"
+                aria-label={`View wishlist, ${totalWishlistCount} items`}
               >
                 <Heart className="h-5 w-5" />
                 {totalWishlistCount > 0 && (
-                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
                     {totalWishlistCount}
                   </span>
                 )}
@@ -122,7 +118,7 @@ export function Header() {
               {/* Customer Account */}
               <Link
                 href="/account"
-                className="p-2 text-slate-700 hover:text-brand-primary transition-colors"
+                className="p-2 text-slate-700 hover:text-brand-primary transition-colors rounded-brand"
                 aria-label="Customer account"
               >
                 <User className="h-5 w-5" />
@@ -132,12 +128,12 @@ export function Header() {
               <button
                 type="button"
                 onClick={openMiniCart}
-                className="relative flex items-center p-2 text-slate-900 hover:text-brand-primary transition-colors"
-                aria-label="Open cart"
+                className="relative flex items-center p-2 text-slate-900 hover:text-brand-primary transition-colors rounded-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+                aria-label={`Open cart, ${totalItemCount} items`}
               >
                 <ShoppingBag className="h-5 w-5" />
                 {totalItemCount > 0 && (
-                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-primary text-[10px] font-bold text-white">
+                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-primary text-[10px] font-bold text-white">
                     {totalItemCount}
                   </span>
                 )}
@@ -148,52 +144,28 @@ export function Header() {
 
         {/* Mobile Navigation Drawer */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-100 bg-white px-6 py-6 space-y-4 animate-in slide-in-from-top-4 duration-200">
-            <Link
-              href="/products"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block text-base font-semibold text-slate-900 py-2"
-            >
-              All Products
-            </Link>
-            <Link
-              href="/categories/luxury-apparel"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block text-base font-medium text-slate-700 py-2"
-            >
-              Apparel
-            </Link>
-            <Link
-              href="/categories/artisanal-footwear"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block text-base font-medium text-slate-700 py-2"
-            >
-              Footwear
-            </Link>
-            <Link
-              href="/categories/designer-accessories"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block text-base font-medium text-slate-700 py-2"
-            >
-              Accessories
-            </Link>
-            <Link
-              href="/categories/home-and-living"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block text-base font-medium text-slate-700 py-2"
-            >
-              Home & Living
-            </Link>
-            <div className="pt-4 border-t border-slate-100">
+          <nav
+            id="mobile-navigation"
+            className="lg:hidden border-t border-slate-100 bg-white px-6 py-4 space-y-1 max-h-[70vh] overflow-y-auto animate-in slide-in-from-top-4 duration-200"
+          >
+            {navigation.map((link) => (
               <Link
-                href="/admin"
+                key={link.href}
+                href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-xs uppercase tracking-widest text-emerald-600 font-bold block py-2"
+                className="block text-base font-medium text-slate-700 py-3"
               >
-                Admin Dashboard →
+                {link.label}
               </Link>
-            </div>
-          </div>
+            ))}
+            <Link
+              href="/wishlist"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block text-base font-medium text-slate-700 py-3 sm:hidden"
+            >
+              Wishlist{totalWishlistCount > 0 ? ` (${totalWishlistCount})` : ""}
+            </Link>
+          </nav>
         )}
       </header>
 

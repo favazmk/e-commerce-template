@@ -15,7 +15,9 @@ interface CartContextType {
   totalItemCount: number;
   isMiniCartOpen: boolean;
   couponCode: string;
+  shippingMethodId: string;
   isLoading: boolean;
+  setShippingMethodId: (id: string) => void;
   openMiniCart: () => void;
   closeMiniCart: () => void;
   addItem: (productId: string, variantId?: string | null, quantity?: number) => void;
@@ -29,12 +31,13 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | null>(null);
 
-const CART_STORAGE_KEY = "aura_guest_cart_v1";
-const COUPON_STORAGE_KEY = "aura_coupon_code_v1";
+const CART_STORAGE_KEY = "guest_cart_v1";
+const COUPON_STORAGE_KEY = "coupon_code_v1";
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItemKey[]>([]);
   const [couponCode, setCouponCode] = useState<string>("");
+  const [shippingMethodId, setShippingMethodId] = useState<string>("");
   const [calculatedCart, setCalculatedCart] = useState<CartCalculationResult | null>(null);
   const [isMiniCartOpen, setIsMiniCartOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -70,6 +73,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({
           items,
           couponCode: couponCode || undefined,
+          // Without this the server prices the default method while the UI
+          // shows the selected one, so the displayed total is wrong.
+          shippingMethodId: shippingMethodId || undefined,
         }),
       });
       const data = await res.json();
@@ -81,7 +87,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [items, couponCode]);
+  }, [items, couponCode, shippingMethodId]);
 
   // Save to localStorage and trigger server calculation
   useEffect(() => {
@@ -92,7 +98,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       console.error("Failed to save local cart", e);
     }
     refreshCart();
-  }, [items, couponCode, isInitialized, refreshCart]);
+  }, [items, couponCode, shippingMethodId, isInitialized, refreshCart]);
 
   const addItem = (productId: string, variantId?: string | null, quantity = 1) => {
     setItems((prev) => {
@@ -139,11 +145,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const clearCart = () => {
     setItems([]);
     setCouponCode("");
+    setShippingMethodId("");
     setCalculatedCart(null);
     try {
       localStorage.removeItem(CART_STORAGE_KEY);
       localStorage.removeItem(COUPON_STORAGE_KEY);
-    } catch (e) {}
+    } catch {
+      // localStorage can be unavailable (private mode, disabled storage).
+    }
   };
 
   const applyCoupon = async (code: string): Promise<boolean> => {
@@ -184,7 +193,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         totalItemCount,
         isMiniCartOpen,
         couponCode,
+        shippingMethodId,
         isLoading,
+        setShippingMethodId,
         openMiniCart: () => setIsMiniCartOpen(true),
         closeMiniCart: () => setIsMiniCartOpen(false),
         addItem,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ProductService } from "@/services/product.service";
+import { requireAdmin } from "@/lib/auth/session";
 
 export async function GET(
   request: NextRequest,
@@ -29,6 +30,9 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (auth.response) return auth.response;
+
   try {
     const { slug: id } = await params;
     const body = await request.json();
@@ -54,6 +58,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (auth.response) return auth.response;
+
   try {
     const { slug: id } = await params;
     const deleted = await ProductService.deleteProduct(id);

@@ -62,7 +62,7 @@ export default function AdminSettingsPage() {
             Store & Theme Settings
           </h1>
         </div>
-        <Button type="submit" variant="primary" size="md" className="gap-2 shadow-xs">
+        <Button type="submit" variant="primary" size="md" className="gap-2 shadow-sm">
           <Save className="h-4 w-4" /> Save Settings
         </Button>
       </div>

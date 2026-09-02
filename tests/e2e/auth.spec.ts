@@ -71,15 +71,11 @@ test.describe('E2E Auth & Security Flow', () => {
     await page.fill('input[name="state"]', 'NY');
     await page.fill('input[name="postalCode"]', '10001');
     
-    const countrySelect = page.locator('select[name="country"]');
-    if (await countrySelect.isVisible()) {
-      await countrySelect.selectOption({ label: 'United States' });
-    }
+    await page.fill('input[name="country"]', 'US');
     
     const mockPayment = page.locator('input[value="mock"]');
-    if (await mockPayment.isVisible()) {
-      await mockPayment.click();
-    }
+    await expect(mockPayment).toBeVisible();
+    await mockPayment.check();
 
     // Intercept checkout request and tamper prices
     await page.route('/api/checkout', async (route) => {

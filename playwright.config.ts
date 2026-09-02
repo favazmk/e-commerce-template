@@ -25,6 +25,15 @@ export default defineConfig({
     command: 'npm run build && npm run start',
     url: 'http://127.0.0.1:3000',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    timeout: 180 * 1000,
+    env: {
+      ...process.env,
+      // The E2E flows complete a purchase without a live gateway, which is
+      // exactly what demo mode exists for. NEXT_PUBLIC_* is inlined at build
+      // time, so this must be set for the build the webServer runs.
+      APP_MODE: 'demo',
+      NEXT_PUBLIC_APP_MODE: 'demo',
+      DEFAULT_PAYMENT_PROVIDER: 'mock',
+    } as Record<string, string>,
   },
 });

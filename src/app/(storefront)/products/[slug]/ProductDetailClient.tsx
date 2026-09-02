@@ -111,7 +111,7 @@ export function ProductDetailClient({
                       : "border-transparent opacity-70 hover:opacity-100"
                   }`}
                 >
-                  <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={img.url} alt={img.alt_text || product.name} className="h-full w-full object-cover" />
+                  <Image fill sizes="80px" src={img.url} alt={img.alt_text || product.name} className="object-cover" />
                 </button>
               ))}
             </div>
@@ -119,7 +119,7 @@ export function ProductDetailClient({
 
           {/* Main Hero Image */}
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-brand-xl bg-slate-50 shadow-subtle border border-slate-100 flex-1">
-            <Image fill sizes="(max-width: 768px) 100vw, 33vw"
+            <Image fill sizes="(max-width: 1024px) 100vw, 50vw"
               src={images[selectedImageIndex]?.url || images[0]?.url}
               alt={images[selectedImageIndex]?.alt_text || product.name}
               className="h-full w-full object-cover object-center"
@@ -189,7 +189,7 @@ export function ProductDetailClient({
                         onClick={() => setSelectedVariant(v)}
                         className={`px-3.5 py-2.5 rounded-brand border text-xs font-semibold transition-all text-left flex flex-col justify-between ${
                           isSelected
-                            ? "border-brand-primary bg-slate-900 text-white shadow-xs"
+                            ? "border-brand-primary bg-slate-900 text-white shadow-sm"
                             : isAvailable
                             ? "border-slate-200 bg-white text-slate-800 hover:border-slate-400"
                             : "border-slate-200 bg-slate-100 text-slate-400 line-through cursor-not-allowed"

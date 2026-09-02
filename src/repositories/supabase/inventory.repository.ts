@@ -1,14 +1,18 @@
 import { IInventoryRepository } from "../interfaces/inventory.repository.interface";
-import { createAdminClient } from "../../lib/supabase/server";
+import { SupabaseRepository } from "./base.repository";
 
-export class SupabaseInventoryRepository implements IInventoryRepository {
-  private getClient() {
-    return createAdminClient();
+export class SupabaseInventoryRepository extends SupabaseRepository implements IInventoryRepository {
+  /**
+   * Stock movements happen during checkout (guests have no session) and
+   * from admin adjustments. inventory_transactions has no anon policy.
+   */
+  private system() {
+    return this.serviceClient("system-no-session");
   }
 
   async getStock(productId: string, variantId?: string): Promise<number> {
     if (variantId) {
-      const { data, error } = await this.getClient()
+      const { data, error } = await this.system()
         .from('product_variants')
         .select('stock')
         .eq('id', variantId)
@@ -16,7 +20,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
       if (error || !data) return 0;
       return data.stock;
     } else {
-      const { data, error } = await this.getClient()
+      const { data, error } = await this.system()
         .from('products')
         .select('stock_quantity')
         .eq('id', productId)
@@ -36,7 +40,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
     // For now, we will assume this is handled by manually reversing it if needed,
     // or adding an increment_product_stock_atomic RPC. 
     // Wait, the user asked to "releaseStock". Let's just implement a basic release that looks up the transaction.
-    const client = this.getClient();
+    const client = this.system();
     const { data: tx } = await client.from('inventory_transactions').select('*').eq('note', `Reservation ${referenceId}`).single();
     if (tx) {
         // Reverse the quantity change (which was negative)
@@ -62,7 +66,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
   }
 
   async decrementStockAtomic(productId: string, quantity: number, variantId?: string, note?: string): Promise<boolean> {
-    const { data, error } = await this.getClient().rpc('decrement_product_stock_atomic', {
+    const { data, error } = await this.system().rpc('decrement_product_stock_atomic', {
       p_product_id: productId,
       p_variant_id: variantId || null,
       p_quantity: quantity,

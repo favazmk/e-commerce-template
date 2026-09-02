@@ -70,7 +70,7 @@ export default function AdminCouponsPage() {
           variant="primary"
           size="md"
           onClick={() => setIsModalOpen(true)}
-          className="gap-2 shadow-xs"
+          className="gap-2 shadow-sm"
         >
           <Plus className="h-4 w-4" /> Create Coupon
         </Button>

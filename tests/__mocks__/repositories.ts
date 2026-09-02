@@ -14,6 +14,17 @@ export const mockData = {
   orders: [] as Order[],
   orderItems: [] as OrderItem[],
   coupons: [] as Coupon[],
+  users: [
+    {
+      id: "user-test-id",
+      email: "customer@example.com",
+      name: "Test Customer",
+      role: "customer",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  ] as any[],
+  homepageSections: [] as any[],
   settings: {
     tax: {
       enabled: false,
@@ -193,6 +204,21 @@ export class MockSettingsRepository implements ISettingsRepository {
     return mockData.settings.shipping;
   }
   async getStoreSettings(): Promise<any> { return {}; }
+  async getHomepageSections(): Promise<any[]> { return mockData.homepageSections ?? []; }
+  async updateHomepageSection(id: string, data: any): Promise<any> {
+    const sections = mockData.homepageSections ?? [];
+    const existing = sections.find((s: any) => s.id === id);
+    if (!existing) return null;
+    Object.assign(existing, data);
+    return existing;
+  }
+  async reorderHomepageSections(orderedIds: string[]): Promise<void> {
+    const sections = mockData.homepageSections ?? [];
+    orderedIds.forEach((id, index) => {
+      const section = sections.find((s: any) => s.id === id);
+      if (section) section.display_order = index;
+    });
+  }
 }
 
 const mockReservations: Record<string, any> = {};
@@ -298,5 +324,26 @@ export class MockOrderRepository implements IOrderRepository {
   }
   async findAllAdmin(searchQuery?: string, status?: string): Promise<any> {
     return { items: mockData.orders, total: mockData.orders.length, page: 1, limit: 10, totalPages: 1 };
+  }
+}
+
+export class MockUserRepository {
+  async findById(id: string): Promise<any> {
+    return mockData.users.find((u: any) => u.id === id) || null;
+  }
+  async findByIdAsService(id: string): Promise<any> {
+    return this.findById(id);
+  }
+  async findByEmail(email: string): Promise<any> {
+    return mockData.users.find((u: any) => u.email === email) || null;
+  }
+  async create(user: any): Promise<any> {
+    const created = { id: `user-${mockData.users.length + 1}`, ...user };
+    mockData.users.push(created);
+    return created;
+  }
+  async updateRole(userId: string, role: string): Promise<void> {
+    const user = mockData.users.find((u: any) => u.id === userId);
+    if (user) user.role = role;
   }
 }

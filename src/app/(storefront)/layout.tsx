@@ -1,6 +1,7 @@
 import React from "react";
 import { Header } from "@/components/storefront/Header";
 import { Footer } from "@/components/storefront/Footer";
+import { Analytics } from "@/components/storefront/Analytics";
 
 export default function StorefrontLayout({
   children,
@@ -10,8 +11,9 @@ export default function StorefrontLayout({
   return (
     <div className="flex min-h-screen flex-col justify-between">
       <Header />
-      <main className="flex-1">{children}</main>
+      <main id="main-content" className="flex-1">{children}</main>
       <Footer />
+      <Analytics />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { useFocusTrap } from "@/lib/hooks/use-focus-trap";
 
 export interface DrawerProps {
   isOpen: boolean;
@@ -22,6 +23,9 @@ export function Drawer({
   position = "right",
   width = "md",
 }: DrawerProps) {
+  const panelRef = useFocusTrap<HTMLDivElement>(isOpen);
+  const titleId = React.useId();
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -48,7 +52,7 @@ export function Drawer({
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity duration-300"
+        className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -63,10 +67,19 @@ export function Drawer({
           )}
           role="dialog"
           aria-modal="true"
+          aria-labelledby={title ? titleId : undefined}
+          aria-label={title ? undefined : "Panel"}
+          ref={panelRef}
+          tabIndex={-1}
         >
           {/* Drawer Header */}
           <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-            <h3 className="text-base font-semibold uppercase tracking-wider text-slate-900">{title}</h3>
+            <h3
+              id={titleId}
+              className="text-base font-semibold uppercase tracking-wider text-slate-900"
+            >
+              {title}
+            </h3>
             <button
               type="button"
               onClick={onClose}

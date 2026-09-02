@@ -17,10 +17,13 @@ export class TaxService {
     const settings = await repo.getByKey("tax");
     
     const taxConfig = settings?.value || {
-      enabled: true,
-      percentage: 8.5,
+      enabled: false,
+      percentage: 0,
       is_inclusive: false,
-      tax_name: "Sales Tax / VAT",
+      // Whether shipping is part of the taxable base. Jurisdiction-specific,
+      // so it is configuration rather than a baked-in assumption.
+      tax_shipping: false,
+      tax_name: "Tax",
     };
 
     if (!taxConfig.enabled || taxConfig.percentage <= 0 || subtotalAfterDiscount <= 0) {
@@ -34,7 +37,11 @@ export class TaxService {
     }
 
     const rate = Number(taxConfig.percentage);
-    const taxableAmount = subtotalAfterDiscount;
+    // `shippingAmount` was previously accepted and then ignored, so stores that
+    // must tax delivery under-collected. It is now honoured when configured.
+    const taxableAmount = taxConfig.tax_shipping
+      ? subtotalAfterDiscount + Number(shippingAmount || 0)
+      : subtotalAfterDiscount;
 
     if (taxConfig.is_inclusive) {
       // Inclusive Tax: Price already contains tax: Tax = Total - (Total / (1 + Rate/100))

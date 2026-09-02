@@ -9,6 +9,22 @@ import {
   VerifyPaymentParams,
   WebhookResult,
 } from "./payment-provider.interface";
+import {
+  getCheckoutThemeColor,
+  getStoreDisplayName,
+  isDemoMode,
+} from "@/lib/config/store.config";
+
+/**
+ * Constant-time string comparison. A plain `===` on a signature leaks the
+ * position of the first differing byte through response timing.
+ */
+function safeEqualHex(a: string, b: string): boolean {
+  const bufA = Buffer.from(a || "", "utf8");
+  const bufB = Buffer.from(b || "", "utf8");
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
 
 export class RazorpayProvider implements PaymentProvider {
   readonly name = "razorpay";
@@ -24,8 +40,17 @@ export class RazorpayProvider implements PaymentProvider {
 
   async createPayment(params: CreatePaymentParams): Promise<PaymentInitResult> {
     if (!this.keyId || !this.keySecret) {
-      // If keys are missing, return a simulated test payload
-      const mockOrderId = `order_rzp_${Date.now()}`;
+      if (!isDemoMode()) {
+        // Fail clearly rather than handing the browser a fake checkout that
+        // can never collect money.
+        throw new Error(
+          "Razorpay is not configured: RAZORPAY_KEY_SECRET and NEXT_PUBLIC_RAZORPAY_KEY_ID are required. " +
+            "Set APP_MODE=demo to use the simulated gateway."
+        );
+      }
+
+      // Demo mode only: simulated test payload for previews and design review.
+      const mockOrderId = `order_rzp_demo_${Date.now()}`;
       return {
         provider: this.name,
         providerOrderId: mockOrderId,
@@ -35,7 +60,7 @@ export class RazorpayProvider implements PaymentProvider {
           key: "rzp_test_placeholder",
           amount: Math.round(params.amount * 100),
           currency: params.currency,
-          name: "Aura Luxury",
+          name: getStoreDisplayName(),
           description: `Order #${params.order.order_number}`,
           order_id: mockOrderId,
           prefill: {
@@ -44,7 +69,7 @@ export class RazorpayProvider implements PaymentProvider {
             contact: params.customer.phone || "",
           },
           theme: {
-            color: "#0f172a",
+            color: getCheckoutThemeColor(),
           },
         },
       };
@@ -86,7 +111,7 @@ export class RazorpayProvider implements PaymentProvider {
           key: this.keyId,
           amount: rzpOrder.amount,
           currency: rzpOrder.currency,
-          name: "Aura Luxury",
+          name: getStoreDisplayName(),
           description: `Order #${params.order.order_number}`,
           order_id: rzpOrder.id,
           prefill: {
@@ -95,7 +120,7 @@ export class RazorpayProvider implements PaymentProvider {
             contact: params.customer.phone || "",
           },
           theme: {
-            color: "#0f172a",
+            color: getCheckoutThemeColor(),
           },
         },
       };
@@ -108,14 +133,25 @@ export class RazorpayProvider implements PaymentProvider {
   async verifyPayment(params: VerifyPaymentParams): Promise<PaymentVerificationResult> {
     const { providerOrderId, paymentId, signature } = params;
 
-    // Sandbox / Test fallback if keys not configured
+    // A missing secret means we CANNOT verify. Never treat that as success:
+    // doing so marks arbitrary orders paid. Demo mode must be explicit.
     if (!this.keySecret) {
+      if (!isDemoMode()) {
+        return {
+          isSuccessful: false,
+          transactionId: paymentId || "",
+          providerOrderId,
+          status: "failed",
+          error: "Payment verification unavailable: RAZORPAY_KEY_SECRET is not configured",
+        };
+      }
+
       return {
         isSuccessful: true,
-        transactionId: paymentId || `pay_rzp_mock_${Date.now()}`,
+        transactionId: paymentId || `pay_rzp_demo_${Date.now()}`,
         providerOrderId,
         status: "captured",
-        rawResponse: { mode: "mock_test_mode" },
+        rawResponse: { mode: "demo_mode" },
       };
     }
 
@@ -134,7 +170,7 @@ export class RazorpayProvider implements PaymentProvider {
         .update(`${providerOrderId}|${paymentId}`)
         .digest("hex");
 
-      const isMatch = generatedSignature === signature;
+      const isMatch = safeEqualHex(generatedSignature, signature);
 
       if (!isMatch) {
         return {
@@ -166,9 +202,12 @@ export class RazorpayProvider implements PaymentProvider {
 
   async refundPayment(params: RefundPaymentParams): Promise<PaymentRefundResult> {
     if (!this.keyId || !this.keySecret) {
+      if (!isDemoMode()) {
+        throw new Error("Razorpay is not configured: cannot issue a refund without RAZORPAY_KEY_SECRET");
+      }
       return {
         isSuccessful: true,
-        refundId: `rfnd_${Date.now()}`,
+        refundId: `rfnd_demo_${Date.now()}`,
         amount: params.amount,
         status: "processed",
       };
@@ -208,15 +247,21 @@ export class RazorpayProvider implements PaymentProvider {
   }
 
   async handleWebhook(rawBody: string, signature: string): Promise<WebhookResult> {
-    if (this.webhookSecret) {
-      const expectedSignature = crypto
-        .createHmac("sha256", this.webhookSecret)
-        .update(rawBody)
-        .digest("hex");
+    // An unset webhook secret previously skipped verification entirely, which
+    // let anyone POST a forged event and mark orders captured. Always verify.
+    if (!this.webhookSecret) {
+      throw new Error(
+        "Razorpay webhook rejected: RAZORPAY_WEBHOOK_SECRET is not configured, signature cannot be verified"
+      );
+    }
 
-      if (expectedSignature !== signature) {
-        throw new Error("Razorpay Webhook signature verification failed");
-      }
+    const expectedSignature = crypto
+      .createHmac("sha256", this.webhookSecret)
+      .update(rawBody)
+      .digest("hex");
+
+    if (!safeEqualHex(expectedSignature, signature)) {
+      throw new Error("Razorpay Webhook signature verification failed");
     }
 
     const payload = JSON.parse(rawBody);

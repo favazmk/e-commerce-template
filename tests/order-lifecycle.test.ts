@@ -8,6 +8,7 @@ import {
   MockCouponRepository,
   MockInventoryRepository,
   MockSettingsRepository,
+  MockUserRepository,
   resetMockData, 
   mockData 
 } from "./__mocks__/repositories";
@@ -20,6 +21,7 @@ describe("Commerce Core: Order Lifecycle & Snapshots", () => {
     RepositoryFactory.setOverride("CouponRepository", new MockCouponRepository());
     RepositoryFactory.setOverride("InventoryRepository", new MockInventoryRepository());
     RepositoryFactory.setOverride("SettingsRepository", new MockSettingsRepository());
+    RepositoryFactory.setOverride("UserRepository", new MockUserRepository());
     resetMockData();
   });
 
@@ -64,7 +66,9 @@ describe("Commerce Core: Order Lifecycle & Snapshots", () => {
     );
 
     expect(order).toBeDefined();
-    expect(order.order_number).toContain("AURA-");
+    // The prefix is deployment configuration (ORDER_NUMBER_PREFIX); the MASTER
+    // template must not assert a specific client's brand here.
+    expect(order.order_number).toMatch(/^[A-Z0-9]+-\d{9}$/);
     
     const items = mockData.orders.find(o => o.id === order.id) as any;
     expect(items).toBeDefined();
@@ -78,7 +82,7 @@ describe("Commerce Core: Order Lifecycle & Snapshots", () => {
   it("should transition order statuses", async () => {
     mockData.orders.push({
       id: "ord_1",
-      order_number: "AURA-123",
+      order_number: "ORD-000000123",
       status: "pending",
       user_id: "user-test-id",
     } as any);

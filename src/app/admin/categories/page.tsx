@@ -78,7 +78,7 @@ export default function AdminCategoriesPage() {
           variant="primary"
           size="md"
           onClick={() => setIsModalOpen(true)}
-          className="gap-2 shadow-xs"
+          className="gap-2 shadow-sm"
         >
           <Plus className="h-4 w-4" /> Add Category
         </Button>
@@ -93,7 +93,7 @@ export default function AdminCategoriesPage() {
           >
             <div className="relative aspect-[16/9] w-full bg-slate-100 overflow-hidden">
               {cat.image_url ? (
-                <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={cat.image_url} alt={cat.name} className="h-full w-full object-cover" />
+                <Image fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px" src={cat.image_url} alt={cat.name} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full items-center justify-center text-slate-300">
                   <Layers className="h-8 w-8" />

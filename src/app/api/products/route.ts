@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { ProductService } from "@/services/product.service";
+import { requireAdmin } from "@/lib/auth/session";
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,6 +40,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAdmin();
+  if (auth.response) return auth.response;
+
   try {
     const body = await request.json();
     const created = await ProductService.createProduct(body);

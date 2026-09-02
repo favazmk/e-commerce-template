@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CouponService } from "@/services/coupon.service";
+import { getSessionUserId } from "@/lib/auth/session";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { code, subtotal, userId, productIds } = body;
+    const { code, subtotal, productIds } = body;
 
-    const result = CouponService.validateCoupon(code, Number(subtotal) || 0, userId, productIds);
+    const userId = await getSessionUserId();
+
+    const result = await CouponService.validateCoupon(
+      code,
+      Number(subtotal) || 0,
+      userId,
+      productIds
+    );
     return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
     return NextResponse.json(

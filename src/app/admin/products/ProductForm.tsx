@@ -179,7 +179,7 @@ export function ProductForm({
             {isEditing ? `Edit Product: ${initialProduct?.name}` : "Create New Product"}
           </h1>
         </div>
-        <Button type="submit" variant="primary" size="md" isLoading={isSubmitting} className="shadow-xs">
+        <Button type="submit" variant="primary" size="md" isLoading={isSubmitting} className="shadow-sm">
           Save Product
         </Button>
       </div>
@@ -298,7 +298,7 @@ export function ProductForm({
             id="featuredToggle"
             checked={featured}
             onChange={(e) => setFeatured(e.target.checked)}
-            className="rounded-xs text-emerald-600 focus:ring-emerald-500"
+            className="rounded-sm text-emerald-600 focus:ring-emerald-500"
           />
           <label htmlFor="featuredToggle" className="text-xs font-semibold text-slate-800">
             Feature this product on homepage curations
@@ -382,7 +382,7 @@ export function ProductForm({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
           {images.map((img, i) => (
             <div key={i} className="relative aspect-[3/4] rounded-brand overflow-hidden border border-slate-200 bg-slate-50 group">
-              <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={img.url || ""} alt="Product image preview" className="h-full w-full object-cover" />
+              <Image fill sizes="(max-width: 640px) 50vw, 160px" src={img.url || ""} alt="Product image preview" className="h-full w-full object-cover" />
               {img.is_primary && (
                 <span className="absolute top-2 left-2 bg-slate-900 text-white text-[10px] uppercase px-2 py-0.5 rounded-full font-bold">
                   Primary

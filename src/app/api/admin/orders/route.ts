@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OrderService } from "@/services/order.service";
+import { requireAdmin } from "@/lib/auth/session";
 
 export async function GET(request: NextRequest) {
+  const auth = await requireAdmin();
+  if (auth.response) return auth.response;
+
   try {
     const status = request.nextUrl.searchParams.get("status") || undefined;
     const search = request.nextUrl.searchParams.get("search") || undefined;
@@ -16,6 +20,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const auth = await requireAdmin();
+  if (auth.response) return auth.response;
+
   try {
     const body = await request.json();
     const { orderId, status, notes, changedBy } = body;

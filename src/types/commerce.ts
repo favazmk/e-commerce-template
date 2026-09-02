@@ -45,6 +45,18 @@ export interface CartCalculationResult {
     title: string;
     amount: number;
   };
+  /**
+   * Shipping options as configured on the server. The storefront must render
+   * these rather than a hard-coded list, otherwise the rate shown to the
+   * customer can differ from the rate actually charged.
+   */
+  availableShippingMethods: {
+    id: string;
+    name: string;
+    rate: number;
+    free_threshold?: number;
+    estimated_days?: string;
+  }[];
   tax: {
     rate: number;
     amount: number;

@@ -8,6 +8,7 @@ import { useWishlist } from "@/features/wishlist/WishlistContext";
 import { ProductCardVariant } from "@/theme/theme.config";
 import { Product } from "@/types/database";
 import { Badge } from "@/components/ui/badge";
+import { formatPrice } from "@/lib/config/store.config";
 import Image from "next/image";
 
 export interface ProductCardProps {
@@ -50,13 +51,18 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
   if (variant === "minimal") {
     return (
       <div className="group relative flex flex-col">
-        <Link href={`/products/${product.slug}`} className="block overflow-hidden rounded-brand bg-slate-50">
-          <Image fill sizes="(max-width: 768px) 100vw, 33vw"
+        <Link
+          href={`/products/${product.slug}`}
+          className="relative block aspect-[3/4] w-full overflow-hidden rounded-brand bg-slate-50"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <Image
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             src={isHovered ? hoverImage : primaryImage}
             alt={product.name}
-            className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </Link>
         <div className="mt-3 flex justify-between items-start">
@@ -66,7 +72,7 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">{product.brand}</p>
           </div>
-          <p className="text-sm font-semibold text-slate-900">${product.price.toFixed(2)}</p>
+          <p className="text-sm font-semibold text-slate-900">{formatPrice(product.price)}</p>
         </div>
       </div>
     );
@@ -77,13 +83,13 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
     return (
       <div className="flex items-center space-x-4 p-3 bg-white rounded-brand border border-slate-100 shadow-subtle hover:border-slate-300 transition-colors">
         <Link href={`/products/${product.slug}`} className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100">
-          <Image fill sizes="(max-width: 768px) 100vw, 33vw" src={primaryImage} alt={product.name} className="h-full w-full object-cover" />
+          <Image fill sizes="80px" src={primaryImage} alt={product.name} className="object-cover" />
         </Link>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-semibold text-slate-900 truncate">
             <Link href={`/products/${product.slug}`}>{product.name}</Link>
           </h4>
-          <p className="text-xs text-slate-500 mt-0.5">${product.price.toFixed(2)}</p>
+          <p className="text-xs text-slate-500 mt-0.5">{formatPrice(product.price)}</p>
           <button
             onClick={handleQuickAdd}
             className="mt-2 text-xs font-semibold text-brand-primary hover:underline flex items-center gap-1"
@@ -105,10 +111,12 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
       {/* Image Container with Badges */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-50">
         <Link href={`/products/${product.slug}`} className="block h-full w-full">
-          <Image fill sizes="(max-width: 768px) 100vw, 33vw"
+          <Image
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             src={isHovered ? hoverImage : primaryImage}
             alt={product.name}
-            className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+            className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
           />
         </Link>
 
@@ -139,18 +147,19 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
         {/* Wishlist Button */}
         <button
           onClick={handleToggleWishlist}
-          className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-xs text-slate-700 shadow-sm transition-all hover:bg-white hover:text-rose-500 hover:scale-110"
-          aria-label="Toggle wishlist"
+          className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm text-slate-700 shadow-sm transition-all hover:bg-white hover:text-rose-500 hover:scale-110"
+          aria-label={isFavorite ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
+          aria-pressed={isFavorite}
         >
           <Heart className={`h-4 w-4 ${isFavorite ? "fill-rose-500 text-rose-500" : ""}`} />
         </button>
 
         {/* Quick Add To Cart Hover Slide-up Button */}
-        <div className="absolute inset-x-3 bottom-3 z-10 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+        <div className="absolute inset-x-3 bottom-3 z-10 transition-all duration-300 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0">
           <button
             onClick={handleQuickAdd}
             disabled={product.stock_quantity === 0}
-            className="w-full flex items-center justify-center gap-2 rounded-brand bg-slate-900/95 backdrop-blur-xs py-3 px-4 text-xs font-semibold uppercase tracking-wider text-white shadow-elevated hover:bg-brand-primary active:scale-[0.98] transition-all disabled:bg-slate-400 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 rounded-brand bg-slate-900/95 backdrop-blur-sm py-3 px-4 text-xs font-semibold uppercase tracking-wider text-white shadow-elevated hover:bg-brand-primary active:scale-[0.98] transition-all disabled:bg-slate-400 disabled:cursor-not-allowed"
           >
             {isAdded ? (
               <>
@@ -170,7 +179,7 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
       {/* Content Info */}
       <div className="flex flex-1 flex-col p-4">
         <div className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
-          {product.brand || "Aura Studio"}
+          {product.brand || " "}
         </div>
         <h3 className="text-sm font-semibold text-slate-900 group-hover:text-brand-primary transition-colors line-clamp-1">
           <Link href={`/products/${product.slug}`}>{product.name}</Link>
@@ -181,11 +190,11 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
         <div className="mt-3 flex items-center justify-between pt-2 border-t border-slate-50">
           <div className="flex items-baseline gap-2">
             <span className="text-base font-bold text-slate-900">
-              ${product.price.toFixed(2)}
+              {formatPrice(product.price)}
             </span>
             {hasDiscount && (
               <span className="text-xs text-slate-400 line-through">
-                ${product.compare_at_price!.toFixed(2)}
+                {formatPrice(product.compare_at_price!)}
               </span>
             )}
           </div>

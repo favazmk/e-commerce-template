@@ -97,7 +97,7 @@ export function SearchModal({
                 >
                   <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100">
                     {product.images?.[0]?.url ? (
-                      <Image fill sizes="(max-width: 768px) 100vw, 33vw"
+                      <Image fill sizes="56px"
                         src={product.images[0].url}
                         alt={product.name}
                         className="h-full w-full object-cover"

@@ -1,14 +1,19 @@
 import { ICouponRepository } from "../interfaces/coupon.repository.interface";
 import { Coupon } from "../../types/database";
-import { createAdminClient } from "../../lib/supabase/server";
+import { SupabaseRepository } from "./base.repository";
 
-export class SupabaseCouponRepository implements ICouponRepository {
-  private getClient() {
-    return createAdminClient();
+export class SupabaseCouponRepository extends SupabaseRepository implements ICouponRepository {
+  /**
+   * The coupons and coupon_usages tables carry no anon policy on purpose:
+   * the discount catalogue and per-customer usage counts must not be
+   * enumerable with the public key. All access is server-side only.
+   */
+  private locked() {
+    return this.serviceClient("no-anon-policy-by-design");
   }
 
   async findAll(): Promise<Coupon[]> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.locked()
       .from('coupons')
       .select('*')
       .order('created_at', { ascending: false });
@@ -21,7 +26,7 @@ export class SupabaseCouponRepository implements ICouponRepository {
   }
 
   async findByCode(code: string): Promise<Coupon | null> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.locked()
       .from('coupons')
       .select('*')
       .eq('code', code.toUpperCase())
@@ -32,7 +37,7 @@ export class SupabaseCouponRepository implements ICouponRepository {
   }
 
   async findById(id: string): Promise<Coupon | null> {
-    const { data, error } = await this.getClient()
+    const { data, error } = await this.locked()
       .from('coupons')
       .select('*')
       .eq('id', id)
@@ -43,7 +48,7 @@ export class SupabaseCouponRepository implements ICouponRepository {
   }
 
   async recordUsage(couponId: string, userId?: string, orderId?: string): Promise<void> {
-    const client = this.getClient();
+    const client = this.locked();
     
     // Attempt to insert into coupon_usages to enforce per-user limits
     const { error: usageError } = await client.from('coupon_usages').insert([{
@@ -73,7 +78,7 @@ export class SupabaseCouponRepository implements ICouponRepository {
   async validateCouponForUser(couponId: string, userId?: string): Promise<boolean> {
     if (!userId) return true; // Guest users bypass per_customer_limit if we don't track by email
     
-    const { count, error } = await this.getClient()
+    const { count, error } = await this.locked()
       .from('coupon_usages')
       .select('*', { count: 'exact', head: true })
       .eq('coupon_id', couponId)
