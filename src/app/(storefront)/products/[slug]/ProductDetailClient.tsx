@@ -17,11 +17,13 @@ import {
 } from "lucide-react";
 import { useCart } from "@/features/cart/CartContext";
 import { useWishlist } from "@/features/wishlist/WishlistContext";
+import { ProductReviews } from "@/components/storefront/ProductReviews";
 import { Product, ProductVariant } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { ProductImage } from "@/components/storefront/ProductImage";
+import { formatPrice } from "@/lib/config/store.config";
 
 export function ProductDetailClient({
   product,
@@ -153,11 +155,11 @@ export function ProductDetailClient({
             {/* Price Row */}
             <div className="flex items-baseline gap-3 pb-4 border-b border-slate-100">
               <span className="text-3xl font-bold text-slate-900">
-                ${currentPrice.toFixed(2)}
+                {formatPrice(currentPrice)}
               </span>
               {hasDiscount && (
                 <span className="text-lg text-slate-400 line-through">
-                  ${currentCompareAt!.toFixed(2)}
+                  {formatPrice(currentCompareAt!)}
                 </span>
               )}
               {currentStock > 0 && currentStock <= 5 && (
@@ -200,7 +202,7 @@ export function ProductDetailClient({
                       >
                         <span>{label}</span>
                         <span className={`text-[10px] mt-1 ${isSelected ? "text-slate-300" : "text-slate-500"}`}>
-                          ${v.price.toFixed(2)}
+                          {formatPrice(v.price)}
                         </span>
                       </button>
                     );
@@ -359,6 +361,11 @@ export function ProductDetailClient({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Customer Reviews — hidden entirely when the feature is switched off. */}
+      <div className="mt-20">
+        <ProductReviews productId={product.id} productName={product.name} />
       </div>
 
       {/* Related Products Carousel / Grid */}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ProductService } from "@/services/product.service";
 import { requireAdmin } from "@/lib/auth/session";
+import { ChangeLogService } from "@/services/changelog.service";
 
 export async function GET(
   request: NextRequest,
@@ -36,7 +37,23 @@ export async function PUT(
   try {
     const { slug: id } = await params;
     const body = await request.json();
+
+    // Capture the record as it stands before the write, so the change is undoable.
+    const before = await ProductService.getProductById(id);
     const updated = await ProductService.updateProduct(id, body);
+
+    if (updated && before) {
+      await ChangeLogService.record({
+        entityType: "product",
+        entityId: id,
+        entityLabel: updated.name,
+        action: "update",
+        summary: `Edited the product "${updated.name}"`,
+        before: before as unknown as Record<string, any>,
+        after: updated as unknown as Record<string, any>,
+        actor: auth.user,
+      });
+    }
 
     if (!updated) {
       return NextResponse.json(
@@ -63,7 +80,24 @@ export async function DELETE(
 
   try {
     const { slug: id } = await params;
+
+    // Snapshot before deleting: this is the only copy that makes the delete undoable.
+    const before = await ProductService.getProductById(id);
     const deleted = await ProductService.deleteProduct(id);
+
+    if (deleted && before) {
+      await ChangeLogService.record({
+        entityType: "product",
+        entityId: id,
+        entityLabel: before.name,
+        action: "delete",
+        summary: `Deleted the product "${before.name}"`,
+        before: before as unknown as Record<string, any>,
+        after: null,
+        actor: auth.user,
+      });
+    }
+
     return NextResponse.json({ success: deleted });
   } catch (error: any) {
     return NextResponse.json(

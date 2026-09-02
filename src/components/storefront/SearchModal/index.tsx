@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ProductImage } from "../ProductImage";
 import { Search, X, ArrowRight, Loader2 } from "lucide-react";
 import { Product } from "@/types/database";
+import { formatPrice } from "@/lib/config/store.config";
 
 export function SearchModal({
   isOpen,
@@ -112,7 +113,7 @@ export function SearchModal({
                     <p className="text-xs text-slate-500">{product.brand || ""}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-slate-900">${product.price.toFixed(2)}</p>
+                    <p className="text-sm font-bold text-slate-900">{formatPrice(product.price)}</p>
                     <span className="text-[11px] text-emerald-600 flex items-center justify-end gap-1">
                       View <ArrowRight className="h-3 w-3" />
                     </span>

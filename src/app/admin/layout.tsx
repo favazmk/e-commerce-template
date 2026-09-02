@@ -11,7 +11,9 @@ import {
   Archive,
   ShoppingCart,
   Tag,
+  MessageSquare,
   Settings,
+  History,
   Sliders,
   Image as ImageIcon,
   ExternalLink,
@@ -46,9 +48,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Inventory", href: "/admin/inventory", icon: Archive },
     { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
     { name: "Coupons", href: "/admin/coupons", icon: Tag },
+    { name: "Reviews", href: "/admin/reviews", icon: MessageSquare },
     { name: "Homepage Builder", href: "/admin/homepage", icon: Sliders },
     { name: "Media Library", href: "/admin/media", icon: ImageIcon },
-    { name: "Store Settings", href: "/admin/settings", icon: Settings },
+    { name: "Shipping & Features", href: "/admin/settings", icon: Settings },
+    { name: "Change History", href: "/admin/history", icon: History },
   ];
 
   return (

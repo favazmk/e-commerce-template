@@ -1,4 +1,5 @@
 import { IInventoryRepository } from "../interfaces/inventory.repository.interface";
+import { InventoryTransaction } from "../../types/database";
 import { SupabaseRepository } from "./base.repository";
 
 export class SupabaseInventoryRepository extends SupabaseRepository implements IInventoryRepository {
@@ -79,5 +80,88 @@ export class SupabaseInventoryRepository extends SupabaseRepository implements I
       return false;
     }
     return data as boolean;
+  }
+
+  /**
+   * Set an absolute stock level for a product or one of its variants and
+   * record the difference in the audit ledger.
+   *
+   * The admin form thinks in absolute counts ("this size now has 12"), while
+   * the ledger thinks in deltas, so the conversion happens here — reading the
+   * current value and writing `new - current` as the movement.
+   */
+  async setStock(
+    productId: string,
+    variantId: string | null | undefined,
+    newQuantity: number,
+    reason: string
+  ): Promise<boolean> {
+    const client = this.system();
+    const target = Math.max(0, Math.trunc(Number(newQuantity) || 0));
+
+    const current = await this.getStock(productId, variantId || undefined);
+    const delta = target - current;
+
+    if (variantId) {
+      const { error } = await client
+        .from("product_variants")
+        .update({ stock: target, updated_at: new Date().toISOString() })
+        .eq("id", variantId);
+      if (error) throw new Error(`Failed to update variant stock: ${error.message}`);
+
+      // Keep the product-level total consistent with the sum of its variants.
+      const { data: siblings } = await client
+        .from("product_variants")
+        .select("stock")
+        .eq("product_id", productId)
+        .eq("is_active", true);
+
+      if (siblings) {
+        const total = siblings.reduce((sum: number, v: any) => sum + (Number(v.stock) || 0), 0);
+        await client
+          .from("products")
+          .update({ stock_quantity: total, updated_at: new Date().toISOString() })
+          .eq("id", productId);
+      }
+    } else {
+      const { error } = await client
+        .from("products")
+        .update({ stock_quantity: target, updated_at: new Date().toISOString() })
+        .eq("id", productId);
+      if (error) throw new Error(`Failed to update stock: ${error.message}`);
+    }
+
+    // A no-op adjustment is still worth recording: it evidences the review.
+    const { error: ledgerError } = await client.from("inventory_transactions").insert([
+      {
+        product_id: productId,
+        variant_id: variantId || null,
+        quantity_change: delta,
+        transaction_type: "adjustment",
+        reference_id: null,
+        note: reason || "Manual stock adjustment",
+      },
+    ]);
+
+    if (ledgerError) throw new Error(`Stock changed but the audit entry failed: ${ledgerError.message}`);
+
+    return true;
+  }
+
+  /**
+   * Read the stock movement ledger, newest first.
+   */
+  async getTransactions(productId?: string, limit = 100): Promise<InventoryTransaction[]> {
+    let query = this.system()
+      .from("inventory_transactions")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (productId) query = query.eq("product_id", productId);
+
+    const { data, error } = await query;
+    if (error || !data) return [];
+    return data as unknown as InventoryTransaction[];
   }
 }

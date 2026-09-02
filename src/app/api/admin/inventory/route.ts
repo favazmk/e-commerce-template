@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { InventoryService } from "@/services/inventory.service";
 import { ProductService } from "@/services/product.service";
 import { requireAdmin } from "@/lib/auth/session";
+import { ChangeLogService } from "@/services/changelog.service";
+import { RepositoryFactory } from "@/repositories/repository.factory";
 
 export async function GET(request: NextRequest) {
   const auth = await requireAdmin();
@@ -28,12 +30,36 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { productId, variantId, newQuantity, reason } = body;
 
-    const adjusted = await InventoryService.adjustStock(
-      productId,
-      variantId,
-      Number(newQuantity) || 0,
-      reason
-    );
+    // Read the count before the write so the adjustment can be undone.
+    const inventoryRepo = RepositoryFactory.getInventoryRepository();
+    const previousQuantity = await inventoryRepo.getStock(productId, variantId || undefined);
+
+    const target = Number(newQuantity) || 0;
+    const adjusted = await InventoryService.adjustStock(productId, variantId, target, reason);
+
+    if (adjusted) {
+      const product = await ProductService.getProductById(productId);
+      const variant = variantId
+        ? product?.variants?.find((v) => v.id === variantId)
+        : undefined;
+      const sizeLabel = variant
+        ? Object.entries(variant.attributes || {})
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(", ") || variant.sku
+        : null;
+      const label = sizeLabel ? `${product?.name ?? "Product"} (${sizeLabel})` : product?.name ?? "Product";
+
+      await ChangeLogService.record({
+        entityType: "inventory",
+        entityId: variantId || productId,
+        entityLabel: label,
+        action: "update",
+        summary: `Set ${label} stock to ${target} (was ${previousQuantity})`,
+        before: { productId, variantId: variantId || null, quantity: previousQuantity },
+        after: { productId, variantId: variantId || null, quantity: target },
+        actor: auth.user,
+      });
+    }
 
     return NextResponse.json({ success: adjusted });
   } catch (error: any) {

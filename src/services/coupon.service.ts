@@ -1,5 +1,6 @@
 import { RepositoryFactory } from "@/repositories/repository.factory";
 import { Coupon } from "@/types/database";
+import { formatPrice } from "@/lib/config/store.config";
 
 export interface CouponValidationResult {
   isValid: boolean;
@@ -58,7 +59,7 @@ export class CouponService {
       return {
         isValid: false,
         discountAmount: 0,
-        error: `Minimum order value of $${coupon.min_order_value} required for this coupon`,
+        error: `Minimum order value of ${formatPrice(coupon.min_order_value)} required for this coupon`,
       };
     }
 
@@ -94,6 +95,89 @@ export class CouponService {
       coupon,
       discountAmount,
     };
+  }
+
+
+  /**
+   * Admin: list every coupon, active or not.
+   */
+  static async listCoupons(): Promise<Coupon[]> {
+    const repo = RepositoryFactory.getCouponRepository();
+    return await repo.findAll();
+  }
+
+  /**
+   * Admin: read one coupon by id.
+   */
+  static async getCouponById(id: string): Promise<Coupon | null> {
+    const repo = RepositoryFactory.getCouponRepository();
+    return await repo.findById(id);
+  }
+
+  /**
+   * Admin: create a coupon.
+   */
+  static async createCoupon(data: Partial<Coupon>): Promise<Coupon> {
+    const code = String(data.code || "").trim().toUpperCase();
+    if (!/^[A-Z0-9_-]{3,32}$/.test(code)) {
+      throw new Error("Coupon code must be 3-32 characters: letters, numbers, hyphen or underscore.");
+    }
+
+    const discountType = data.discount_type === "fixed" ? "fixed" : "percentage";
+    const value = Number(data.discount_value);
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new Error("Discount value must be greater than zero.");
+    }
+    if (discountType === "percentage" && value > 100) {
+      throw new Error("A percentage discount cannot exceed 100%.");
+    }
+
+    const repo = RepositoryFactory.getCouponRepository();
+    return await repo.create({
+      code,
+      discount_type: discountType,
+      discount_value: value,
+      min_order_value: Number(data.min_order_value) || 0,
+      max_discount_amount:
+        data.max_discount_amount != null && data.max_discount_amount !== ("" as any)
+          ? Number(data.max_discount_amount)
+          : null,
+      usage_limit:
+        data.usage_limit != null && data.usage_limit !== ("" as any) ? Number(data.usage_limit) : null,
+      per_customer_limit: Number(data.per_customer_limit) || 1,
+      start_date: data.start_date || null,
+      end_date: data.end_date || null,
+      is_active: data.is_active !== undefined ? Boolean(data.is_active) : true,
+    });
+  }
+
+  /**
+   * Admin: update a coupon, including activating or deactivating it.
+   */
+  static async updateCoupon(id: string, data: Partial<Coupon>): Promise<Coupon | null> {
+    if (data.discount_value !== undefined) {
+      const value = Number(data.discount_value);
+      if (!Number.isFinite(value) || value <= 0) {
+        throw new Error("Discount value must be greater than zero.");
+      }
+      if ((data.discount_type ?? "percentage") === "percentage" && value > 100) {
+        throw new Error("A percentage discount cannot exceed 100%.");
+      }
+    }
+
+    const repo = RepositoryFactory.getCouponRepository();
+    return await repo.update(id, data);
+  }
+
+  /**
+   * Admin: permanently delete a coupon.
+   *
+   * Deactivating is usually the better move — it keeps the code unusable while
+   * preserving the usage history attached to past orders.
+   */
+  static async deleteCoupon(id: string): Promise<boolean> {
+    const repo = RepositoryFactory.getCouponRepository();
+    return await repo.delete(id);
   }
 
   /**

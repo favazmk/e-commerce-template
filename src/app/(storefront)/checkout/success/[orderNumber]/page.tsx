@@ -6,6 +6,7 @@ import { OrderService } from "@/services/order.service";
 import { getSessionUser } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/storefront/ProductImage";
+import { formatPrice } from "@/lib/config/store.config";
 
 export interface OrderSuccessPageProps {
   params: Promise<{ orderNumber: string }>;
@@ -94,7 +95,7 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
               </div>
               <div className="text-right">
                 <span className="text-sm font-bold text-slate-900">
-                  ${item.total_price.toFixed(2)}
+                  {formatPrice(item.total_price, order.currency)}
                 </span>
               </div>
             </div>
@@ -126,27 +127,27 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
           <div className="space-y-2 text-xs">
             <div className="flex justify-between text-slate-600">
               <span>Subtotal</span>
-              <span className="font-semibold text-slate-900">${order.subtotal.toFixed(2)}</span>
+              <span className="font-semibold text-slate-900">{formatPrice(order.subtotal, order.currency)}</span>
             </div>
             {order.discount_amount > 0 && (
               <div className="flex justify-between text-emerald-600 font-semibold">
                 <span>Coupon Discount</span>
-                <span>-${order.discount_amount.toFixed(2)}</span>
+                <span>-{formatPrice(order.discount_amount, order.currency)}</span>
               </div>
             )}
             <div className="flex justify-between text-slate-600">
               <span>Shipping ({order.shipping_method?.title || "Courier"})</span>
               <span className="font-semibold text-slate-900">
-                {order.shipping_amount === 0 ? "FREE" : `$${order.shipping_amount.toFixed(2)}`}
+                {order.shipping_amount === 0 ? "FREE" : formatPrice(order.shipping_amount, order.currency)}
               </span>
             </div>
             <div className="flex justify-between text-slate-600">
               <span>Tax</span>
-              <span className="font-semibold text-slate-900">${order.tax_amount.toFixed(2)}</span>
+              <span className="font-semibold text-slate-900">{formatPrice(order.tax_amount, order.currency)}</span>
             </div>
             <div className="border-t border-slate-200 pt-2 flex justify-between text-base font-bold text-slate-900">
               <span>Total Paid</span>
-              <span>${order.total_amount.toFixed(2)}</span>
+              <span>{formatPrice(order.total_amount, order.currency)}</span>
             </div>
           </div>
         </div>

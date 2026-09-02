@@ -9,8 +9,8 @@
 
 const FALLBACK_STORE_NAME = "Your Store";
 const FALLBACK_CHECKOUT_COLOR = "#0f172a";
-const FALLBACK_CURRENCY = "USD";
-const FALLBACK_CURRENCY_SYMBOL = "$";
+const FALLBACK_CURRENCY = "AED";
+const FALLBACK_CURRENCY_SYMBOL = "AED";
 const FALLBACK_ORDER_PREFIX = "ORD";
 
 /** Public storefront / gateway display name. */
@@ -36,6 +36,16 @@ export function getDefaultCurrency(): string {
 /** Symbol used when formatting prices for display. */
 export function getCurrencySymbol(): string {
   return process.env.NEXT_PUBLIC_DEFAULT_CURRENCY_SYMBOL?.trim() || FALLBACK_CURRENCY_SYMBOL;
+}
+
+/**
+ * Currency marker for form field labels, e.g. "Selling Price (AED)".
+ *
+ * Labels must never hard-code a symbol: the same form ships to every client,
+ * and the currency is environment-driven.
+ */
+export function getCurrencyLabel(): string {
+  return getCurrencySymbol() || getDefaultCurrency();
 }
 
 /** Prefix applied to generated human-readable order numbers. */
@@ -75,6 +85,9 @@ export function formatPrice(amount: number, currency: string = getDefaultCurrenc
       maximumFractionDigits: 2,
     }).format(safeValue);
   } catch {
-    return `${getCurrencySymbol()}${safeValue.toFixed(2)}`;
+    // A multi-letter marker such as "AED" reads wrong glued to the digits.
+    const symbol = getCurrencySymbol();
+    const separator = /[A-Za-z]$/.test(symbol) ? " " : "";
+    return `${symbol}${separator}${safeValue.toFixed(2)}`;
   }
 }

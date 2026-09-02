@@ -7,6 +7,7 @@ import { useCart } from "@/features/cart/CartContext";
 import { Drawer } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "../ProductImage";
+import { formatPrice } from "@/lib/config/store.config";
 
 export function MiniCart() {
   const {
@@ -35,7 +36,7 @@ export function MiniCart() {
               <span className="text-emerald-700">You unlocked Free Express Shipping!</span>
             ) : (
               <span>
-                Add <span className="font-bold text-slate-900">${amountNeededForFreeShipping.toFixed(2)}</span> more for Free Shipping
+                Add <span className="font-bold text-slate-900">{formatPrice(amountNeededForFreeShipping)}</span> more for Free Shipping
               </span>
             )}
           </div>
@@ -130,7 +131,7 @@ export function MiniCart() {
 
                     {/* Price */}
                     <span className="text-sm font-bold text-slate-900">
-                      ${item.totalPrice.toFixed(2)}
+                      {formatPrice(item.totalPrice)}
                     </span>
                   </div>
                 </div>
@@ -144,13 +145,13 @@ export function MiniCart() {
           <div className="border-t border-slate-100 pt-4 mt-4 space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-600 font-medium">Subtotal</span>
-              <span className="font-bold text-slate-900">${calculatedCart.subtotal.toFixed(2)}</span>
+              <span className="font-bold text-slate-900">{formatPrice(calculatedCart.subtotal)}</span>
             </div>
 
             {calculatedCart.discount.amount > 0 && (
               <div className="flex items-center justify-between text-xs text-emerald-600 font-semibold">
                 <span>Promo Discount ({calculatedCart.discount.code})</span>
-                <span>-${calculatedCart.discount.amount.toFixed(2)}</span>
+                <span>-{formatPrice(calculatedCart.discount.amount)}</span>
               </div>
             )}
 

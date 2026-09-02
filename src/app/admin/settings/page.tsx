@@ -1,232 +1,431 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Settings, Save, Palette, DollarSign, Truck, ToggleLeft, Check } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { Save, Truck, ToggleLeft, Plus, Trash2, History, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useTheme } from "@/theme/ThemeProvider";
+import { getCurrencyLabel } from "@/lib/config/store.config";
+
+/** One shipping option a customer can pick at checkout. */
+interface ShippingZone {
+  id: string;
+  name: string;
+  rate: number | string;
+  free_threshold: number | string | null;
+  estimated_days: string;
+}
+
+interface FeatureFlags {
+  guest_checkout_enabled: boolean;
+  wishlist_enabled: boolean;
+  reviews_enabled: boolean;
+}
 
 export default function AdminSettingsPage() {
-  const { theme, updateThemeColors } = useTheme();
+  const currency = getCurrencyLabel();
 
-  // General Settings
-  const [storeName, setStoreName] = useState("");
-  const [tagline, setTagline] = useState("Artisanal Goods & Timeless Essentials");
-  const [email, setEmail] = useState("concierge@auraluxury.com");
-  const [phone, setPhone] = useState("+1 (800) 555-0199");
-  const [currency, setCurrency] = useState("USD");
+  const [zones, setZones] = useState<ShippingZone[]>([]);
+  const [defaultFlatRate, setDefaultFlatRate] = useState("");
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState("");
+  const [shippingEnabled, setShippingEnabled] = useState(true);
 
-  // Branding & Theme Colors
-  const [primaryColor, setPrimaryColor] = useState(theme.colors.primary);
-  const [secondaryColor, setSecondaryColor] = useState(theme.colors.secondary);
-  const [accentColor, setAccentColor] = useState(theme.colors.accent);
+  const [features, setFeatures] = useState<FeatureFlags>({
+    guest_checkout_enabled: true,
+    wishlist_enabled: true,
+    reviews_enabled: false,
+  });
 
-  // Tax Settings
-  const [taxEnabled, setTaxEnabled] = useState(true);
-  const [taxRate, setTaxRate] = useState("8.5");
-  const [taxInclusive, setTaxInclusive] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [savingArea, setSavingArea] = useState<"shipping" | "features" | null>(null);
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
 
-  // Shipping Settings
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState("200");
-  const [standardRate, setStandardRate] = useState("15");
-
-  // Feature Flags
-  const [guestCheckout, setGuestCheckout] = useState(true);
-  const [wishlistEnabled, setWishlistEnabled] = useState(true);
-  const [reviewsEnabled, setReviewsEnabled] = useState(true);
-
-  const [savedMessage, setSavedMessage] = useState("");
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Update real-time theme CSS tokens immediately
-    updateThemeColors({
-      primary: primaryColor,
-      secondary: secondaryColor,
-      accent: accentColor,
-    });
-
-    setSavedMessage("Store configuration and brand theme updated!");
-    setTimeout(() => setSavedMessage(""), 2500);
+  const notify = (tone: "ok" | "error", text: string) => {
+    setFeedback({ tone, text });
+    setTimeout(() => setFeedback(null), 5000);
   };
 
+  const fetchSettings = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/settings", { cache: "no-store" });
+      const data = await res.json();
+
+      if (!data.success) {
+        notify("error", data.error?.message || "Could not load settings.");
+        return;
+      }
+
+      const shipping = data.data.settings?.shipping || {};
+      setZones(
+        Array.isArray(shipping.zones)
+          ? shipping.zones.map((z: any) => ({
+              id: z.id,
+              name: z.name ?? "",
+              rate: z.rate ?? 0,
+              free_threshold: z.free_threshold ?? "",
+              estimated_days: z.estimated_days ?? "",
+            }))
+          : []
+      );
+      setDefaultFlatRate(String(shipping.default_flat_rate ?? ""));
+      setFreeShippingThreshold(String(shipping.free_shipping_threshold ?? ""));
+      setShippingEnabled(shipping.enabled !== false);
+
+      const flags = data.data.settings?.features || {};
+      setFeatures({
+        guest_checkout_enabled: flags.guest_checkout_enabled !== false,
+        wishlist_enabled: flags.wishlist_enabled !== false,
+        reviews_enabled: flags.reviews_enabled === true,
+      });
+    } catch {
+      notify("error", "Could not reach the server.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchSettings();
+  }, [fetchSettings]);
+
+  const updateZone = (index: number, patch: Partial<ShippingZone>) => {
+    setZones((prev) => prev.map((z, i) => (i === index ? { ...z, ...patch } : z)));
+  };
+
+  const addZone = () => {
+    setZones((prev) => [
+      ...prev,
+      {
+        id: `zone-${Date.now().toString(36)}`,
+        name: "",
+        rate: 0,
+        free_threshold: "",
+        estimated_days: "",
+      },
+    ]);
+  };
+
+  const saveShipping = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const unnamed = zones.findIndex((z) => !String(z.name).trim());
+    if (unnamed !== -1) {
+      notify("error", `Shipping option ${unnamed + 1} needs a name customers will recognise.`);
+      return;
+    }
+
+    setSavingArea("shipping");
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: "shipping",
+          data: {
+            enabled: shippingEnabled,
+            default_flat_rate: Number(defaultFlatRate) || 0,
+            free_shipping_threshold: Number(freeShippingThreshold) || 0,
+            zones: zones.map((z) => ({
+              id: z.id,
+              name: String(z.name).trim(),
+              rate: Number(z.rate) || 0,
+              // An empty threshold means "this option is never free".
+              free_threshold:
+                String(z.free_threshold).trim() === "" ? null : Number(z.free_threshold),
+              estimated_days: String(z.estimated_days).trim(),
+            })),
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error?.message || "Save failed.");
+
+      notify("ok", "Shipping rates saved. They apply to new checkouts immediately.");
+      await fetchSettings();
+    } catch (err: any) {
+      notify("error", err.message);
+    } finally {
+      setSavingArea(null);
+    }
+  };
+
+  const saveFeatures = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingArea("features");
+
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: "features", data: features }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error?.message || "Save failed.");
+
+      notify("ok", "Feature switches saved and live on the storefront.");
+      await fetchSettings();
+    } catch (err: any) {
+      notify("error", err.message);
+    } finally {
+      setSavingArea(null);
+    }
+  };
+
+  if (isLoading) {
+    return <p className="text-xs text-slate-400">Loading settings…</p>;
+  }
+
   return (
-    <form onSubmit={handleSave} className="space-y-8 max-w-5xl mx-auto pb-20">
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-        <div>
-          <span className="text-xs uppercase font-bold tracking-widest text-emerald-600">
-            Agency Configuration
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-bold font-heading text-slate-900">
-            Store & Theme Settings
-          </h1>
-        </div>
-        <Button type="submit" variant="primary" size="md" className="gap-2 shadow-sm">
-          <Save className="h-4 w-4" /> Save Settings
-        </Button>
+    <div className="space-y-8 max-w-5xl mx-auto pb-20">
+      <div className="border-b border-slate-200 pb-4">
+        <span className="text-xs uppercase font-bold tracking-widest text-emerald-600">
+          Store Configuration
+        </span>
+        <h1 className="text-2xl sm:text-3xl font-bold font-heading text-slate-900">
+          Shipping &amp; Store Features
+        </h1>
+        <p className="mt-1 text-xs text-slate-500">
+          Every change here is recorded and can be undone from{" "}
+          <Link href="/admin/history" className="font-semibold text-emerald-700 hover:underline">
+            Change History
+          </Link>
+          .
+        </p>
       </div>
 
-      {savedMessage && (
-        <div className="p-4 rounded-brand bg-emerald-50 text-emerald-800 text-xs font-semibold border border-emerald-200">
-          {savedMessage}
+      {feedback && (
+        <div
+          className={`rounded-brand border p-3 text-xs font-semibold ${
+            feedback.tone === "ok"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-rose-200 bg-rose-50 text-rose-800"
+          }`}
+        >
+          {feedback.text}
         </div>
       )}
 
-      {/* 1. General Info */}
-      <div className="rounded-brand-xl border border-slate-200 bg-white p-6 shadow-subtle space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-          <Settings className="h-4 w-4 text-slate-700" /> 1. Store Identity & Contact
-        </h2>
+      {/* ---------------------------------------------------- Shipping ---- */}
+      <form
+        onSubmit={saveShipping}
+        className="rounded-brand-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-subtle space-y-5"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+            <Truck className="h-4 w-4 text-slate-700" /> Shipping Rates
+          </h2>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            isLoading={savingArea === "shipping"}
+            className="gap-1.5"
+          >
+            <Save className="h-3.5 w-3.5" /> Save shipping
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input label="Store Name" required value={storeName} onChange={(e) => setStoreName(e.target.value)} />
-          <Input label="Brand Tagline" value={tagline} onChange={(e) => setTagline(e.target.value)} />
-          <Input label="Contact Concierge Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <Input label="Contact Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        </div>
-      </div>
-
-      {/* 2. Brand Theme & Colors */}
-      <div className="rounded-brand-xl border border-slate-200 bg-white p-6 shadow-subtle space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-          <Palette className="h-4 w-4 text-emerald-600" /> 2. Client Theme & Visual Identity
-        </h2>
-        <p className="text-xs text-slate-500">
-          Customizing these tokens updates all buttons, banners, and card borders dynamically.
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-slate-700">Primary Brand Color</label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={primaryColor}
-                onChange={(e) => setPrimaryColor(e.target.value)}
-                className="h-10 w-14 rounded-brand border border-slate-300 cursor-pointer p-0.5"
-              />
-              <span className="font-mono text-xs text-slate-800">{primaryColor}</span>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-slate-700">Secondary Color</label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={secondaryColor}
-                onChange={(e) => setSecondaryColor(e.target.value)}
-                className="h-10 w-14 rounded-brand border border-slate-300 cursor-pointer p-0.5"
-              />
-              <span className="font-mono text-xs text-slate-800">{secondaryColor}</span>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-slate-700">Accent / CTA Color</label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={accentColor}
-                onChange={(e) => setAccentColor(e.target.value)}
-                className="h-10 w-14 rounded-brand border border-slate-300 cursor-pointer p-0.5"
-              />
-              <span className="font-mono text-xs text-slate-800">{accentColor}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Tax & Shipping Configuration */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Tax */}
-        <div className="rounded-brand-xl border border-slate-200 bg-white p-6 shadow-subtle space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-slate-700" /> 3. Tax Configuration
-          </h2>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="taxToggle"
-              checked={taxEnabled}
-              onChange={(e) => setTaxEnabled(e.target.checked)}
-            />
-            <label htmlFor="taxToggle" className="text-xs font-semibold text-slate-800">
-              Enable Automatic Sales Tax / VAT
-            </label>
-          </div>
           <Input
-            label="Tax Rate (%)"
+            label={`Free Shipping Threshold (${currency})`}
             type="number"
-            step="0.1"
-            value={taxRate}
-            onChange={(e) => setTaxRate(e.target.value)}
-          />
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="inclusiveToggle"
-              checked={taxInclusive}
-              onChange={(e) => setTaxInclusive(e.target.checked)}
-            />
-            <label htmlFor="inclusiveToggle" className="text-xs text-slate-600">
-              Prices are tax-inclusive (VAT embedded in price)
-            </label>
-          </div>
-        </div>
-
-        {/* Shipping */}
-        <div className="rounded-brand-xl border border-slate-200 bg-white p-6 shadow-subtle space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-            <Truck className="h-4 w-4 text-slate-700" /> 4. Shipping Rules
-          </h2>
-          <Input
-            label="Free Express Shipping Threshold ($)"
-            type="number"
+            min="0"
+            step="0.01"
             value={freeShippingThreshold}
             onChange={(e) => setFreeShippingThreshold(e.target.value)}
+            helperText="Shown to customers as “spend X more for free shipping”. Set 0 to never offer it."
           />
           <Input
-            label="Standard Ground Flat Rate ($)"
+            label={`Standard Flat Rate (${currency})`}
             type="number"
-            value={standardRate}
-            onChange={(e) => setStandardRate(e.target.value)}
+            min="0"
+            step="0.01"
+            value={defaultFlatRate}
+            onChange={(e) => setDefaultFlatRate(e.target.value)}
+            helperText="Fallback rate when no shipping option matches."
           />
         </div>
-      </div>
 
-      {/* 4. Feature Flags */}
-      <div className="rounded-brand-xl border border-slate-200 bg-white p-6 shadow-subtle space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900">
-          5. Store Feature Flags
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-          <label className="flex items-center gap-2 text-xs font-medium text-slate-800">
+        <label className="flex items-center gap-2 text-xs font-semibold text-slate-800">
+          <input
+            type="checkbox"
+            checked={shippingEnabled}
+            onChange={(e) => setShippingEnabled(e.target.checked)}
+          />
+          Charge for shipping (unticking makes every order ship free)
+        </label>
+
+        <div className="space-y-3 border-t border-slate-100 pt-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+              Shipping options offered at checkout
+            </h3>
+            <Button type="button" variant="outline" size="sm" onClick={addZone} className="gap-1.5 text-xs">
+              <Plus className="h-3.5 w-3.5" /> Add option
+            </Button>
+          </div>
+
+          {zones.length === 0 ? (
+            <p className="rounded-brand border border-dashed border-slate-200 p-4 text-center text-[11px] text-slate-400">
+              No shipping options yet. Add at least one so customers have something to choose.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {zones.map((zone, idx) => (
+                <div
+                  key={zone.id}
+                  className="rounded-brand border border-slate-200 bg-slate-50 p-4 space-y-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <Input
+                        label="Option name (customers see this)"
+                        required
+                        value={zone.name}
+                        onChange={(e) => updateZone(idx, { name: e.target.value })}
+                        placeholder="e.g. UAE & GCC Express Courier"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setZones((prev) => prev.filter((_, i) => i !== idx))}
+                      className="mt-6 rounded-brand p-2 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                      title="Remove this shipping option"
+                      aria-label={`Remove ${zone.name || "shipping option"}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <Input
+                      label={`Rate (${currency})`}
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={zone.rate}
+                      onChange={(e) => updateZone(idx, { rate: e.target.value })}
+                    />
+                    <Input
+                      label={`Free above (${currency})`}
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={zone.free_threshold ?? ""}
+                      onChange={(e) => updateZone(idx, { free_threshold: e.target.value })}
+                      placeholder="Never free"
+                    />
+                    <Input
+                      label="Delivery estimate"
+                      value={zone.estimated_days}
+                      onChange={(e) => updateZone(idx, { estimated_days: e.target.value })}
+                      placeholder="3-5 Business Days"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </form>
+
+      {/* ---------------------------------------------------- Features ---- */}
+      <form
+        onSubmit={saveFeatures}
+        className="rounded-brand-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-subtle space-y-5"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+            <ToggleLeft className="h-4 w-4 text-slate-700" /> Store Features
+          </h2>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            isLoading={savingArea === "features"}
+            className="gap-1.5"
+          >
+            <Save className="h-3.5 w-3.5" /> Save features
+          </Button>
+        </div>
+
+        <div className="divide-y divide-slate-100">
+          <label className="flex items-start gap-3 py-3.5 cursor-pointer">
             <input
               type="checkbox"
-              checked={guestCheckout}
-              onChange={(e) => setGuestCheckout(e.target.checked)}
+              className="mt-1"
+              checked={features.guest_checkout_enabled}
+              onChange={(e) =>
+                setFeatures({ ...features, guest_checkout_enabled: e.target.checked })
+              }
             />
-            Allow Guest Checkout
+            <span>
+              <span className="block text-sm font-semibold text-slate-900">Guest checkout</span>
+              <span className="block text-xs text-slate-500">
+                Let customers buy without creating an account. Switched off, the checkout asks
+                them to sign in first — and the order is refused server-side even if someone
+                tries to bypass the page.
+              </span>
+            </span>
           </label>
-          <label className="flex items-center gap-2 text-xs font-medium text-slate-800">
+
+          <label className="flex items-start gap-3 py-3.5 cursor-pointer">
             <input
               type="checkbox"
-              checked={wishlistEnabled}
-              onChange={(e) => setWishlistEnabled(e.target.checked)}
+              className="mt-1"
+              checked={features.wishlist_enabled}
+              onChange={(e) => setFeatures({ ...features, wishlist_enabled: e.target.checked })}
             />
-            Enable Customer Wishlist
+            <span>
+              <span className="block text-sm font-semibold text-slate-900">Customer wishlist</span>
+              <span className="block text-xs text-slate-500">
+                Shows the heart button on product cards and the wishlist link in the header.
+                Switched off, both disappear and saved lists are kept untouched.
+              </span>
+            </span>
           </label>
-          <label className="flex items-center gap-2 text-xs font-medium text-slate-800">
+
+          <label className="flex items-start gap-3 py-3.5 cursor-pointer">
             <input
               type="checkbox"
-              checked={reviewsEnabled}
-              onChange={(e) => setReviewsEnabled(e.target.checked)}
+              className="mt-1"
+              checked={features.reviews_enabled}
+              onChange={(e) => setFeatures({ ...features, reviews_enabled: e.target.checked })}
             />
-            Enable Product Reviews
+            <span>
+              <span className="block text-sm font-semibold text-slate-900">Product reviews</span>
+              <span className="block text-xs text-slate-500">
+                Shows the reviews section on every product page, where customers can read reviews
+                and write their own. Nothing appears publicly until you publish it in{" "}
+                <Link href="/admin/reviews" className="font-semibold text-emerald-700 hover:underline">
+                  Product Reviews
+                </Link>
+                . Switched off, the whole section disappears and submissions are refused.
+              </span>
+            </span>
           </label>
         </div>
+
+        <div className="flex items-start gap-2.5 rounded-brand border border-slate-200 bg-slate-50 p-3">
+          <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-slate-500" />
+          <p className="text-[11px] text-slate-600">
+            Tax rates, brand colours, currency and payment keys are not on this page on purpose —
+            a wrong value there mis-charges every order until someone notices. Those stay with the
+            development team, where a change is reviewed before it goes live.
+          </p>
+        </div>
+      </form>
+
+      <div className="flex items-center gap-2 text-xs text-slate-500">
+        <History className="h-3.5 w-3.5" />
+        <span>
+          Changed something by mistake?{" "}
+          <Link href="/admin/history" className="font-semibold text-emerald-700 hover:underline">
+            Undo it from Change History
+          </Link>
+          .
+        </span>
       </div>
-    </form>
+    </div>
   );
 }

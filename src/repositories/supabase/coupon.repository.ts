@@ -47,6 +47,70 @@ export class SupabaseCouponRepository extends SupabaseRepository implements ICou
     return data as Coupon;
   }
 
+  /**
+   * Columns a caller may set. `usage_count` is deliberately excluded: it is
+   * owned by recordUsage() and must never be rewritten from an admin form.
+   */
+  private static readonly WRITABLE = [
+    "code",
+    "discount_type",
+    "discount_value",
+    "min_order_value",
+    "max_discount_amount",
+    "start_date",
+    "end_date",
+    "usage_limit",
+    "per_customer_limit",
+    "product_ids",
+    "category_ids",
+    "is_active",
+  ] as const;
+
+  private pickWritable(data: Record<string, any>): Record<string, any> {
+    const row: Record<string, any> = {};
+    for (const column of SupabaseCouponRepository.WRITABLE) {
+      if (data[column] !== undefined) row[column] = data[column];
+    }
+    if (typeof row.code === "string") row.code = row.code.trim().toUpperCase();
+    return row;
+  }
+
+  async create(data: Partial<Coupon>): Promise<Coupon> {
+    const { data: created, error } = await this.locked()
+      .from('coupons')
+      .insert([this.pickWritable(data as Record<string, any>)])
+      .select()
+      .single();
+
+    if (error || !created) {
+      // 23505 is a unique-violation on `code`; say so rather than "failed".
+      if (error?.code === "23505") throw new Error("A coupon with that code already exists.");
+      throw new Error(`Failed to create coupon${error ? `: ${error.message}` : ""}`);
+    }
+    return created as Coupon;
+  }
+
+  async update(id: string, data: Partial<Coupon>): Promise<Coupon | null> {
+    const { data: updated, error } = await this.locked()
+      .from('coupons')
+      .update({ ...this.pickWritable(data as Record<string, any>), updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error?.code === "23505") throw new Error("A coupon with that code already exists.");
+    if (error || !updated) return null;
+    return updated as Coupon;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const { error } = await this.locked()
+      .from('coupons')
+      .delete()
+      .eq('id', id);
+    return !error;
+  }
+
   async recordUsage(couponId: string, userId?: string, orderId?: string): Promise<void> {
     const client = this.locked();
     

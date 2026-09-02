@@ -4,6 +4,7 @@ import { ShoppingCart, Search, Eye, Filter } from "lucide-react";
 import { OrderService } from "@/services/order.service";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatPrice } from "@/lib/config/store.config";
 
 export default async function AdminOrdersPage({
   searchParams,
@@ -83,7 +84,7 @@ export default async function AdminOrdersPage({
                       {ord.items?.length || 0}
                     </td>
                     <td className="py-3.5 px-4 text-right font-bold text-slate-900">
-                      ${ord.total_amount.toFixed(2)}
+                      {formatPrice(ord.total_amount, ord.currency)}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <Link href={`/admin/orders/${ord.id}`}>

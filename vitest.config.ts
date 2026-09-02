@@ -6,7 +6,11 @@ const projectDir = process.cwd();
 const envLocalPath = path.resolve(projectDir, ".env.local");
 if (fs.existsSync(envLocalPath)) {
   const envConfig = fs.readFileSync(envLocalPath, "utf-8");
-  envConfig.split("\n").forEach((line) => {
+  // Split on /\r?\n/, not "\n": a CRLF checkout leaves a trailing \r on every
+  // line, and JavaScript's `.` does not match \r, so the `(.*)$` value capture
+  // below matches nothing at all and every integration test silently loses its
+  // database credentials.
+  envConfig.split(/\r?\n/).forEach((line) => {
     const match = line.match(/^([^#\s=]+)=(.*)$/);
     if (match) {
       process.env[match[1]] = match[2].trim().replace(/^['"](.*)['"]$/, "$1");

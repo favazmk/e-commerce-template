@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useCart } from "@/features/cart/CartContext";
 import { useWishlist } from "@/features/wishlist/WishlistContext";
+import { useStoreFeatures } from "@/features/settings/StoreFeaturesContext";
 import { useTheme } from "@/theme/ThemeProvider";
 import { SearchModal } from "../SearchModal";
 
@@ -22,6 +23,7 @@ export function Header({ categories = [] }: HeaderProps) {
   const { theme } = useTheme();
   const { totalItemCount, openMiniCart } = useCart();
   const { totalWishlistCount } = useWishlist();
+  const { wishlist: wishlistEnabled } = useStoreFeatures();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
@@ -118,7 +120,9 @@ export function Header({ categories = [] }: HeaderProps) {
                 <Search className="h-5 w-5" />
               </button>
 
-              {/* Wishlist — secondary on the narrowest screens */}
+              {/* Wishlist — secondary on the narrowest screens, and hidden
+                  entirely when the feature is switched off in the admin panel. */}
+              {wishlistEnabled && (
               <Link
                 href="/wishlist"
                 className="relative hidden sm:inline-flex p-2 text-slate-700 hover:text-brand-primary transition-colors rounded-brand"
@@ -131,6 +135,7 @@ export function Header({ categories = [] }: HeaderProps) {
                   </span>
                 )}
               </Link>
+              )}
 
               {/* Customer Account */}
               <Link

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Heart, ShoppingBag, Eye, Check } from "lucide-react";
 import { useCart } from "@/features/cart/CartContext";
 import { useWishlist } from "@/features/wishlist/WishlistContext";
+import { useStoreFeatures } from "@/features/settings/StoreFeaturesContext";
 import { ProductCardVariant } from "@/theme/theme.config";
 import { Product } from "@/types/database";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ export interface ProductCardProps {
 export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { wishlist: wishlistEnabled } = useStoreFeatures();
   const [isHovered, setIsHovered] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
 
@@ -144,7 +146,8 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
           )}
         </div>
 
-        {/* Wishlist Button */}
+        {/* Wishlist Button — omitted when the feature is switched off. */}
+        {wishlistEnabled && (
         <button
           onClick={handleToggleWishlist}
           className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm text-slate-700 shadow-sm transition-all hover:bg-white hover:text-rose-500 hover:scale-110"
@@ -153,6 +156,7 @@ export function ProductCard({ product, variant = "luxury" }: ProductCardProps) {
         >
           <Heart className={`h-4 w-4 ${isFavorite ? "fill-rose-500 text-rose-500" : ""}`} />
         </button>
+        )}
 
         {/* Quick Add To Cart Hover Slide-up Button */}
         <div className="absolute inset-x-3 bottom-3 z-10 transition-all duration-300 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0">

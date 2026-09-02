@@ -7,6 +7,7 @@ import { useCart } from "@/features/cart/CartContext";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ProductImage } from "@/components/storefront/ProductImage";
+import { formatPrice } from "@/lib/config/store.config";
 
 export default function CartPage() {
   const {
@@ -91,7 +92,7 @@ export default function CartPage() {
                   )}
 
                   <div className="mt-2 text-sm font-bold text-slate-900 sm:hidden">
-                    ${item.unitPrice.toFixed(2)}
+                    {formatPrice(item.unitPrice)}
                   </div>
                 </div>
 
@@ -119,7 +120,7 @@ export default function CartPage() {
 
                   <div className="text-right min-w-[80px]">
                     <span className="text-base font-bold text-slate-900">
-                      ${item.totalPrice.toFixed(2)}
+                      {formatPrice(item.totalPrice)}
                     </span>
                   </div>
 
@@ -157,7 +158,7 @@ export default function CartPage() {
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal</span>
                 <span className="font-semibold text-slate-900">
-                  ${calculatedCart.subtotal.toFixed(2)}
+                  {formatPrice(calculatedCart.subtotal)}
                 </span>
               </div>
 
@@ -166,27 +167,27 @@ export default function CartPage() {
                   <span className="flex items-center gap-1">
                     <Tag className="h-3.5 w-3.5" /> Coupon ({calculatedCart.discount.code})
                   </span>
-                  <span>-${calculatedCart.discount.amount.toFixed(2)}</span>
+                  <span>-{formatPrice(calculatedCart.discount.amount)}</span>
                 </div>
               )}
 
               <div className="flex justify-between text-slate-600">
                 <span>Estimated Shipping</span>
                 <span className="font-semibold text-slate-900">
-                  {calculatedCart.shipping.amount === 0 ? "FREE" : `$${calculatedCart.shipping.amount.toFixed(2)}`}
+                  {calculatedCart.shipping.amount === 0 ? "FREE" : formatPrice(calculatedCart.shipping.amount)}
                 </span>
               </div>
 
               <div className="flex justify-between text-slate-600">
                 <span>Estimated Tax ({calculatedCart.tax.rate}%)</span>
                 <span className="font-semibold text-slate-900">
-                  ${calculatedCart.tax.amount.toFixed(2)}
+                  {formatPrice(calculatedCart.tax.amount)}
                 </span>
               </div>
 
               <div className="border-t border-slate-100 pt-4 flex justify-between text-base font-bold text-slate-900">
                 <span>Estimated Total</span>
-                <span className="text-xl">${calculatedCart.total.toFixed(2)}</span>
+                <span className="text-xl">{formatPrice(calculatedCart.total)}</span>
               </div>
             </div>
 
