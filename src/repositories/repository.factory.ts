@@ -7,6 +7,7 @@ import { ICouponRepository } from "./interfaces/coupon.repository.interface";
 import { IUserRepository } from "./interfaces/user.repository.interface";
 import { ISettingsRepository } from "./interfaces/settings.repository.interface";
 import { IReviewRepository } from "./interfaces/review.repository.interface";
+import { IChangeLogRepository } from "./interfaces/changelog.repository.interface";
 
 import { SupabaseProductRepository } from "./supabase/product.repository";
 import { SupabaseCategoryRepository } from "./supabase/category.repository";
@@ -17,6 +18,7 @@ import { SupabaseCouponRepository } from "./supabase/coupon.repository";
 import { SupabaseUserRepository } from "./supabase/user.repository";
 import { SupabaseSettingsRepository } from "./supabase/settings.repository";
 import { SupabaseReviewRepository } from "./supabase/review.repository";
+import { SupabaseChangeLogRepository } from "./supabase/changelog.repository";
 
 // Currently wired to Supabase implementations.
 // In the future, this can read an env variable to wire to different implementations.
@@ -65,5 +67,9 @@ export class RepositoryFactory {
 
   static getReviewRepository(): IReviewRepository {
     return this.overrides.get("ReviewRepository") || new SupabaseReviewRepository();
+  }
+
+  static getChangeLogRepository(): IChangeLogRepository {
+    return this.overrides.get("ChangeLogRepository") || new SupabaseChangeLogRepository();
   }
 }

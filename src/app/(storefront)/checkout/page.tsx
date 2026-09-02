@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatPrice } from "@/lib/config/store.config";
+import { useStoreFeatures } from "@/features/settings/StoreFeaturesContext";
 import { ProductImage } from "@/components/storefront/ProductImage";
 
 declare global {
@@ -35,6 +36,8 @@ export default function CheckoutPage() {
 
   // Form State — intentionally empty. Pre-filling real-looking names and
   // addresses ships someone else's details to production customers.
+  const { guestCheckout } = useStoreFeatures();
+
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -232,6 +235,19 @@ export default function CheckoutPage() {
               </span>
               Customer &amp; Contact Information
             </h2>
+
+            {/* When guest checkout is switched off, say so here rather than
+                letting the customer fill in the whole form and be refused at
+                the end. The server enforces the rule regardless. */}
+            {!guestCheckout && (
+              <p className="rounded-brand border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-800">
+                An account is required to place an order.{" "}
+                <Link href="/login" className="underline">
+                  Sign in or create one
+                </Link>{" "}
+                to continue.
+              </p>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <Input

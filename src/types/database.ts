@@ -315,3 +315,36 @@ export interface Review {
   created_at: string;
   updated_at: string;
 }
+
+/** The kinds of record the admin panel can undo a change to. */
+export type AdminChangeEntityType =
+  | "product"
+  | "category"
+  | "coupon"
+  | "homepage_section"
+  | "settings"
+  | "inventory";
+
+export type AdminChangeAction = "create" | "update" | "delete";
+
+/**
+ * One entry in the admin undo history. `before_state` and `after_state` hold
+ * the full record rather than a diff, so a restore stays possible even after
+ * the schema moves on.
+ */
+export interface AdminChangeLogEntry {
+  id: string;
+  entity_type: AdminChangeEntityType;
+  entity_id: string;
+  entity_label: string;
+  action: AdminChangeAction;
+  summary: string;
+  before_state: Record<string, any> | null;
+  after_state: Record<string, any> | null;
+  actor_id?: string | null;
+  actor_email: string;
+  reverted_at?: string | null;
+  reverted_by?: string | null;
+  is_revert: boolean;
+  created_at: string;
+}

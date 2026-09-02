@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { ProductService } from "@/services/product.service";
 import { requireAdmin } from "@/lib/auth/session";
+import { ChangeLogService } from "@/services/changelog.service";
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,6 +47,18 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const created = await ProductService.createProduct(body);
+
+    await ChangeLogService.record({
+      entityType: "product",
+      entityId: created.id,
+      entityLabel: created.name,
+      action: "create",
+      summary: `Created the product "${created.name}"`,
+      before: null,
+      after: created as unknown as Record<string, any>,
+      actor: auth.user,
+    });
+
     revalidatePath("/admin/products");
     revalidatePath("/products");
     return NextResponse.json({ success: true, data: created });

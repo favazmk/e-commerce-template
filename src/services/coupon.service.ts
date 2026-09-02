@@ -107,6 +107,14 @@ export class CouponService {
   }
 
   /**
+   * Admin: read one coupon by id.
+   */
+  static async getCouponById(id: string): Promise<Coupon | null> {
+    const repo = RepositoryFactory.getCouponRepository();
+    return await repo.findById(id);
+  }
+
+  /**
    * Admin: create a coupon.
    */
   static async createCoupon(data: Partial<Coupon>): Promise<Coupon> {

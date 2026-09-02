@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { CategoryService } from "@/services/category.service";
 import { requireAdmin } from "@/lib/auth/session";
+import { ChangeLogService } from "@/services/changelog.service";
 
 /** PUT /api/categories/[id] — update a category. */
 export async function PUT(
@@ -14,7 +15,22 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
+
+    const before = await CategoryService.getCategoryById(id);
     const updated = await CategoryService.updateCategory(id, body);
+
+    if (updated && before) {
+      await ChangeLogService.record({
+        entityType: "category",
+        entityId: id,
+        entityLabel: updated.name,
+        action: "update",
+        summary: `Edited the category "${updated.name}"`,
+        before: before as unknown as Record<string, any>,
+        after: updated as unknown as Record<string, any>,
+        actor: auth.user,
+      });
+    }
 
     if (!updated) {
       return NextResponse.json(
@@ -49,7 +65,22 @@ export async function DELETE(
 
   try {
     const { id } = await params;
+
+    const before = await CategoryService.getCategoryById(id);
     const deleted = await CategoryService.deleteCategory(id);
+
+    if (deleted && before) {
+      await ChangeLogService.record({
+        entityType: "category",
+        entityId: id,
+        entityLabel: before.name,
+        action: "delete",
+        summary: `Deleted the category "${before.name}"`,
+        before: before as unknown as Record<string, any>,
+        after: null,
+        actor: auth.user,
+      });
+    }
 
     revalidatePath("/");
     revalidatePath("/products");

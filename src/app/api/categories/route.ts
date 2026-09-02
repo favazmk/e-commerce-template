@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CategoryService } from "@/services/category.service";
 import { requireAdmin } from "@/lib/auth/session";
+import { ChangeLogService } from "@/services/changelog.service";
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,6 +22,18 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const created = await CategoryService.createCategory(body);
+
+    await ChangeLogService.record({
+      entityType: "category",
+      entityId: created.id,
+      entityLabel: created.name,
+      action: "create",
+      summary: `Created the category "${created.name}"`,
+      before: null,
+      after: created as unknown as Record<string, any>,
+      actor: auth.user,
+    });
+
     return NextResponse.json({ success: true, data: created });
   } catch (error: any) {
     return NextResponse.json(

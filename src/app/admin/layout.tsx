@@ -11,6 +11,8 @@ import {
   Archive,
   ShoppingCart,
   Tag,
+  Settings,
+  History,
   Sliders,
   Image as ImageIcon,
   ExternalLink,
@@ -47,6 +49,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Coupons", href: "/admin/coupons", icon: Tag },
     { name: "Homepage Builder", href: "/admin/homepage", icon: Sliders },
     { name: "Media Library", href: "/admin/media", icon: ImageIcon },
+    { name: "Shipping & Features", href: "/admin/settings", icon: Settings },
+    { name: "Change History", href: "/admin/history", icon: History },
   ];
 
   return (

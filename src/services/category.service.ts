@@ -17,6 +17,11 @@ export class CategoryService {
     return await repo.findBySlug(slug);
   }
 
+  static async getCategoryById(id: string): Promise<Category | null> {
+    const repo = RepositoryFactory.getCategoryRepository();
+    return await repo.findById(id);
+  }
+
   static async createCategory(data: Partial<Category>): Promise<Category> {
     const repo = RepositoryFactory.getCategoryRepository();
     
