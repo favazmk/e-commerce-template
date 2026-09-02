@@ -10,6 +10,7 @@ import {
   Sliders,
   Settings,
   Archive,
+  MessageSquare,
   CheckCircle2,
 } from "lucide-react";
 import { AdminChangeLogEntry, AdminChangeEntityType } from "@/types/database";
@@ -27,6 +28,7 @@ const ENTITY_META: Record<
   homepage_section: { label: "Homepage", icon: Sliders },
   settings: { label: "Settings", icon: Settings },
   inventory: { label: "Stock", icon: Archive },
+  review: { label: "Review", icon: MessageSquare },
 };
 
 const FILTERS: Array<{ key: "all" | AdminChangeEntityType; label: string }> = [
@@ -34,6 +36,7 @@ const FILTERS: Array<{ key: "all" | AdminChangeEntityType; label: string }> = [
   { key: "product", label: "Products" },
   { key: "inventory", label: "Stock" },
   { key: "coupon", label: "Coupons" },
+  { key: "review", label: "Reviews" },
   { key: "category", label: "Categories" },
   { key: "homepage_section", label: "Homepage" },
   { key: "settings", label: "Settings" },

@@ -385,24 +385,22 @@ export default function AdminSettingsPage() {
             </span>
           </label>
 
-          <label className="flex items-start gap-3 py-3.5 opacity-60 cursor-not-allowed">
+          <label className="flex items-start gap-3 py-3.5 cursor-pointer">
             <input
               type="checkbox"
               className="mt-1"
-              disabled
               checked={features.reviews_enabled}
               onChange={(e) => setFeatures({ ...features, reviews_enabled: e.target.checked })}
             />
             <span>
-              <span className="block text-sm font-semibold text-slate-900">
-                Product reviews
-                <span className="ml-2 rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  Not built yet
-                </span>
-              </span>
+              <span className="block text-sm font-semibold text-slate-900">Product reviews</span>
               <span className="block text-xs text-slate-500">
-                The storefront has no review surface yet, so this switch would change nothing.
-                It stays locked until reviews are built — ask the development team to schedule it.
+                Shows the reviews section on every product page, where customers can read reviews
+                and write their own. Nothing appears publicly until you publish it in{" "}
+                <Link href="/admin/reviews" className="font-semibold text-emerald-700 hover:underline">
+                  Product Reviews
+                </Link>
+                . Switched off, the whole section disappears and submissions are refused.
               </span>
             </span>
           </label>

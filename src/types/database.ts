@@ -323,7 +323,8 @@ export type AdminChangeEntityType =
   | "coupon"
   | "homepage_section"
   | "settings"
-  | "inventory";
+  | "inventory"
+  | "review";
 
 export type AdminChangeAction = "create" | "update" | "delete";
 

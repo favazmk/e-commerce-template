@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/features/cart/CartContext";
 import { useWishlist } from "@/features/wishlist/WishlistContext";
+import { ProductReviews } from "@/components/storefront/ProductReviews";
 import { Product, ProductVariant } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -360,6 +361,11 @@ export function ProductDetailClient({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Customer Reviews — hidden entirely when the feature is switched off. */}
+      <div className="mt-20">
+        <ProductReviews productId={product.id} productName={product.name} />
       </div>
 
       {/* Related Products Carousel / Grid */}

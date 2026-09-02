@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { ProductService } from "@/services/product.service";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,11 +28,18 @@ export default async function AdminProductsPage({
             Store Products ({products.length})
           </h1>
         </div>
-        <Link href="/admin/products/new">
-          <Button variant="primary" size="md" className="gap-2 shadow-sm">
-            <Plus className="h-4 w-4" /> Create New Product
-          </Button>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/admin/products/import">
+            <Button variant="outline" size="md" className="gap-2">
+              <Upload className="h-4 w-4" /> Import from spreadsheet
+            </Button>
+          </Link>
+          <Link href="/admin/products/new">
+            <Button variant="primary" size="md" className="gap-2 shadow-sm">
+              <Plus className="h-4 w-4" /> Create New Product
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Table Container */}

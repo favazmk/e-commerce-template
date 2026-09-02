@@ -10,6 +10,7 @@ import { CategoryService } from "@/services/category.service";
 import { CouponService } from "@/services/coupon.service";
 import { SettingsService } from "@/services/settings.service";
 import { InventoryService } from "@/services/inventory.service";
+import { ReviewService } from "@/services/review.service";
 
 export interface RecordChangeInput {
   entityType: AdminChangeEntityType;
@@ -213,6 +214,25 @@ export class ChangeLogService {
         // entity_id is the settings category: "shipping", "features", …
         await SettingsService.replaceStoreSettings(entry.entity_id, before);
         return `Restored the ${label || entry.entity_id} settings to their previous values.`;
+      }
+
+      // --------------------------------------------------------------- review
+      case "review": {
+        const before = entry.before_state;
+        if (!before) throw new Error("This change has no earlier version to restore.");
+
+        if (entry.action === "delete") {
+          // A deleted review cannot be recreated with its original id, and
+          // republishing a review the merchant deliberately removed would be a
+          // surprise. Deletion of a review is final.
+          throw new Error(
+            "A deleted review cannot be restored. Ask the customer to submit it again."
+          );
+        }
+
+        const restored = await ReviewService.setStatus(entry.entity_id, before.status);
+        if (!restored) throw new Error("That review no longer exists.");
+        return `Set the review by ${before.customer_name} back to "${before.status}".`;
       }
 
       // ------------------------------------------------------------ inventory
