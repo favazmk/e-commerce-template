@@ -7,6 +7,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/storefront/ProductImage";
 import { formatPrice } from "@/lib/config/store.config";
+import { PurchaseTracker } from "@/components/storefront/PurchaseTracker";
 
 export interface OrderSuccessPageProps {
   params: Promise<{ orderNumber: string }>;
@@ -27,6 +28,22 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+      {/* Conversion reporting, driven by the stored order rather than by the
+          cart the browser held a moment ago. */}
+      <PurchaseTracker
+        orderNumber={order.order_number}
+        value={Number(order.total_amount)}
+        currency={order.currency}
+        tax={Number(order.tax_amount)}
+        shipping={Number(order.shipping_amount)}
+        coupon={order.coupon_code}
+        items={(order.items || []).map((item) => ({
+          item_id: item.product_id || item.sku_snapshot,
+          item_name: item.product_name_snapshot,
+          price: Number(item.price_snapshot),
+          quantity: item.quantity,
+        }))}
+      />
       {/* Top Success Banner */}
       <div className="text-center space-y-4 mb-12">
         <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-2 shadow-sm">
@@ -38,9 +55,13 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
         <h1 className="text-3xl sm:text-4xl font-bold font-heading text-slate-900">
           Thank you for your order
         </h1>
+        {/* Generic by design: the MASTER template ships to every client, so
+            product-category wording ("garments", "fragrances") belongs in the
+            client repository, never here (AGENTS.md sections 9 and 25). */}
         <p className="text-sm text-slate-500 max-w-md mx-auto">
-          We have dispatched a receipt to <span className="font-semibold text-slate-900">{order.guest_email || "your email"}</span>.
-          Your artisanal garments are being prepared for dispatch.
+          We have emailed your receipt to{" "}
+          <span className="font-semibold text-slate-900">{order.guest_email || "your email address"}</span>.
+          Your order is being prepared and you will get tracking details as soon as it ships.
         </p>
       </div>
 

@@ -86,6 +86,17 @@ export class SupabaseProductRepository extends SupabaseRepository implements IPr
       query = query.eq('brand', params.brand);
     }
 
+    // Price bounds were part of ProductFilterParams from the start but were
+    // never applied, so every "under X" link in the storefront returned the
+    // unfiltered catalog. Coerced to finite numbers because they arrive from
+    // the query string.
+    if (Number.isFinite(Number(params.minPrice))) {
+      query = query.gte('price', Number(params.minPrice));
+    }
+    if (Number.isFinite(Number(params.maxPrice))) {
+      query = query.lte('price', Number(params.maxPrice));
+    }
+
     // Apply sorting
     if (params.sortBy) {
       switch (params.sortBy) {
@@ -100,6 +111,12 @@ export class SupabaseProductRepository extends SupabaseRepository implements IPr
           break;
         case 'name_asc':
           query = query.order('name', { ascending: true });
+          break;
+        case 'featured':
+          // Merchant-picked items first, then newest within each group.
+          query = query
+            .order('featured', { ascending: false })
+            .order('created_at', { ascending: false });
           break;
         default:
           query = query.order('created_at', { ascending: false });
