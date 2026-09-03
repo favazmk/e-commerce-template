@@ -28,6 +28,7 @@ export class CartService {
     const calculatedItems: CartCalculationResult["items"] = [];
     const validationErrors: string[] = [];
     let subtotal = 0;
+    let listSubtotal = 0;
     const productIds: string[] = [];
 
     const productRepo = RepositoryFactory.getProductRepository();
@@ -53,6 +54,7 @@ export class CartService {
       productIds.push(product.id);
 
       let unitPrice = Number(product.price);
+      let listPrice = product.compare_at_price != null ? Number(product.compare_at_price) : null;
       let availableStock = product.stock_quantity;
       let sku = product.sku;
       let attributes: Record<string, string> | undefined;
@@ -62,6 +64,7 @@ export class CartService {
         const variant = product.variants?.find((v) => v.id === item.variantId);
         if (variant && variant.is_active) {
           unitPrice = Number(variant.price);
+          listPrice = variant.compare_at_price != null ? Number(variant.compare_at_price) : null;
           availableStock = variant.stock;
           sku = variant.sku;
           attributes = variant.attributes;
@@ -80,6 +83,9 @@ export class CartService {
 
       const itemTotal = unitPrice * quantity;
       subtotal += itemTotal;
+      // A list price below the selling price is a data error, not a markup;
+      // clamping keeps a "you saved" figure from ever going negative.
+      listSubtotal += Math.max(listPrice ?? unitPrice, unitPrice) * quantity;
 
       calculatedItems.push({
         productId: product.id,
@@ -88,6 +94,7 @@ export class CartService {
         sku,
         image,
         unitPrice,
+        listPrice,
         quantity,
         totalPrice: itemTotal,
         attributes,
@@ -128,6 +135,7 @@ export class CartService {
     return {
       items: calculatedItems,
       subtotal: Math.round(subtotal * 100) / 100,
+      listSubtotal: Math.round(listSubtotal * 100) / 100,
       discount: {
         code: appliedCouponCode,
         amount: discountAmount,

@@ -43,11 +43,13 @@ is configuration. Nothing in this repository hard-codes a client identity.
 
 ### Customer storefront
 - **Database-driven homepage sections** — hero, featured products, categories, banners, testimonials, newsletter; ordered and toggled from `homepage_sections`.
-- **Catalog & search** — debounced search, category filtering, price and brand facets, in-stock filter, sorting.
-- **Product detail** — multi-image gallery, variant matrix selector, live stock indicators, related products.
-- **Cart** — server-recalculated pricing and stock, guest cart in `localStorage`, slide-over mini-cart.
+- **Catalog & search** — debounced search, indexable category landing pages, price and brand facets derived from the live catalog, in-stock filter, windowed pagination.
+- **Product detail** — multi-image gallery, variant axes with availability, delivery-date estimate, offers block, back-in-stock capture, sticky mobile buy bar.
+- **Merchandising** — frequently bought together, similar products, cart companions, best sellers and recently viewed. See [CONVERSION.md](docs/CONVERSION.md).
+- **Cart** — server-recalculated pricing and stock, marked-price savings breakdown, free-shipping progress, inline add of recommended items.
 - **Checkout** — server-validated address, server-configured shipping methods, coupon engine, Razorpay modal.
-- **Account portal** — session-scoped order history, receipts, and status timelines.
+- **Accounts** — registration, password reset, address book, profile, change email, sign out everywhere. See [ACCOUNTS.md](docs/ACCOUNTS.md).
+- **Order tracking** — signed-in and guest (order number plus email), with a live status timeline.
 
 ### Merchant admin
 - **Analytics overview** — revenue, order volume, AOV, low-stock alerts.
@@ -56,6 +58,16 @@ is configuration. Nothing in this repository hard-codes a client identity.
 - **Order lifecycle** — frozen price snapshots and status transitions.
 - **Coupons** — percentage/fixed rules, minimum spend, discount caps, usage limits.
 - **Store settings & homepage builder** — persisted to the database.
+
+### Discoverability & marketing
+- **Sitemap, robots and PWA manifest** generated from the live catalog.
+- **schema.org markup** — Product, Breadcrumb, ItemList, Organization, WebSite with sitelinks search, FAQ.
+- **Google Merchant Center feed** at `/feeds/google-merchant.xml` and a **Meta catalog feed** at `/feeds/meta-catalog.csv`.
+- **GA4, Google Ads and Meta Pixel** with the full e-commerce event funnel and server-sourced purchase values.
+- **Consent Mode v2** — tracking denied by default, granted only after an explicit choice.
+- Preview and demo deployments are excluded from indexing automatically.
+
+See [SEO.md](docs/SEO.md).
 
 ### Security model
 - **Zero client trust** — prices, discounts, tax, and shipping are always recalculated server-side from
@@ -71,6 +83,16 @@ is configuration. Nothing in this repository hard-codes a client identity.
 - **Row Level Security** — enabled on every table; commercially sensitive tables (payments, refunds,
   coupons, coupon usage, inventory movements, webhook payloads) are unreachable with the public anon key.
 - **Atomic stock reservation** — row locking prevents overselling under concurrency.
+- **Column-level privilege enforcement** — `users.role` is unwritable through the public key, guarded
+  by column grants, a database trigger and server-side validation independently. RLS restricts rows,
+  not columns; that distinction was a full-compromise vulnerability until
+  `20260105000000_privilege_escalation_fix.sql`.
+- **Content Security Policy** — configuration-derived allowlists for scripts, connections, frames and
+  images, plus `frame-ancestors`, `form-action` and `base-uri` locks.
+- **Open-redirect protection** on every post-login destination.
+- **Rate limiting** on public write endpoints (coupons, reviews, newsletter, order lookup).
+- **Injection-safe structured data** — JSON-LD is escaped so merchant and customer text cannot break
+  out of the script tag.
 - **Baseline security headers** — set for every response in `src/middleware.ts`.
 
 ---
@@ -139,6 +161,17 @@ npm run build
 ```bash
 npx playwright test
 ```
+```bash
+npm run verify:security
+```
+
+`npm run verify:security` is not a unit test — it signs in as a throwaway
+customer and performs real privilege-escalation and data-exfiltration attacks
+against the database in your `.env.local`, then exits non-zero if any of them
+succeed. A migration file protects nothing until it has been applied, and a
+store with an unapplied security migration looks completely normal until
+somebody exploits it. Run it against **every** client database, not just this
+one.
 
 `npm run test` covers the unit and integration suites (integration tests hit a real database and are
 included in the default run). The E2E suite builds the app with `APP_MODE=demo` so it can complete a
@@ -179,6 +212,10 @@ src/
 
 ## 📚 Documentation
 
+- 🚦 [**Go-Live Checklist**](docs/GO-LIVE.md) — start here for a new store
+- 🔍 [SEO, Google Listings & Ads](docs/SEO.md)
+- 📈 [Conversion & Merchandising](docs/CONVERSION.md)
+- 👤 [Customer Accounts & Authentication](docs/ACCOUNTS.md)
 - 🏛️ [Architecture & Core/Theme Separation](docs/ARCHITECTURE.md)
 - 🚀 [Deployment Guide](docs/DEPLOYMENT.md)
 - 📋 [Client Onboarding Checklist](docs/CLIENT-ONBOARDING.md)

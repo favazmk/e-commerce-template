@@ -284,6 +284,42 @@ export class OrderService {
     return null;
   }
 
+  /**
+   * Guest order tracking: order number plus the email it was placed with.
+   *
+   * Two factors on purpose. The order number alone already gates guest orders
+   * (getOrderForViewer), but a public tracking form is a very different
+   * exposure from a link the customer received by email — it invites
+   * enumeration attempts against every order number at once. Requiring the
+   * email as well means a guessed number is still useless.
+   *
+   * Also the only safe way to let an *account* order be tracked without a
+   * login: the address on file must match what the caller typed.
+   *
+   * Returns null for every failure mode, so the form cannot distinguish
+   * "no such order" from "wrong email" — the distinction is exactly what an
+   * attacker enumerating order numbers would want.
+   */
+  static async lookupForTracking(orderNumber: string, email: string): Promise<Order | null> {
+    const trimmedNumber = orderNumber.trim();
+    const normalisedEmail = email.trim().toLowerCase();
+    if (!trimmedNumber || !normalisedEmail) return null;
+
+    const repo = RepositoryFactory.getOrderRepository();
+    const order = await repo.findByOrderNumber(trimmedNumber);
+    if (!order) return null;
+
+    const candidates: string[] = [];
+    if (order.guest_email) candidates.push(order.guest_email.toLowerCase());
+
+    if (order.user_id) {
+      const account = await RepositoryFactory.getUserRepository().findByIdAsService(order.user_id);
+      if (account?.email) candidates.push(account.email.toLowerCase());
+    }
+
+    return candidates.includes(normalisedEmail) ? order : null;
+  }
+
   static async getUserOrders(userId: string): Promise<Order[]> {
     const repo = RepositoryFactory.getOrderRepository();
     return await repo.findByUserId(userId);

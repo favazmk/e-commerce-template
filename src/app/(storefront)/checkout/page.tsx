@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { formatPrice } from "@/lib/config/store.config";
 import { useStoreFeatures } from "@/features/settings/StoreFeaturesContext";
 import { ProductImage } from "@/components/storefront/ProductImage";
+import { AnalyticsService } from "@/services/analytics.service";
 
 declare global {
   interface Window {
@@ -72,6 +73,28 @@ export default function CheckoutPage() {
       setShippingMethodId(shippingMethods[0].id);
     }
   }, [shippingMethodId, shippingMethods, setShippingMethodId]);
+
+  // begin_checkout marks the top of the conversion funnel Google Ads optimises
+  // against. Guarded with a ref because the cart recalculates whenever the
+  // shipping method changes, which would otherwise fire it repeatedly.
+  const beginCheckoutReported = useRef(false);
+  useEffect(() => {
+    if (beginCheckoutReported.current || !calculatedCart || calculatedCart.items.length === 0) {
+      return;
+    }
+    beginCheckoutReported.current = true;
+    AnalyticsService.track("begin_checkout", {
+      currency: calculatedCart.currency,
+      value: calculatedCart.total,
+      coupon: calculatedCart.discount.code,
+      items: calculatedCart.items.map((item) => ({
+        item_id: item.productId,
+        item_name: item.name,
+        price: item.unitPrice,
+        quantity: item.quantity,
+      })),
+    });
+  }, [calculatedCart]);
 
   if (!calculatedCart || calculatedCart.items.length === 0) {
     return (

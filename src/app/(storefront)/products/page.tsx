@@ -1,10 +1,14 @@
 import React from "react";
 import Link from "next/link";
+import type { Metadata } from "next";
+import { ChevronRight } from "lucide-react";
 import { CategoryService } from "@/services/category.service";
 import { ProductService } from "@/services/product.service";
-import { ProductCard } from "@/components/storefront/ProductCard";
-import { EmptyState } from "@/components/ui/empty-state";
-import { SlidersHorizontal, ShoppingBag } from "lucide-react";
+import { CatalogListing, derivePriceBands } from "@/components/storefront/CatalogListing";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { breadcrumbJsonLd, itemListJsonLd } from "@/lib/seo/structured-data";
+import { canonicalUrl } from "@/lib/seo/site";
+import { getStoreDisplayName } from "@/lib/config/store.config";
 
 export interface ProductsPageProps {
   searchParams: Promise<{
@@ -19,202 +23,122 @@ export interface ProductsPageProps {
   }>;
 }
 
+export async function generateMetadata({ searchParams }: ProductsPageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const storeName = getStoreDisplayName();
+
+  if (params.q) {
+    return {
+      title: `Search: ${params.q}`,
+      // Search-result pages are near-infinite and thin; indexing them wastes
+      // crawl budget and risks a "thin content" penalty.
+      robots: { index: false, follow: true },
+    };
+  }
+
+  const filtered = Boolean(
+    params.category || params.brand || params.minPrice || params.maxPrice || params.inStock
+  );
+
+  return {
+    title: "Shop all products",
+    description: `Browse the full ${storeName} collection — new arrivals, best sellers and current offers.`,
+    // Every faceted variant points back at the clean listing, so ranking
+    // signals consolidate on one URL instead of splitting across thousands.
+    alternates: { canonical: canonicalUrl("/products") },
+    robots: filtered ? { index: false, follow: true } : undefined,
+  };
+}
+
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const params = await searchParams;
-  const categorySlug = params.category;
-  const searchQuery = params.q;
+
+  const page = Math.max(1, Number(params.page) || 1);
   const minPrice = params.minPrice ? Number(params.minPrice) : undefined;
   const maxPrice = params.maxPrice ? Number(params.maxPrice) : undefined;
-  const brand = params.brand;
-  const inStockOnly = params.inStock === "true";
-  const sortBy = (params.sort as any) || "newest";
-  const page = params.page ? Number(params.page) : 1;
+  const sortBy = (params.sort as never) || "featured";
 
-  const categories = await CategoryService.getCategories(true);
-  const currentCategory = categorySlug
-    ? categories.find((c) => c.slug === categorySlug)
-    : null;
+  const [categories, result] = await Promise.all([
+    CategoryService.getCategories(true),
+    ProductService.getProducts({
+      categorySlug: params.category,
+      searchQuery: params.q,
+      minPrice: Number.isFinite(minPrice) ? minPrice : undefined,
+      maxPrice: Number.isFinite(maxPrice) ? maxPrice : undefined,
+      brand: params.brand,
+      inStockOnly: params.inStock === "true",
+      sortBy,
+      page,
+      limit: 12,
+    }),
+  ]);
 
-  const { items: products, total, totalPages } = await ProductService.getProducts({
-    categorySlug,
-    searchQuery,
-    minPrice,
-    maxPrice,
-    brand,
-    inStockOnly,
-    sortBy,
-    page,
-    limit: 12,
-  });
+  // Facet values come from the catalog itself, so a store selling anything at
+  // all gets sensible filters without configuration.
+  const facetSource = await ProductService.getProducts({ limit: 500 });
+  const priceBands = derivePriceBands(facetSource.items.map((product) => product.price));
+  const brands = [
+    ...new Set(
+      facetSource.items
+        .map((product) => product.brand)
+        .filter((brand): brand is string => Boolean(brand && brand.trim()))
+    ),
+  ].sort();
+
+  const heading = params.q ? `Results for “${params.q}”` : "All products";
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-      {/* Page Header & Breadcrumb */}
-      <div className="mb-10">
-        <nav className="flex text-xs text-slate-500 mb-3 space-x-2">
-          <Link href="/" className="hover:text-slate-900 transition-colors">
-            Home
-          </Link>
-          <span>/</span>
-          <Link href="/products" className="hover:text-slate-900 transition-colors">
-            Collections
-          </Link>
-          {currentCategory && (
-            <>
-              <span>/</span>
-              <span className="text-slate-900 font-semibold">{currentCategory.name}</span>
-            </>
-          )}
-        </nav>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+      <JsonLd
+        data={[
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Products", path: "/products" },
+          ]),
+          itemListJsonLd(result.items, heading),
+        ]}
+      />
 
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 pb-6">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold font-heading text-slate-900">
-              {currentCategory ? currentCategory.name : searchQuery ? `Search: "${searchQuery}"` : "All Collections"}
-            </h1>
-            <p className="mt-1 text-sm text-slate-500 max-w-xl">
-              {currentCategory
-                ? currentCategory.description
-                : "Discover our comprehensive gallery of artisanal garments, footwear, and curated lifestyle essentials."}
-            </p>
-          </div>
+      <nav aria-label="Breadcrumb" className="mb-5">
+        <ol className="flex items-center gap-1 text-xs text-slate-500">
+          <li>
+            <Link href="/" className="transition-colors hover:text-slate-900">
+              Home
+            </Link>
+          </li>
+          <ChevronRight className="h-3 w-3 text-slate-300" aria-hidden="true" />
+          <li className="font-semibold text-slate-900">Products</li>
+        </ol>
+      </nav>
 
-          <div className="text-xs text-slate-400 font-medium">
-            Showing <span className="text-slate-900 font-bold">{products.length}</span> of {total} products
-          </div>
-        </div>
-      </div>
+      <header className="mb-8 border-b border-slate-100 pb-6">
+        <h1 className="font-heading text-2xl font-bold text-slate-900 sm:text-4xl">{heading}</h1>
+        <p className="mt-1.5 max-w-2xl text-sm text-slate-500">
+          {params.q
+            ? `${result.total} ${result.total === 1 ? "match" : "matches"} found.`
+            : "Browse the full range. Filter by category, price or brand to narrow it down."}
+        </p>
+      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Desktop Sidebar Filters */}
-        <div className="hidden lg:block space-y-8">
-          {/* Categories List */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-4">
-              Categories
-            </h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/products"
-                  className={`block py-1.5 transition-colors ${
-                    !categorySlug ? "font-bold text-emerald-600" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  All Products
-                </Link>
-              </li>
-              {categories.map((cat) => (
-                <li key={cat.id}>
-                  <Link
-                    href={`/products?category=${cat.slug}`}
-                    className={`block py-1.5 transition-colors ${
-                      categorySlug === cat.slug
-                        ? "font-bold text-emerald-600"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    {cat.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Price Filters */}
-          <div className="border-t border-slate-100 pt-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-4">
-              Price Range
-            </h3>
-            <div className="space-y-2 text-sm">
-              <Link
-                href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}maxPrice=200`}
-                className="block text-slate-600 hover:text-slate-900 py-1"
-              >
-                Under $200
-              </Link>
-              <Link
-                href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}minPrice=200&maxPrice=400`}
-                className="block text-slate-600 hover:text-slate-900 py-1"
-              >
-                $200 – $400
-              </Link>
-              <Link
-                href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}minPrice=400`}
-                className="block text-slate-600 hover:text-slate-900 py-1"
-              >
-                $400 & Above
-              </Link>
-            </div>
-          </div>
-
-          {/* Sort Presets */}
-          <div className="border-t border-slate-100 pt-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-4">
-              Sort Order
-            </h3>
-            <div className="space-y-2 text-sm">
-              {[
-                { label: "Newest Releases", value: "newest" },
-                { label: "Price: Low to High", value: "price_asc" },
-                { label: "Price: High to Low", value: "price_desc" },
-                { label: "Featured Picks", value: "featured" },
-              ].map((s) => (
-                <Link
-                  key={s.value}
-                  href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}sort=${s.value}`}
-                  className={`block py-1 ${
-                    sortBy === s.value ? "font-bold text-emerald-600" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  {s.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Product Grid */}
-        <div className="lg:col-span-3">
-          {products.length === 0 ? (
-            <EmptyState
-              icon={ShoppingBag}
-              title="No products match your criteria"
-              description="Try adjusting your filters or search keywords to discover available items."
-              actionText="Reset Filters"
-              actionHref="/products"
-            />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} variant="luxury" />
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-12 flex items-center justify-center space-x-2 border-t border-slate-100 pt-8">
-              {[...Array(totalPages)].map((_, i) => {
-                const pNum = i + 1;
-                return (
-                  <Link
-                    key={pNum}
-                    href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}page=${pNum}`}
-                    className={`flex h-10 w-10 items-center justify-center rounded-brand text-sm font-semibold transition-colors ${
-                      page === pNum
-                        ? "bg-brand-primary text-white"
-                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                    }`}
-                  >
-                    {pNum}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
+      <CatalogListing
+        products={result.items}
+        total={result.total}
+        totalPages={result.totalPages}
+        categories={categories}
+        basePath="/products"
+        priceBands={priceBands}
+        brands={brands}
+        filters={{
+          category: params.category,
+          q: params.q,
+          minPrice: Number.isFinite(minPrice) ? minPrice : undefined,
+          maxPrice: Number.isFinite(maxPrice) ? maxPrice : undefined,
+          brand: params.brand,
+          inStock: params.inStock === "true",
+          sort: params.sort,
+          page,
+        }}
+      />
     </div>
   );
 }

@@ -8,6 +8,8 @@ import { IUserRepository } from "./interfaces/user.repository.interface";
 import { ISettingsRepository } from "./interfaces/settings.repository.interface";
 import { IReviewRepository } from "./interfaces/review.repository.interface";
 import { IChangeLogRepository } from "./interfaces/changelog.repository.interface";
+import { IMerchandisingRepository } from "./interfaces/merchandising.repository.interface";
+import { IAddressRepository } from "./interfaces/address.repository.interface";
 
 import { SupabaseProductRepository } from "./supabase/product.repository";
 import { SupabaseCategoryRepository } from "./supabase/category.repository";
@@ -19,6 +21,8 @@ import { SupabaseUserRepository } from "./supabase/user.repository";
 import { SupabaseSettingsRepository } from "./supabase/settings.repository";
 import { SupabaseReviewRepository } from "./supabase/review.repository";
 import { SupabaseChangeLogRepository } from "./supabase/changelog.repository";
+import { SupabaseMerchandisingRepository } from "./supabase/merchandising.repository";
+import { SupabaseAddressRepository } from "./supabase/address.repository";
 
 // Currently wired to Supabase implementations.
 // In the future, this can read an env variable to wire to different implementations.
@@ -72,4 +76,12 @@ export class RepositoryFactory {
   static getChangeLogRepository(): IChangeLogRepository {
     return this.overrides.get("ChangeLogRepository") || new SupabaseChangeLogRepository();
   }
+  static getMerchandisingRepository(): IMerchandisingRepository {
+    return this.overrides.get("MerchandisingRepository") || new SupabaseMerchandisingRepository();
+  }
+
+  static getAddressRepository(): IAddressRepository {
+    return this.overrides.get("AddressRepository") || new SupabaseAddressRepository();
+  }
+
 }

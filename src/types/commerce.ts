@@ -38,6 +38,8 @@ export interface CartCalculationResult {
     sku: string;
     image?: string | null;
     unitPrice: number;
+    /** Pre-discount list price (compare-at), when the merchant set one. */
+    listPrice?: number | null;
     quantity: number;
     totalPrice: number;
     attributes?: Record<string, string>;
@@ -45,6 +47,11 @@ export interface CartCalculationResult {
     availableStock: number;
   }[];
   subtotal: number;
+  /**
+   * Subtotal at list prices, so the cart can show what the shopper saved
+   * against the marked price before any coupon is applied.
+   */
+  listSubtotal: number;
   discount: {
     code?: string;
     amount: number;

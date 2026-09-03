@@ -1,23 +1,24 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { securityHeaders } from '@/lib/security/headers'
 
 const ADMIN_ROLES = ['admin', 'super_admin']
 
 /** Baseline hardening headers applied to every response. */
-function applySecurityHeaders(response: NextResponse): NextResponse {
-  response.headers.set('X-Frame-Options', 'SAMEORIGIN')
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('X-DNS-Prefetch-Control', 'off')
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()')
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
+function applySecurityHeaders(response: NextResponse, isApi = false): NextResponse {
+  for (const [name, value] of Object.entries(securityHeaders({ isApi }))) {
+    response.headers.set(name, value)
   }
   return response
 }
 
 function isProtectedApi(pathname: string): boolean {
   return pathname.startsWith('/api/admin')
+}
+
+/** Routes that require any signed-in customer (not necessarily an admin). */
+function isCustomerApi(pathname: string): boolean {
+  return pathname.startsWith('/api/account')
 }
 
 function isProtectedAdminPage(pathname: string): boolean {
@@ -53,6 +54,7 @@ export async function middleware(request: NextRequest) {
   )
 
   const { pathname } = request.nextUrl
+  const isApiRoute = pathname.startsWith('/api')
 
   try {
     // Refresh session if expired - required for Server Components
@@ -64,7 +66,8 @@ export async function middleware(request: NextRequest) {
       if (!user) {
         if (isProtectedApi(pathname)) {
           return applySecurityHeaders(
-            NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+            true
           )
         }
         const loginUrl = new URL('/login', request.url)
@@ -82,11 +85,21 @@ export async function middleware(request: NextRequest) {
       if (!userData || !ADMIN_ROLES.includes(userData.role)) {
         if (isProtectedApi(pathname)) {
           return applySecurityHeaders(
-            NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+            NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
+            true
           )
         }
         return applySecurityHeaders(NextResponse.redirect(new URL('/', request.url)))
       }
+    }
+
+    // Customer API protection. The route handlers guard themselves with
+    // requireUser(); this simply avoids paying for the handler at all.
+    if (isCustomerApi(pathname) && !user) {
+      return applySecurityHeaders(
+        NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+        true
+      )
     }
 
     // Account route protection
@@ -97,14 +110,21 @@ export async function middleware(request: NextRequest) {
         return applySecurityHeaders(NextResponse.redirect(loginUrl))
       }
     }
+
+    // A signed-in customer landing on sign-in or sign-up belongs in their
+    // account, not on a form they no longer need.
+    if (user && (pathname === '/login' || pathname === '/register')) {
+      return applySecurityHeaders(NextResponse.redirect(new URL('/account', request.url)))
+    }
   } catch (error) {
     // Never leak internal error detail (message/stack) to the client, and never
     // fail open on a protected route.
     console.error('[Middleware Error]', error)
 
-    if (isProtectedApi(pathname)) {
+    if (isProtectedApi(pathname) || isCustomerApi(pathname)) {
       return applySecurityHeaders(
-        NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
+        NextResponse.json({ error: 'Service unavailable' }, { status: 503 }),
+        true
       )
     }
     if (isProtectedAdminPage(pathname) || pathname.startsWith('/account')) {
@@ -113,7 +133,7 @@ export async function middleware(request: NextRequest) {
     // Public pages stay reachable if the auth service is briefly unavailable.
   }
 
-  return applySecurityHeaders(supabaseResponse)
+  return applySecurityHeaders(supabaseResponse, isApiRoute)
 }
 
 export const config = {
@@ -123,8 +143,10 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     *
+     * Feed and sitemap routes are excluded too: they are public, cached, and
+     * gain nothing from a session lookup on every crawler request.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|feeds/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

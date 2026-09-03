@@ -98,3 +98,67 @@ describe("Commerce Core: Cart Service", () => {
     expect(p1Item?.quantity).toBe(3); // 2 from guest + 1 from user
   });
 });
+
+/**
+ * List-price tracking.
+ *
+ * The cart shows a "you save X" figure. It has to come from the same
+ * server-side calculation as the amount charged — a saving computed in the
+ * browser from stale product data is a price claim the merchant cannot back up.
+ */
+describe("Commerce Core: Cart list pricing", () => {
+  beforeEach(() => {
+    RepositoryFactory.setOverride("ProductRepository", new MockProductRepository());
+    RepositoryFactory.setOverride("CartRepository", new MockCartRepository());
+    RepositoryFactory.setOverride("CouponRepository", new MockCouponRepository());
+    RepositoryFactory.setOverride("SettingsRepository", new MockSettingsRepository());
+    resetMockData();
+  });
+
+  it("reports the marked-price subtotal alongside the selling subtotal", async () => {
+    const product = mockData.products[0];
+    product.stock_quantity = 100;
+    product.compare_at_price = product.price + 100;
+    if (product.variants?.[0]) {
+      product.variants[0].compare_at_price = product.variants[0].price + 100;
+    }
+
+    const result = await CartService.calculateCart([
+      { productId: product.id, variantId: product.variants?.[0]?.id, quantity: 2 },
+    ]);
+
+    expect(result.listSubtotal).toBe(result.subtotal + 200);
+    expect(result.items[0].listPrice).toBe(result.items[0].unitPrice + 100);
+  });
+
+  it("falls back to the selling price when no marked price is set", async () => {
+    const product = mockData.products[0];
+    product.stock_quantity = 100;
+    product.compare_at_price = null;
+    if (product.variants?.[0]) product.variants[0].compare_at_price = null;
+
+    const result = await CartService.calculateCart([
+      { productId: product.id, variantId: product.variants?.[0]?.id, quantity: 1 },
+    ]);
+
+    // No fabricated "was" price, so no saving is implied.
+    expect(result.listSubtotal).toBe(result.subtotal);
+  });
+
+  it("never reports a negative saving when the marked price is below the selling price", async () => {
+    // Bad catalog data, not a markup. Clamping keeps the UI from showing
+    // "You save -50", which reads as a bug to the customer.
+    const product = mockData.products[0];
+    product.stock_quantity = 100;
+    product.compare_at_price = product.price - 50;
+    if (product.variants?.[0]) {
+      product.variants[0].compare_at_price = product.variants[0].price - 50;
+    }
+
+    const result = await CartService.calculateCart([
+      { productId: product.id, variantId: product.variants?.[0]?.id, quantity: 1 },
+    ]);
+
+    expect(result.listSubtotal).toBeGreaterThanOrEqual(result.subtotal);
+  });
+});

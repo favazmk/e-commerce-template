@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { CartCalculationResult } from "@/types/commerce";
+import { AnalyticsService, type AnalyticsItem } from "@/services/analytics.service";
 
 export interface CartItemKey {
   productId: string;
@@ -20,7 +21,17 @@ interface CartContextType {
   setShippingMethodId: (id: string) => void;
   openMiniCart: () => void;
   closeMiniCart: () => void;
-  addItem: (productId: string, variantId?: string | null, quantity?: number) => void;
+  addItem: (
+    productId: string,
+    variantId?: string | null,
+    quantity?: number,
+    /**
+     * Optional catalog detail for analytics. The cart itself only tracks ids
+     * and quantities, so callers that already hold the product pass it here
+     * rather than making the cart fetch it back.
+     */
+    analyticsItem?: AnalyticsItem
+  ) => void;
   updateQuantity: (productId: string, variantId: string | null | undefined, quantity: number) => void;
   removeItem: (productId: string, variantId?: string | null) => void;
   clearCart: () => void;
@@ -100,7 +111,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     refreshCart();
   }, [items, couponCode, shippingMethodId, isInitialized, refreshCart]);
 
-  const addItem = (productId: string, variantId?: string | null, quantity = 1) => {
+  const addItem = (
+    productId: string,
+    variantId?: string | null,
+    quantity = 1,
+    analyticsItem?: AnalyticsItem
+  ) => {
+    const item: AnalyticsItem =
+      analyticsItem ?? { item_id: productId, item_name: productId, price: 0, quantity };
+    AnalyticsService.track("add_to_cart", {
+      currency: calculatedCart?.currency,
+      value: item.price * quantity,
+      items: [{ ...item, quantity }],
+    });
+
     setItems((prev) => {
       const existingIndex = prev.findIndex(
         (i) => i.productId === productId && (i.variantId || null) === (variantId || null)
@@ -134,6 +158,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeItem = (productId: string, variantId?: string | null) => {
+    const removed = calculatedCart?.items.find(
+      (entry) => entry.productId === productId && (entry.variantId || null) === (variantId || null)
+    );
+    if (removed) {
+      AnalyticsService.track("remove_from_cart", {
+        currency: calculatedCart?.currency,
+        value: removed.totalPrice,
+        items: [
+          {
+            item_id: removed.productId,
+            item_name: removed.name,
+            price: removed.unitPrice,
+            quantity: removed.quantity,
+          },
+        ],
+      });
+    }
+
     setItems((prev) =>
       prev.filter(
         (item) =>

@@ -3,16 +3,21 @@ import "./globals.css";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 import { CartProvider } from "@/features/cart/CartContext";
 import { WishlistProvider } from "@/features/wishlist/WishlistContext";
+import { ConsentProvider } from "@/features/consent/ConsentContext";
 import { MiniCart } from "@/components/storefront/MiniCart";
-import { getSiteUrl, getStoreDisplayName, getStoreTagline } from "@/lib/config/store.config";
+import { ConsentDefaults } from "@/components/storefront/Analytics/ConsentDefaults";
+import { getStoreDisplayName, getStoreTagline } from "@/lib/config/store.config";
+import {
+  absoluteUrl,
+  getStoreDescription,
+  getVerificationTokens,
+  isIndexable,
+} from "@/lib/seo/site";
 
 const storeName = getStoreDisplayName();
 const storeTagline = getStoreTagline();
-const siteUrl = getSiteUrl();
-const description =
-  process.env.NEXT_PUBLIC_STORE_DESCRIPTION ||
-  storeTagline ||
-  `Shop the latest products at ${storeName}.`;
+const description = getStoreDescription();
+const verification = getVerificationTokens();
 
 /**
  * Metadata is derived from configuration, not hard-coded. A client name or
@@ -20,30 +25,59 @@ const description =
  * (AGENTS.md sections 9 and 25).
  */
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(absoluteUrl("/")),
   title: {
     default: storeTagline ? `${storeName} | ${storeTagline}` : storeName,
     template: `%s | ${storeName}`,
   },
   description,
+  applicationName: storeName,
+  // Home page canonical; every route that needs its own overrides this.
+  alternates: { canonical: "/" },
+  manifest: "/manifest.webmanifest",
   openGraph: {
     title: storeName,
     description,
-    url: siteUrl,
+    url: absoluteUrl("/"),
     siteName: storeName,
     locale: process.env.NEXT_PUBLIC_LOCALE || "en_US",
     type: "website",
   },
-  robots: {
-    index: process.env.NEXT_PUBLIC_APP_MODE !== "demo",
-    follow: process.env.NEXT_PUBLIC_APP_MODE !== "demo",
+  twitter: {
+    card: "summary_large_image",
+    title: storeName,
+    description,
   },
+  // Preview and demo deployments are excluded from search entirely, so a
+  // staging copy can never compete with the live store.
+  robots: isIndexable()
+    ? {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+          "max-video-preview": -1,
+        },
+      }
+    : { index: false, follow: false },
+  verification: {
+    google: verification.google,
+    other: {
+      ...(verification.bing ? { "msvalidate.01": verification.bing } : {}),
+      ...(verification.pinterest ? { "p:domain_verify": verification.pinterest } : {}),
+    },
+  },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: process.env.NEXT_PUBLIC_BRAND_PRIMARY_COLOR || "#0f172a",
 };
 
 export default function RootLayout({
@@ -53,6 +87,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang={process.env.NEXT_PUBLIC_HTML_LANG || "en"} className="scroll-smooth">
+      <head>
+        {/* Warm up the font connection before the CSS import is parsed. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* Must be the first script on the page: see ConsentDefaults. */}
+        <ConsentDefaults />
+      </head>
       <body className="min-h-screen bg-brand-surface text-slate-900 antialiased">
         <a
           href="#main-content"
@@ -61,12 +102,14 @@ export default function RootLayout({
           Skip to content
         </a>
         <ThemeProvider>
-          <CartProvider>
-            <WishlistProvider>
-              {children}
-              <MiniCart />
-            </WishlistProvider>
-          </CartProvider>
+          <ConsentProvider>
+            <CartProvider>
+              <WishlistProvider>
+                {children}
+                <MiniCart />
+              </WishlistProvider>
+            </CartProvider>
+          </ConsentProvider>
         </ThemeProvider>
       </body>
     </html>

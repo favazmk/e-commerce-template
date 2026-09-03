@@ -1,0 +1,11 @@
+{
+  "//": "Copy to .mcp.json and replace YOUR_PROJECT_REF with this store's Supabase project reference (Supabase dashboard -> Project Settings -> General -> Reference ID). The real .mcp.json is gitignored because the ref is client-specific.",
+  "//auth": "After copying, authenticate in a regular terminal (not an IDE extension): run `claude`, then `/mcp`, select `supabase`, then Authenticate.",
+  "//scope": "The `features` list below grants an agent session read/write access to this project. Narrow it for a production store: dropping `database` and `branching` leaves docs and debugging without write access.",
+  "mcpServers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=YOUR_PROJECT_REF&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage"
+    }
+  }
+}

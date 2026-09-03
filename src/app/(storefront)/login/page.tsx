@@ -1,135 +1,156 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { Suspense, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { AlertCircle, ArrowRight, CheckCircle2, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AuthShell } from "@/components/storefront/auth/AuthShell";
+import { PasswordField } from "@/components/storefront/auth/PasswordField";
+import { safeRedirectPath } from "@/lib/security/safe-redirect";
+
+/**
+ * Map a Supabase auth error to copy that is useful without being an oracle.
+ *
+ * "No account exists for this email" would let anyone enumerate the customer
+ * list one address at a time, so a wrong email and a wrong password produce the
+ * same message.
+ */
+function friendlyAuthError(message: string): string {
+  const text = message.toLowerCase();
+  if (text.includes("invalid login credentials")) {
+    return "That email and password combination does not match an account.";
+  }
+  if (text.includes("email not confirmed")) {
+    return "Please confirm your email address first — check your inbox for the link we sent.";
+  }
+  if (text.includes("rate limit") || text.includes("too many")) {
+    return "Too many attempts. Please wait a few minutes before trying again.";
+  }
+  return "We could not sign you in. Please try again.";
+}
 
 function LoginForm() {
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(searchParams.get("error") || "");
+  const [notice, setNotice] = useState(searchParams.get("notice") || "");
+  const [loading, setLoading] = useState(false);
+
+  // Never hand a caller-supplied destination straight to the browser.
+  const redirectTo = safeRedirectPath(searchParams.get("redirectTo"), "/account");
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError("");
+    setNotice("");
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        const { error: signUpError, data } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { name },
-          },
-        });
-        if (signUpError) throw signUpError;
-        
-        // Database trigger handles the 'users' table insert automatically.
-        
-        // Auto sign in right after for local dev
-        await supabase.auth.signInWithPassword({ email, password });
-        
-      } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (signInError) throw signInError;
-      }
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (signInError) throw signInError;
 
-      // Merge cart if necessary by pinging API
-      await fetch('/api/cart/merge', { method: 'POST' }).catch(() => {});
-
-      const redirectTo = searchParams.get("redirectTo") || "/account";
+      // A full navigation (not router.push) so every Server Component re-renders
+      // with the new session cookie attached.
       window.location.href = redirectTo;
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
-    } finally {
+    } catch (caught) {
+      setError(friendlyAuthError((caught as Error)?.message || ""));
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-20">
-      <h1 className="text-3xl font-bold font-heading mb-6">
-        {isSignUp ? "Create an account" : "Sign In"}
-      </h1>
-      
+    <AuthShell
+      eyebrow="Welcome back"
+      title="Sign in to your account"
+      subtitle="Track orders, save addresses and check out faster."
+      footer={
+        <>
+          New here?{" "}
+          <Link
+            href={`/register?redirectTo=${encodeURIComponent(redirectTo)}`}
+            className="font-semibold text-emerald-600 hover:underline"
+          >
+            Create an account
+          </Link>
+        </>
+      }
+    >
       {error && (
-        <div className="bg-red-50 text-red-600 p-3 mb-4 rounded border border-red-200 text-sm">
-          {error}
+        <div
+          role="alert"
+          className="mb-5 flex gap-2 rounded-brand border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"
+        >
+          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {isSignUp && (
-          <div>
-            <label className="block text-sm font-medium mb-1">Name</label>
-            <Input
-              name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Full Name"
-              required={isSignUp}
-            />
-          </div>
-        )}
-        
-        <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <Input
-            type="email"
-            name="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            required
-          />
+      {notice && (
+        <div
+          role="status"
+          className="mb-5 flex gap-2 rounded-brand border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"
+        >
+          <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <span>{notice}</span>
         </div>
+      )}
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Password</label>
-          <Input
-            type="password"
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <Input
+          type="email"
+          name="email"
+          label="Email address"
+          autoComplete="email"
+          inputMode="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="you@example.com"
+          leftIcon={<Mail className="h-4 w-4" />}
+          required
+        />
+
+        <div className="space-y-2">
+          <PasswordField
             name="password"
+            label="Password"
+            autoComplete="current-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Your password"
             required
           />
+          <div className="text-right">
+            <Link
+              href="/forgot-password"
+              className="text-xs font-semibold text-slate-500 hover:text-emerald-600 hover:underline"
+            >
+              Forgot your password?
+            </Link>
+          </div>
         </div>
 
-        <Button type="submit" disabled={loading} className="w-full">
-          {loading ? "Please wait..." : isSignUp ? "Sign Up" : "Sign In"}
+        <Button type="submit" size="lg" isLoading={loading} className="w-full">
+          Sign in <ArrowRight className="h-4 w-4" />
         </Button>
       </form>
-
-      <div className="mt-6 text-center">
-        <button
-          onClick={() => setIsSignUp(!isSignUp)}
-          className="text-sm text-emerald-600 hover:underline"
-        >
-          {isSignUp
-            ? "Already have an account? Sign In"
-            : "Need an account? Create an account"}
-        </button>
-      </div>
-    </div>
+    </AuthShell>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="max-w-md mx-auto px-4 py-20 text-center">Loading...</div>}>
+    <Suspense
+      fallback={<div className="px-4 py-24 text-center text-sm text-slate-500">Loading…</div>}
+    >
       <LoginForm />
     </Suspense>
   );
