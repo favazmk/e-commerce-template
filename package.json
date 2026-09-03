@@ -19,7 +19,8 @@
     "db:migrate": "node scripts/apply-migration.mjs",
     "db:query": "node scripts/db-query.mjs",
     "verify:admin": "node scripts/verify-admin-crud.mjs",
-    "verify:storage": "node scripts/verify-storage.mjs"
+    "verify:storage": "node scripts/verify-storage.mjs",
+    "verify:security": "node scripts/verify-security.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

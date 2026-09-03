@@ -85,8 +85,27 @@ owned by somebody else), stops an approved review being silently rewritten after
 narrows `store_settings` from `USING (true)` to a fixed key allowlist, and ties `product_images`
 visibility to the parent product so draft imagery stops leaking.
 
-Verify the deployed database actually matches this — a migration file proves nothing until it is
-applied:
+### Verify the deployed database, do not assume it
+
+A migration file protects nothing until it has been applied. The most dangerous failure mode of this
+template is a client store deployed from a checkout where `supabase db push` was never run: the admin
+panel looks right, the storefront works, the local tests pass, and any registered customer can make
+themselves an administrator.
+
+One command settles it:
+
+```bash
+npm run verify:security
+```
+
+It signs in as a throwaway customer and *performs the attacks* against whatever database is in
+`.env.local` — self-promotion to `super_admin`, writing an address owned by somebody else, reading
+payments and coupons with the public browser key — then exits non-zero if any of them succeed. It
+cleans up the probe user afterwards and never touches real customer data.
+
+Run it for **every client database**, not just this one, and again after any migration.
+
+The same assertions run as part of the test suite:
 
 ```bash
 npx vitest run tests/integration/rls-hardening.test.ts

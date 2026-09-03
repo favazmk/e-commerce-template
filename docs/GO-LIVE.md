@@ -33,13 +33,29 @@ Work top to bottom. Nothing here is optional for a store taking real money.
       ```bash
       node scripts/apply-migration.mjs supabase/migrations/<file>.sql
       ```
-- [ ] `20260105000000_privilege_escalation_fix.sql` is applied in particular.
-      Without it, **any registered customer can make themselves an
-      administrator from the browser console.** Verify with:
+- [ ] **Run the security verifier and get a clean result.** This is the single
+      most important check on this page:
       ```bash
-      npx vitest run tests/integration/privilege-escalation.test.ts
+      npm run verify:security
       ```
-      All seven tests must pass.
+      It signs in as a throwaway customer and *actually performs the attacks*
+      against whatever database is in your `.env.local`, then tells you what got
+      through. It cleans up after itself and never touches real customer data.
+
+      A migration file proves nothing until it has been applied. If
+      `20260105000000_privilege_escalation_fix.sql` has not run, **any registered
+      customer can make themselves an administrator from the browser console** —
+      and nothing else in the app will look wrong. The verifier is what catches
+      that.
+
+      If it reports CRITICAL, fix it before doing anything else:
+      ```bash
+      npm run db:migrate supabase/migrations/20260105000000_privilege_escalation_fix.sql
+      ```
+
+      **Run this again against every client store you deploy**, not just this
+      one. Each client has its own database, and each one needs its own migration
+      run.
 - [ ] You have created your own admin user and set its role:
       ```sql
       UPDATE users SET role = 'super_admin' WHERE email = 'you@yourdomain.com';
@@ -159,6 +175,9 @@ npm run build
 ```bash
 npx playwright test
 ```
+```bash
+npm run verify:security
+```
 
 Then, on the deployed site, walk the whole path yourself on a phone:
 
@@ -179,4 +198,5 @@ Then, on the deployed site, walk the whole path yourself on a phone:
 | Week 1 | Confirm the first real order's confirmation email actually arrived |
 | Monthly | Review `back_in_stock_requests` — those are customers waiting to give you money |
 | Monthly | Rotate any credential that has been shared with a contractor |
-| Quarterly | Re-run `npx vitest run tests/integration/` against production credentials |
+| Quarterly | Re-run `npm run verify:security` against production credentials |
+| After any migration | Re-run `npm run verify:security` — a schema change can silently undo a policy |

@@ -161,6 +161,17 @@ npm run build
 ```bash
 npx playwright test
 ```
+```bash
+npm run verify:security
+```
+
+`npm run verify:security` is not a unit test — it signs in as a throwaway
+customer and performs real privilege-escalation and data-exfiltration attacks
+against the database in your `.env.local`, then exits non-zero if any of them
+succeed. A migration file protects nothing until it has been applied, and a
+store with an unapplied security migration looks completely normal until
+somebody exploits it. Run it against **every** client database, not just this
+one.
 
 `npm run test` covers the unit and integration suites (integration tests hit a real database and are
 included in the default run). The E2E suite builds the app with `APP_MODE=demo` so it can complete a
