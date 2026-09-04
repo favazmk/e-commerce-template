@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateCatalog } from "@/lib/cache/revalidate";
 import { InventoryService } from "@/services/inventory.service";
 import { ProductService } from "@/services/product.service";
 import { requireAdmin } from "@/lib/auth/session";
@@ -59,6 +60,12 @@ export async function POST(request: NextRequest) {
         after: { productId, variantId: variantId || null, quantity: target },
         actor: auth.user,
       });
+    }
+
+    if (adjusted) {
+      // Stock level drives availability in the Google and Meta feeds and the
+      // "only N left" badge, so a restock has to reach the cached pages.
+      revalidateCatalog();
     }
 
     return NextResponse.json({ success: adjusted });

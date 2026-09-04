@@ -38,24 +38,24 @@ export function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label="Cookie preferences"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/98 p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-5"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-brand-border bg-white/98 p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-5"
     >
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
           <div className="flex min-w-0 flex-1 gap-3">
-            <Cookie className="mt-0.5 hidden h-5 w-5 flex-shrink-0 text-slate-400 sm:block" />
+            <Cookie className="mt-0.5 hidden h-5 w-5 flex-shrink-0 text-brand-faint-ink sm:block" />
             <div className="min-w-0">
-              <h2 className="text-sm font-bold text-slate-900">We use cookies</h2>
-              <p className="mt-1 text-xs leading-relaxed text-slate-600">
+              <h2 className="text-sm font-bold text-brand-ink">We use cookies</h2>
+              <p className="mt-1 text-xs leading-relaxed text-brand-muted-ink">
                 Some are needed to run the store — your bag and your sign-in will not work without
                 them. Others help us understand what is useful and show you relevant ads. You choose.{" "}
-                <Link href="/privacy-policy" className="underline hover:text-slate-900">
+                <Link href="/privacy-policy" className="underline hover:text-brand-ink">
                   Privacy policy
                 </Link>
               </p>
 
               {showDetail && (
-                <fieldset className="mt-4 space-y-2.5 rounded-brand border border-slate-200 bg-slate-50 p-3">
+                <fieldset className="mt-4 space-y-2.5 rounded-brand border border-brand-border bg-brand-subtle p-3">
                   <legend className="sr-only">Cookie categories</legend>
 
                   <label className="flex items-start gap-2.5 text-xs">
@@ -63,11 +63,11 @@ export function CookieConsent() {
                       type="checkbox"
                       checked
                       disabled
-                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-400"
+                      className="mt-0.5 h-4 w-4 rounded border-brand-border-strong text-brand-faint-ink"
                     />
                     <span>
-                      <span className="font-semibold text-slate-900">Strictly necessary</span>
-                      <span className="block text-slate-500">
+                      <span className="font-semibold text-brand-ink">Strictly necessary</span>
+                      <span className="block text-brand-muted-ink">
                         Shopping bag, sign-in session, fraud prevention. Always on.
                       </span>
                     </span>
@@ -78,11 +78,11 @@ export function CookieConsent() {
                       type="checkbox"
                       checked={analytics}
                       onChange={(event) => setAnalytics(event.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      className="mt-0.5 h-4 w-4 rounded border-brand-border-strong text-brand-primary focus:ring-brand-primary"
                     />
                     <span>
-                      <span className="font-semibold text-slate-900">Analytics</span>
-                      <span className="block text-slate-500">
+                      <span className="font-semibold text-brand-ink">Analytics</span>
+                      <span className="block text-brand-muted-ink">
                         Which pages are used and where checkout goes wrong. Aggregated.
                       </span>
                     </span>
@@ -93,11 +93,11 @@ export function CookieConsent() {
                       type="checkbox"
                       checked={marketing}
                       onChange={(event) => setMarketing(event.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      className="mt-0.5 h-4 w-4 rounded border-brand-border-strong text-brand-primary focus:ring-brand-primary"
                     />
                     <span>
-                      <span className="font-semibold text-slate-900">Advertising</span>
-                      <span className="block text-slate-500">
+                      <span className="font-semibold text-brand-ink">Advertising</span>
+                      <span className="block text-brand-muted-ink">
                         Lets us measure ads and show you products you looked at.
                       </span>
                     </span>

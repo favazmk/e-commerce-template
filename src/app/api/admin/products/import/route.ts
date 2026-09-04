@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { revalidateCatalog } from "@/lib/cache/revalidate";
 import { requireAdmin } from "@/lib/auth/session";
 import { ProductImportService } from "@/services/product-import.service";
 import { ChangeLogService } from "@/services/changelog.service";
@@ -159,8 +160,10 @@ export async function PUT(request: NextRequest) {
       actor: auth.user,
     });
 
+    // A bulk import touches many categories at once, so invalidate the whole
+    // catalog rather than trying to enumerate what changed.
+    revalidateCatalog();
     revalidatePath("/admin/products");
-    revalidatePath("/products");
 
     return NextResponse.json({ success: true, data: result });
   } catch (error: any) {

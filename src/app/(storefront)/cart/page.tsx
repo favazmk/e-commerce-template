@@ -104,10 +104,10 @@ export default function CartPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="font-heading text-2xl font-bold text-slate-900 sm:text-3xl">
+        <h1 className="font-heading text-2xl font-bold text-brand-ink sm:text-3xl">
           Shopping bag
         </h1>
-        <span className="text-sm text-slate-500">
+        <span className="text-sm text-brand-muted-ink">
           {itemCount} item{itemCount === 1 ? "" : "s"}
         </span>
       </div>
@@ -137,7 +137,7 @@ export default function CartPage() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
         {/* Items */}
         <div className="space-y-6 lg:col-span-8">
-          <ul className="divide-y divide-slate-100 overflow-hidden rounded-brand-xl border border-slate-200 bg-white shadow-subtle">
+          <ul className="divide-y divide-brand-border overflow-hidden rounded-brand-xl border border-brand-border bg-white shadow-subtle">
             {calculatedCart.items.map((item) => {
               const hasListSaving = item.listPrice != null && item.listPrice > item.unitPrice;
 
@@ -148,7 +148,7 @@ export default function CartPage() {
                 >
                   <Link
                     href={`/products/${item.productId}`}
-                    className="relative h-24 w-20 flex-shrink-0 overflow-hidden rounded-brand border border-slate-100 bg-slate-50 sm:h-28 sm:w-24"
+                    className="relative h-24 w-20 flex-shrink-0 overflow-hidden rounded-brand border border-brand-border bg-brand-subtle sm:h-28 sm:w-24"
                   >
                     <ProductImage
                       src={item.image}
@@ -162,19 +162,19 @@ export default function CartPage() {
                   <div className="flex min-w-0 flex-1 flex-col">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <h2 className="text-sm font-semibold leading-snug text-slate-900">
+                        <h2 className="text-sm font-semibold leading-snug text-brand-ink">
                           <Link href={`/products/${item.productId}`} className="hover:underline">
                             {item.name}
                           </Link>
                         </h2>
-                        <p className="mt-0.5 text-[11px] text-slate-400">SKU {item.sku}</p>
+                        <p className="mt-0.5 text-[11px] text-brand-faint-ink">SKU {item.sku}</p>
 
                         {item.attributes && Object.keys(item.attributes).length > 0 && (
                           <div className="mt-1.5 flex flex-wrap gap-1.5">
                             {Object.entries(item.attributes).map(([key, value]) => (
                               <span
                                 key={key}
-                                className="rounded-sm bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600"
+                                className="rounded-sm bg-brand-subtle px-2 py-0.5 text-[11px] font-medium text-brand-muted-ink"
                               >
                                 {key}: {value}
                               </span>
@@ -191,7 +191,7 @@ export default function CartPage() {
 
                       <button
                         onClick={() => removeItem(item.productId, item.variantId)}
-                        className="flex-shrink-0 p-1 text-slate-300 transition-colors hover:text-rose-500"
+                        className="flex-shrink-0 p-1 text-brand-faint-ink transition-colors hover:text-rose-500"
                         aria-label={`Remove ${item.name} from bag`}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -199,17 +199,17 @@ export default function CartPage() {
                     </div>
 
                     <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-3">
-                      <div className="flex items-center rounded-brand border border-slate-200 bg-white">
+                      <div className="flex items-center rounded-brand border border-brand-border bg-white">
                         <button
                           onClick={() =>
                             updateQuantity(item.productId, item.variantId, item.quantity - 1)
                           }
-                          className="p-2 text-slate-500 transition-colors hover:text-slate-900"
+                          className="p-2 text-brand-muted-ink transition-colors hover:text-brand-ink"
                           aria-label={`Decrease quantity of ${item.name}`}
                         >
                           <Minus className="h-3.5 w-3.5" />
                         </button>
-                        <span className="w-9 text-center text-xs font-bold text-slate-900">
+                        <span className="w-9 text-center text-xs font-bold text-brand-ink">
                           {item.quantity}
                         </span>
                         <button
@@ -217,7 +217,7 @@ export default function CartPage() {
                             updateQuantity(item.productId, item.variantId, item.quantity + 1)
                           }
                           disabled={item.quantity >= item.availableStock}
-                          className="p-2 text-slate-500 transition-colors hover:text-slate-900 disabled:opacity-40"
+                          className="p-2 text-brand-muted-ink transition-colors hover:text-brand-ink disabled:opacity-40"
                           aria-label={`Increase quantity of ${item.name}`}
                         >
                           <Plus className="h-3.5 w-3.5" />
@@ -225,11 +225,11 @@ export default function CartPage() {
                       </div>
 
                       <div className="text-right">
-                        <p className="text-base font-bold text-slate-900">
+                        <p className="text-base font-bold text-brand-ink">
                           {formatPrice(item.totalPrice)}
                         </p>
                         {hasListSaving && (
-                          <p className="text-[11px] text-slate-400 line-through">
+                          <p className="text-[11px] text-brand-faint-ink line-through">
                             {formatPrice(item.listPrice! * item.quantity)}
                           </p>
                         )}
@@ -242,10 +242,10 @@ export default function CartPage() {
           </ul>
 
           <div className="flex items-center justify-between text-xs">
-            <Link href="/products" className="font-semibold text-emerald-600 hover:underline">
+            <Link href="/products" className="font-semibold text-brand-primary hover:underline">
               ← Continue shopping
             </Link>
-            <button onClick={clearCart} className="text-slate-400 hover:text-rose-600">
+            <button onClick={clearCart} className="text-brand-faint-ink hover:text-rose-600">
               Clear bag
             </button>
           </div>
@@ -256,8 +256,8 @@ export default function CartPage() {
         {/* Summary */}
         <div className="lg:col-span-4">
           <div className="space-y-4 lg:sticky lg:top-28">
-            <div className="space-y-5 rounded-brand-xl border border-slate-200 bg-white p-5 shadow-subtle sm:p-6">
-              <h2 className="border-b border-slate-100 pb-4 font-heading text-base font-bold text-slate-900">
+            <div className="space-y-5 rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle sm:p-6">
+              <h2 className="border-b border-brand-border pb-4 font-heading text-base font-bold text-brand-ink">
                 Order summary
               </h2>
 
@@ -265,28 +265,28 @@ export default function CartPage() {
                   price, then every reduction, then what they actually pay. */}
               <dl className="space-y-3 text-sm">
                 {listSavings > 0 && (
-                  <div className="flex justify-between text-slate-600">
+                  <div className="flex justify-between text-brand-muted-ink">
                     <dt>Total marked price</dt>
                     <dd>{formatPrice(calculatedCart.listSubtotal)}</dd>
                   </div>
                 )}
 
                 {listSavings > 0 ? (
-                  <div className="flex justify-between font-semibold text-emerald-600">
+                  <div className="flex justify-between font-semibold text-brand-primary">
                     <dt>Discount on marked price</dt>
                     <dd>-{formatPrice(listSavings)}</dd>
                   </div>
                 ) : (
-                  <div className="flex justify-between text-slate-600">
+                  <div className="flex justify-between text-brand-muted-ink">
                     <dt>Subtotal</dt>
-                    <dd className="font-semibold text-slate-900">
+                    <dd className="font-semibold text-brand-ink">
                       {formatPrice(calculatedCart.subtotal)}
                     </dd>
                   </div>
                 )}
 
                 {calculatedCart.discount.amount > 0 && (
-                  <div className="flex justify-between font-semibold text-emerald-600">
+                  <div className="flex justify-between font-semibold text-brand-primary">
                     <dt className="flex items-center gap-1">
                       <Tag className="h-3.5 w-3.5" /> Coupon ({calculatedCart.discount.code})
                     </dt>
@@ -294,13 +294,13 @@ export default function CartPage() {
                   </div>
                 )}
 
-                <div className="flex justify-between text-slate-600">
+                <div className="flex justify-between text-brand-muted-ink">
                   <dt>Delivery</dt>
                   <dd
                     className={
                       calculatedCart.shipping.amount === 0
-                        ? "font-semibold text-emerald-600"
-                        : "font-semibold text-slate-900"
+                        ? "font-semibold text-brand-primary"
+                        : "font-semibold text-brand-ink"
                     }
                   >
                     {calculatedCart.shipping.amount === 0
@@ -310,35 +310,35 @@ export default function CartPage() {
                 </div>
 
                 {calculatedCart.tax.amount > 0 && (
-                  <div className="flex justify-between text-slate-600">
+                  <div className="flex justify-between text-brand-muted-ink">
                     <dt>
                       Tax{calculatedCart.tax.rate ? ` (${calculatedCart.tax.rate}%)` : ""}
                       {calculatedCart.tax.isInclusive && (
-                        <span className="ml-1 text-xs text-slate-400">included</span>
+                        <span className="ml-1 text-xs text-brand-faint-ink">included</span>
                       )}
                     </dt>
-                    <dd className="font-semibold text-slate-900">
+                    <dd className="font-semibold text-brand-ink">
                       {formatPrice(calculatedCart.tax.amount)}
                     </dd>
                   </div>
                 )}
 
-                <div className="flex items-baseline justify-between border-t border-slate-100 pt-4 text-base font-bold text-slate-900">
+                <div className="flex items-baseline justify-between border-t border-brand-border pt-4 text-base font-bold text-brand-ink">
                   <dt>Total</dt>
                   <dd className="font-heading text-xl">{formatPrice(calculatedCart.total)}</dd>
                 </div>
               </dl>
 
               {totalSavings > 0 && (
-                <p className="rounded-brand bg-emerald-50 px-3 py-2 text-center text-sm font-bold text-emerald-700">
+                <p className="rounded-brand bg-brand-success/10 px-3 py-2 text-center text-sm font-bold text-brand-primary">
                   You save {formatPrice(totalSavings)} on this order
                 </p>
               )}
 
               {/* Coupon */}
-              <div className="border-t border-slate-100 pt-4">
+              <div className="border-t border-brand-border pt-4">
                 {couponCode ? (
-                  <div className="flex items-center justify-between rounded-brand border border-emerald-200/60 bg-emerald-50 p-2.5 text-xs text-emerald-800">
+                  <div className="flex items-center justify-between rounded-brand border border-brand-success/30 bg-brand-success/10 p-2.5 text-xs text-brand-success">
                     <span className="font-bold">Code applied: {couponCode}</span>
                     <button
                       onClick={removeCoupon}
@@ -351,7 +351,7 @@ export default function CartPage() {
                   <form onSubmit={handleApplyCoupon} className="space-y-2">
                     <label
                       htmlFor="coupon"
-                      className="block text-[11px] font-bold uppercase tracking-wider text-slate-500"
+                      className="block text-[11px] font-bold uppercase tracking-wider text-brand-muted-ink"
                     >
                       Have a promo code?
                     </label>
@@ -362,7 +362,7 @@ export default function CartPage() {
                         value={inputCoupon}
                         onChange={(event) => setInputCoupon(event.target.value)}
                         placeholder="Enter code"
-                        className="flex-1 rounded-brand border border-slate-300 px-3 py-2 text-xs uppercase placeholder:normal-case focus:border-slate-900 focus:outline-none"
+                        className="flex-1 rounded-brand border border-brand-border-strong px-3 py-2 text-xs uppercase placeholder:normal-case focus:border-brand-ink focus:outline-none"
                       />
                       <Button type="submit" size="sm" variant="secondary" isLoading={isApplying}>
                         Apply
@@ -386,20 +386,20 @@ export default function CartPage() {
               </Link>
 
               {/* Reassurance at the exact moment of commitment. */}
-              <ul className="space-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
+              <ul className="space-y-2 border-t border-brand-border pt-4 text-xs text-brand-muted-ink">
                 <li className="flex items-center gap-2">
-                  <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0 text-emerald-600" />
+                  <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0 text-brand-primary" />
                   Encrypted checkout — we never store card details
                 </li>
                 <li className="flex items-center gap-2">
-                  <Truck className="h-3.5 w-3.5 flex-shrink-0 text-emerald-600" />
+                  <Truck className="h-3.5 w-3.5 flex-shrink-0 text-brand-primary" />
                   Tracked delivery with updates by email
                 </li>
                 <li className="flex items-center gap-2">
-                  <RotateCcw className="h-3.5 w-3.5 flex-shrink-0 text-emerald-600" />
+                  <RotateCcw className="h-3.5 w-3.5 flex-shrink-0 text-brand-primary" />
                   <span>
                     Easy returns —{" "}
-                    <Link href="/refund-policy" className="underline hover:text-slate-700">
+                    <Link href="/refund-policy" className="underline hover:text-brand-ink">
                       see our policy
                     </Link>
                   </span>
@@ -409,7 +409,7 @@ export default function CartPage() {
 
             <Link
               href="/wishlist"
-              className="flex items-center justify-center gap-2 rounded-brand-xl border border-slate-200 bg-white p-3 text-xs font-semibold text-slate-600 shadow-subtle transition-colors hover:border-slate-300 hover:text-slate-900"
+              className="flex items-center justify-center gap-2 rounded-brand-xl border border-brand-border bg-white p-3 text-xs font-semibold text-brand-muted-ink shadow-subtle transition-colors hover:border-brand-border-strong hover:text-brand-ink"
             >
               <Heart className="h-4 w-4 text-rose-400" /> View your wishlist
             </Link>

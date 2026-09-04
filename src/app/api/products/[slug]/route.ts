@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ProductService } from "@/services/product.service";
+import { revalidateProduct } from "@/lib/cache/revalidate";
 import { requireAdmin } from "@/lib/auth/session";
 import { ChangeLogService } from "@/services/changelog.service";
 
@@ -62,6 +63,13 @@ export async function PUT(
       );
     }
 
+    // Both slugs: an edit can move a product to a different category or change
+    // its slug, and the page it left behind needs refreshing too.
+    revalidateProduct({ slug: updated.slug, categorySlug: updated.category?.slug });
+    if (before && before.slug !== updated.slug) {
+      revalidateProduct({ slug: before.slug, categorySlug: before.category?.slug });
+    }
+
     return NextResponse.json({ success: true, data: updated });
   } catch (error: any) {
     return NextResponse.json(
@@ -96,6 +104,12 @@ export async function DELETE(
         after: null,
         actor: auth.user,
       });
+    }
+
+    if (deleted && before) {
+      // A deleted product must leave the sitemap and the shopping feeds
+      // immediately, or Google keeps crawling a URL that now 404s.
+      revalidateProduct({ slug: before.slug, categorySlug: before.category?.slug });
     }
 
     return NextResponse.json({ success: deleted });

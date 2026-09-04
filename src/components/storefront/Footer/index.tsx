@@ -52,19 +52,19 @@ export function Footer({ categories = [] }: FooterProps) {
   );
 
   return (
-    <footer className="border-t border-slate-200 bg-slate-900 text-sm text-slate-400">
+    <footer className="border-t border-brand-border bg-brand-ink text-sm text-brand-faint-ink">
       {/* Value pillars */}
-      <div className="border-b border-slate-800 py-10 sm:py-12">
+      <div className="border-b border-brand-ink/40 py-10 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-6 sm:gap-8 lg:grid-cols-4">
             {VALUE_PILLARS.map(({ icon: Icon, title, body }) => (
               <div key={title} className="flex items-start gap-3 sm:gap-4">
-                <div className="flex-shrink-0 rounded-full bg-slate-800 p-2.5 text-emerald-400 sm:p-3">
+                <div className="flex-shrink-0 rounded-full bg-brand-ink p-2.5 text-brand-primary sm:p-3">
                   <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-xs font-semibold text-white sm:text-sm">{title}</h3>
-                  <p className="mt-1 text-[11px] leading-relaxed text-slate-400 sm:text-xs">
+                  <p className="mt-1 text-[11px] leading-relaxed text-brand-faint-ink sm:text-xs">
                     {body}
                   </p>
                 </div>
@@ -83,7 +83,7 @@ export function Footer({ categories = [] }: FooterProps) {
               {theme.brand.name}
             </span>
             {theme.brand.tagline && (
-              <p className="max-w-sm text-xs leading-relaxed text-slate-400">
+              <p className="max-w-sm text-xs leading-relaxed text-brand-faint-ink">
                 {theme.brand.tagline}
               </p>
             )}
@@ -96,7 +96,7 @@ export function Footer({ categories = [] }: FooterProps) {
             </div>
 
             {(email || phone || city) && (
-              <address className="space-y-1.5 text-xs not-italic text-slate-400">
+              <address className="space-y-1.5 text-xs not-italic text-brand-faint-ink">
                 {email && (
                   <a
                     href={`mailto:${email}`}
@@ -215,12 +215,12 @@ export function Footer({ categories = [] }: FooterProps) {
           </nav>
         </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-slate-800 pt-8 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-3 border-t border-brand-ink/40 pt-8 text-xs text-brand-muted-ink sm:flex-row sm:items-center sm:justify-between">
           <p>
             &copy; {new Date().getFullYear()} {theme.brand.name}. All rights reserved.
           </p>
           <p className="flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+            <ShieldCheck className="h-3.5 w-3.5 text-brand-primary" />
             Secure encrypted checkout
           </p>
         </div>

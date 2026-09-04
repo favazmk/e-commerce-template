@@ -39,8 +39,8 @@ export function AccountNav() {
                 aria-current={active ? "page" : undefined}
                 className={`flex items-center gap-2.5 whitespace-nowrap rounded-brand px-4 py-2.5 text-sm font-medium transition-colors ${
                   active
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    ? "bg-brand-ink text-white shadow-sm"
+                    : "text-brand-muted-ink hover:bg-brand-subtle hover:text-brand-ink"
                 }`}
               >
                 <link.icon className="h-4 w-4" />
@@ -53,7 +53,7 @@ export function AccountNav() {
           <button
             type="button"
             onClick={handleSignOut}
-            className="flex w-full items-center gap-2.5 whitespace-nowrap rounded-brand px-4 py-2.5 text-sm font-medium text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
+            className="flex w-full items-center gap-2.5 whitespace-nowrap rounded-brand px-4 py-2.5 text-sm font-medium text-brand-muted-ink transition-colors hover:bg-rose-50 hover:text-rose-600"
           >
             <LogOut className="h-4 w-4" />
             Sign out

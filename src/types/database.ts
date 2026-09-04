@@ -66,6 +66,8 @@ export interface ProductImage {
   created_at: string;
 }
 
+export type ProductBadgeTone = "primary" | "success" | "discount" | "urgent" | "neutral";
+
 export interface ProductVariant {
   id: string;
   product_id: string;
@@ -77,6 +79,10 @@ export interface ProductVariant {
   image_url?: string | null;
   barcode?: string | null;
   is_active: boolean;
+  /** Hex drawn as a colour swatch on the product card, e.g. "#1B2A4A". */
+  swatch_hex?: string | null;
+  /** The variant the card previews. Exactly one per product. */
+  is_default?: boolean;
   attributes: Record<string, string>; // e.g. {"Size": "L", "Color": "Navy"}
   created_at: string;
   updated_at: string;
@@ -97,6 +103,9 @@ export interface Product {
   low_stock_threshold: number;
   status: ProductStatus;
   featured: boolean;
+  /** Merchant-set badge, e.g. "BESTSELLER". Null lets the storefront derive one. */
+  badge_label?: string | null;
+  badge_tone?: ProductBadgeTone;
   category_id?: string | null;
   category?: Category | null;
   brand?: string | null;

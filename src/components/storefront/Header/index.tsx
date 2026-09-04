@@ -50,7 +50,7 @@ export function Header({ categories = [] }: HeaderProps) {
       <header
         className={`${
           theme.styling.headerSticky ? "sticky top-0" : "relative"
-        } z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-100 transition-all`}
+        } z-40 w-full bg-white/95 backdrop-blur-md border-b border-brand-border transition-all`}
       >
         {/* Announcement Bar */}
         {theme.styling.announcementBar.enabled && theme.styling.announcementBar.text && (
@@ -72,7 +72,7 @@ export function Header({ categories = [] }: HeaderProps) {
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="-ml-1 p-2 text-slate-700 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded-brand"
+                className="-ml-1 p-2 text-brand-muted-ink hover:text-brand-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded-brand"
                 aria-label="Toggle navigation menu"
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-navigation"
@@ -84,11 +84,11 @@ export function Header({ categories = [] }: HeaderProps) {
             {/* Brand Logo */}
             <div className="flex items-center min-w-0">
               <Link href="/" className="group flex flex-col min-w-0">
-                <span className="truncate text-lg sm:text-2xl font-bold tracking-widest font-heading text-slate-900 group-hover:text-brand-primary transition-colors">
+                <span className="truncate text-lg sm:text-2xl font-bold tracking-widest font-heading text-brand-ink group-hover:text-brand-primary transition-colors">
                   {theme.brand.name}
                 </span>
                 {theme.brand.tagline && (
-                  <span className="hidden sm:block truncate text-[9px] uppercase tracking-widest text-slate-400 font-medium">
+                  <span className="hidden sm:block truncate text-[9px] uppercase tracking-widest text-brand-faint-ink font-medium">
                     {theme.brand.tagline}
                   </span>
                 )}
@@ -101,7 +101,7 @@ export function Header({ categories = [] }: HeaderProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium text-slate-700 hover:text-brand-primary tracking-wide transition-colors"
+                  className="text-sm font-medium text-brand-muted-ink hover:text-brand-primary tracking-wide transition-colors"
                 >
                   {link.label}
                 </Link>
@@ -114,7 +114,7 @@ export function Header({ categories = [] }: HeaderProps) {
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="p-2 text-slate-700 hover:text-brand-primary transition-colors rounded-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+                className="p-2 text-brand-muted-ink hover:text-brand-primary transition-colors rounded-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
                 aria-label="Search catalog"
               >
                 <Search className="h-5 w-5" />
@@ -125,7 +125,7 @@ export function Header({ categories = [] }: HeaderProps) {
               {wishlistEnabled && (
               <Link
                 href="/wishlist"
-                className="relative hidden sm:inline-flex p-2 text-slate-700 hover:text-brand-primary transition-colors rounded-brand"
+                className="relative hidden sm:inline-flex p-2 text-brand-muted-ink hover:text-brand-primary transition-colors rounded-brand"
                 aria-label={`View wishlist, ${totalWishlistCount} items`}
               >
                 <Heart className="h-5 w-5" />
@@ -140,7 +140,7 @@ export function Header({ categories = [] }: HeaderProps) {
               {/* Customer Account */}
               <Link
                 href="/account"
-                className="p-2 text-slate-700 hover:text-brand-primary transition-colors rounded-brand"
+                className="p-2 text-brand-muted-ink hover:text-brand-primary transition-colors rounded-brand"
                 aria-label="Customer account"
               >
                 <User className="h-5 w-5" />
@@ -150,7 +150,7 @@ export function Header({ categories = [] }: HeaderProps) {
               <button
                 type="button"
                 onClick={openMiniCart}
-                className="relative flex items-center p-2 text-slate-900 hover:text-brand-primary transition-colors rounded-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+                className="relative flex items-center p-2 text-brand-ink hover:text-brand-primary transition-colors rounded-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
                 aria-label={`Open cart, ${totalItemCount} items`}
               >
                 <ShoppingBag className="h-5 w-5" />
@@ -168,14 +168,14 @@ export function Header({ categories = [] }: HeaderProps) {
         {isMobileMenuOpen && (
           <nav
             id="mobile-navigation"
-            className="lg:hidden border-t border-slate-100 bg-white px-6 py-4 space-y-1 max-h-[70vh] overflow-y-auto animate-in slide-in-from-top-4 duration-200"
+            className="lg:hidden border-t border-brand-border bg-white px-6 py-4 space-y-1 max-h-[70vh] overflow-y-auto animate-in slide-in-from-top-4 duration-200"
           >
             {navigation.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block text-base font-medium text-slate-700 py-3"
+                className="block text-base font-medium text-brand-muted-ink py-3"
               >
                 {link.label}
               </Link>
@@ -183,7 +183,7 @@ export function Header({ categories = [] }: HeaderProps) {
             <Link
               href="/wishlist"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="block text-base font-medium text-slate-700 py-3 sm:hidden"
+              className="block text-base font-medium text-brand-muted-ink py-3 sm:hidden"
             >
               Wishlist{totalWishlistCount > 0 ? ` (${totalWishlistCount})` : ""}
             </Link>

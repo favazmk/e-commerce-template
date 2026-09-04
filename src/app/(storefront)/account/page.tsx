@@ -51,13 +51,13 @@ export default async function AccountOverviewPage() {
         {summary.map((item) => (
           <div
             key={item.label}
-            className="rounded-brand-xl border border-slate-200 bg-white p-4 shadow-subtle sm:p-5"
+            className="rounded-brand-xl border border-brand-border bg-white p-4 shadow-subtle sm:p-5"
           >
-            <item.icon className="h-4 w-4 text-emerald-600" />
-            <p className="mt-3 font-heading text-xl font-bold text-slate-900 sm:text-2xl">
+            <item.icon className="h-4 w-4 text-brand-primary" />
+            <p className="mt-3 font-heading text-xl font-bold text-brand-ink sm:text-2xl">
               {item.value}
             </p>
-            <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wider text-brand-faint-ink">
               {item.label}
             </p>
           </div>
@@ -67,19 +67,19 @@ export default async function AccountOverviewPage() {
       {/* Live order tracking gets the top slot: it is the single most common
           reason a customer opens their account at all. */}
       {inFlight.length > 0 && (
-        <section className="rounded-brand-xl border border-emerald-200 bg-emerald-50/60 p-5 sm:p-6">
-          <h2 className="flex items-center gap-2 font-heading text-base font-bold text-slate-900">
-            <Package className="h-4 w-4 text-emerald-600" /> On its way to you
+        <section className="rounded-brand-xl border border-brand-success/30 bg-brand-success/10/60 p-5 sm:p-6">
+          <h2 className="flex items-center gap-2 font-heading text-base font-bold text-brand-ink">
+            <Package className="h-4 w-4 text-brand-primary" /> On its way to you
           </h2>
           <ul className="mt-4 space-y-3">
             {inFlight.slice(0, 3).map((order) => (
               <li
                 key={order.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-brand border border-emerald-200/60 bg-white p-4"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-brand border border-brand-success/30 bg-white p-4"
               >
                 <div>
-                  <p className="text-sm font-bold text-slate-900">#{order.order_number}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-bold text-brand-ink">#{order.order_number}</p>
+                  <p className="text-xs text-brand-muted-ink">
                     {order.items?.length || 0} item{(order.items?.length || 0) === 1 ? "" : "s"}
                     {order.shipping_method?.estimated_days
                       ? ` · Arrives in ${order.shipping_method.estimated_days}`
@@ -92,7 +92,7 @@ export default async function AccountOverviewPage() {
                   </Badge>
                   <Link
                     href={`/account/orders/${order.order_number}`}
-                    className="text-xs font-bold text-emerald-700 hover:underline"
+                    className="text-xs font-bold text-brand-primary hover:underline"
                   >
                     Track
                   </Link>
@@ -104,13 +104,13 @@ export default async function AccountOverviewPage() {
       )}
 
       {/* Recent orders */}
-      <section className="rounded-brand-xl border border-slate-200 bg-white shadow-subtle">
-        <div className="flex items-center justify-between border-b border-slate-100 p-5 sm:p-6">
-          <h2 className="font-heading text-base font-bold text-slate-900">Recent orders</h2>
+      <section className="rounded-brand-xl border border-brand-border bg-white shadow-subtle">
+        <div className="flex items-center justify-between border-b border-brand-border p-5 sm:p-6">
+          <h2 className="font-heading text-base font-bold text-brand-ink">Recent orders</h2>
           {orders.length > 3 && (
             <Link
               href="/account/orders"
-              className="flex items-center gap-1 text-xs font-bold text-emerald-600 hover:underline"
+              className="flex items-center gap-1 text-xs font-bold text-brand-primary hover:underline"
             >
               View all <ArrowRight className="h-3 w-3" />
             </Link>
@@ -119,9 +119,9 @@ export default async function AccountOverviewPage() {
 
         {recentOrders.length === 0 ? (
           <div className="p-8 text-center">
-            <Package className="mx-auto h-10 w-10 text-slate-300" />
-            <h3 className="mt-3 text-sm font-semibold text-slate-900">No orders yet</h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <Package className="mx-auto h-10 w-10 text-brand-faint-ink" />
+            <h3 className="mt-3 text-sm font-semibold text-brand-ink">No orders yet</h3>
+            <p className="mt-1 text-xs text-brand-muted-ink">
               Your orders will appear here as soon as you place one.
             </p>
             <Link href="/products" className="mt-4 inline-block">
@@ -129,13 +129,13 @@ export default async function AccountOverviewPage() {
             </Link>
           </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-brand-border">
             {recentOrders.map((order) => (
               <li key={order.id} className="p-5 sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-bold text-slate-900">#{order.order_number}</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-sm font-bold text-brand-ink">#{order.order_number}</p>
+                    <p className="text-xs text-brand-muted-ink">
                       {new Date(order.created_at).toLocaleDateString(undefined, {
                         day: "numeric",
                         month: "short",
@@ -147,7 +147,7 @@ export default async function AccountOverviewPage() {
                     <Badge variant={orderStatusTone(order.status)} size="sm">
                       {order.status.replace(/_/g, " ")}
                     </Badge>
-                    <span className="text-sm font-bold text-slate-900">
+                    <span className="text-sm font-bold text-brand-ink">
                       {formatPrice(order.total_amount, order.currency)}
                     </span>
                   </div>
@@ -157,7 +157,7 @@ export default async function AccountOverviewPage() {
                   {order.items?.slice(0, 5).map((item) => (
                     <div
                       key={item.id}
-                      className="relative h-12 w-12 overflow-hidden rounded-brand border border-slate-100 bg-slate-50"
+                      className="relative h-12 w-12 overflow-hidden rounded-brand border border-brand-border bg-brand-subtle"
                       title={item.product_name_snapshot}
                     >
                       <ProductImage
@@ -171,13 +171,13 @@ export default async function AccountOverviewPage() {
                     </div>
                   ))}
                   {(order.items?.length || 0) > 5 && (
-                    <span className="text-xs font-medium text-slate-400">
+                    <span className="text-xs font-medium text-brand-faint-ink">
                       +{(order.items?.length || 0) - 5} more
                     </span>
                   )}
                   <Link
                     href={`/account/orders/${order.order_number}`}
-                    className="ml-auto flex items-center gap-1 text-xs font-bold text-emerald-600 hover:underline"
+                    className="ml-auto flex items-center gap-1 text-xs font-bold text-brand-primary hover:underline"
                   >
                     Details <ArrowRight className="h-3 w-3" />
                   </Link>
@@ -189,22 +189,22 @@ export default async function AccountOverviewPage() {
       </section>
 
       {/* Default address */}
-      <section className="rounded-brand-xl border border-slate-200 bg-white p-5 shadow-subtle sm:p-6">
+      <section className="rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle sm:p-6">
         <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 font-heading text-base font-bold text-slate-900">
-            <MapPin className="h-4 w-4 text-emerald-600" /> Default delivery address
+          <h2 className="flex items-center gap-2 font-heading text-base font-bold text-brand-ink">
+            <MapPin className="h-4 w-4 text-brand-primary" /> Default delivery address
           </h2>
           <Link
             href="/account/addresses"
-            className="text-xs font-bold text-emerald-600 hover:underline"
+            className="text-xs font-bold text-brand-primary hover:underline"
           >
             Manage
           </Link>
         </div>
 
         {defaultAddress ? (
-          <address className="mt-4 space-y-0.5 rounded-brand border border-slate-100 bg-slate-50 p-4 text-xs not-italic leading-relaxed text-slate-600">
-            <p className="font-semibold text-slate-900">
+          <address className="mt-4 space-y-0.5 rounded-brand border border-brand-border bg-brand-subtle p-4 text-xs not-italic leading-relaxed text-brand-muted-ink">
+            <p className="font-semibold text-brand-ink">
               {defaultAddress.first_name} {defaultAddress.last_name}
             </p>
             <p>{defaultAddress.address_1}</p>
@@ -214,11 +214,11 @@ export default async function AccountOverviewPage() {
               {defaultAddress.state ? `, ${defaultAddress.state}` : ""} {defaultAddress.postal_code}
             </p>
             <p>{defaultAddress.country}</p>
-            <p className="pt-1 text-slate-500">{defaultAddress.phone}</p>
+            <p className="pt-1 text-brand-muted-ink">{defaultAddress.phone}</p>
           </address>
         ) : (
-          <div className="mt-4 rounded-brand border border-dashed border-slate-300 bg-slate-50 p-5 text-center">
-            <p className="text-xs text-slate-500">
+          <div className="mt-4 rounded-brand border border-dashed border-brand-border-strong bg-brand-subtle p-5 text-center">
+            <p className="text-xs text-brand-muted-ink">
               No saved address yet. Saving one now makes every future checkout a single tap.
             </p>
             <Link href="/account/addresses" className="mt-3 inline-block">

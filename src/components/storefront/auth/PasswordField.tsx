@@ -71,7 +71,7 @@ export function PasswordField({
   const password = typeof value === "string" ? value : "";
   const strength = useMemo(() => ratePassword(password), [password]);
 
-  const barColors = ["bg-slate-200", "bg-rose-500", "bg-amber-500", "bg-lime-500", "bg-emerald-600"];
+  const barColors = ["bg-brand-border", "bg-rose-500", "bg-amber-500", "bg-lime-500", "bg-brand-primary"];
 
   return (
     <div className="space-y-2">
@@ -89,7 +89,7 @@ export function PasswordField({
           type="button"
           onClick={() => setVisible((current) => !current)}
           // Offset clears the field label above the input.
-          className="absolute right-3 top-[30px] text-slate-400 transition-colors hover:text-slate-700"
+          className="absolute right-3 top-[30px] text-brand-faint-ink transition-colors hover:text-brand-ink"
           aria-label={visible ? "Hide password" : "Show password"}
           tabIndex={-1}
         >
@@ -104,13 +104,13 @@ export function PasswordField({
               <span
                 key={step}
                 className={`h-1 flex-1 rounded-full transition-colors ${
-                  strength.score >= step ? barColors[strength.score] : "bg-slate-200"
+                  strength.score >= step ? barColors[strength.score] : "bg-brand-border"
                 }`}
               />
             ))}
           </div>
-          <p className="text-xs text-slate-500">
-            <span className="font-semibold text-slate-700">{strength.label}.</span>{" "}
+          <p className="text-xs text-brand-muted-ink">
+            <span className="font-semibold text-brand-muted-ink">{strength.label}.</span>{" "}
             {strength.suggestions.join(". ")}
           </p>
         </div>

@@ -139,16 +139,16 @@ export default function PrivacyPolicyPage() {
         </ul>
         <p>
           You can update your name, phone number and addresses yourself under{" "}
-          <Link href="/account/profile" className="font-semibold text-emerald-600 hover:underline">
+          <Link href="/account/profile" className="font-semibold text-brand-primary hover:underline">
             your account
           </Link>
           . For anything else,{" "}
           {contact.email ? (
-            <a href={`mailto:${contact.email}`} className="font-semibold text-emerald-600 hover:underline">
+            <a href={`mailto:${contact.email}`} className="font-semibold text-brand-primary hover:underline">
               email us
             </a>
           ) : (
-            <Link href="/contact" className="font-semibold text-emerald-600 hover:underline">
+            <Link href="/contact" className="font-semibold text-brand-primary hover:underline">
               contact us
             </Link>
           )}{" "}

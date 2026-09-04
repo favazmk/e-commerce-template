@@ -12,9 +12,9 @@ export default function WishlistPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-      <div className="border-b border-slate-100 pb-6 mb-10">
-        <h1 className="text-3xl font-bold font-heading text-slate-900">Saved Wishlist</h1>
-        <p className="mt-1 text-sm text-slate-500">
+      <div className="border-b border-brand-border pb-6 mb-10">
+        <h1 className="text-3xl font-bold font-heading text-brand-ink">Saved Wishlist</h1>
+        <p className="mt-1 text-sm text-brand-muted-ink">
           Your personal curation of bespoke pieces saved for future acquisition.
         </p>
       </div>

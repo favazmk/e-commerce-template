@@ -44,13 +44,13 @@ export async function ProductRail({
     <section className={`py-8 sm:py-10 ${className}`} aria-label={title}>
       <div className="mb-5 flex items-end justify-between gap-4">
         <div>
-          <h2 className="font-heading text-lg font-bold text-slate-900 sm:text-xl">{title}</h2>
-          {subtitle && <p className="mt-1 text-xs text-slate-500 sm:text-sm">{subtitle}</p>}
+          <h2 className="font-heading text-lg font-bold text-brand-ink sm:text-xl">{title}</h2>
+          {subtitle && <p className="mt-1 text-xs text-brand-muted-ink sm:text-sm">{subtitle}</p>}
         </div>
         {href && (
           <Link
             href={href}
-            className="flex flex-shrink-0 items-center gap-1 text-xs font-bold text-emerald-600 hover:underline"
+            className="flex flex-shrink-0 items-center gap-1 text-xs font-bold text-brand-primary hover:underline"
           >
             {hrefLabel} <ArrowRight className="h-3 w-3" />
           </Link>

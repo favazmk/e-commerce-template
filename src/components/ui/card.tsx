@@ -42,7 +42,7 @@ export function CardTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={twMerge(clsx("text-lg font-semibold leading-none tracking-tight text-slate-900", className))}
+      className={twMerge(clsx("text-lg font-semibold leading-none tracking-tight text-brand-ink", className))}
       {...props}
     >
       {children}
@@ -56,7 +56,7 @@ export function CardDescription({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={twMerge(clsx("text-sm text-slate-500", className))} {...props}>
+    <p className={twMerge(clsx("text-sm text-brand-muted-ink", className))} {...props}>
       {children}
     </p>
   );

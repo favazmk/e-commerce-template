@@ -55,12 +55,12 @@ export default function ForgotPasswordPage() {
         subtitle="If that address has an account, the link is on its way."
       >
         <div className="space-y-5 text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-success/10 text-brand-primary">
             <MailCheck className="h-7 w-7" />
           </span>
-          <p className="text-sm leading-relaxed text-slate-600">
+          <p className="text-sm leading-relaxed text-brand-muted-ink">
             We sent password reset instructions to{" "}
-            <span className="font-semibold text-slate-900">{email}</span>. The link works once and
+            <span className="font-semibold text-brand-ink">{email}</span>. The link works once and
             expires after a short time.
           </p>
           <Link href="/login" className="inline-block">
@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
       title="Forgot your password?"
       subtitle="Enter your email and we will send you a link to choose a new one."
       footer={
-        <Link href="/login" className="font-semibold text-emerald-600 hover:underline">
+        <Link href="/login" className="font-semibold text-brand-primary hover:underline">
           ← Back to sign in
         </Link>
       }

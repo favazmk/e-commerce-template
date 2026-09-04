@@ -48,13 +48,13 @@ export function StarRating({
     // then the count. Survives a 2-column phone grid where five stars cannot.
     return (
       <span
-        className={`inline-flex items-center gap-1 rounded-brand-sm border border-slate-200 bg-white px-1.5 py-0.5 ${TEXT_CLASSES[size]} font-semibold text-slate-700 ${className}`}
+        className={`inline-flex items-center gap-1 rounded-brand-sm border border-brand-border bg-white px-1.5 py-0.5 ${TEXT_CLASSES[size]} font-semibold text-brand-muted-ink ${className}`}
         aria-label={label}
       >
         <span aria-hidden="true">{rounded.toFixed(1)}</span>
-        <Star className={`${SIZE_CLASSES[size]} fill-emerald-600 text-emerald-600`} aria-hidden="true" />
+        <Star className={`${SIZE_CLASSES[size]} fill-brand-rating text-brand-rating`} aria-hidden="true" />
         {count ? (
-          <span className="font-normal text-slate-400" aria-hidden="true">
+          <span className="font-normal text-brand-faint-ink" aria-hidden="true">
             | {count > 999 ? `${(count / 1000).toFixed(1)}k` : count}
           </span>
         ) : null}
@@ -69,7 +69,7 @@ export function StarRating({
           const fill = Math.min(1, Math.max(0, rounded - position + 1));
           return (
             <span key={position} className="relative inline-block">
-              <Star className={`${SIZE_CLASSES[size]} text-slate-200`} fill="currentColor" />
+              <Star className={`${SIZE_CLASSES[size]} text-brand-border`} fill="currentColor" />
               {fill > 0 && (
                 <span
                   className="absolute inset-0 overflow-hidden"
@@ -86,7 +86,7 @@ export function StarRating({
         })}
       </span>
       {count ? (
-        <span className={`${TEXT_CLASSES[size]} text-slate-400`} aria-hidden="true">
+        <span className={`${TEXT_CLASSES[size]} text-brand-faint-ink`} aria-hidden="true">
           ({count})
         </span>
       ) : null}

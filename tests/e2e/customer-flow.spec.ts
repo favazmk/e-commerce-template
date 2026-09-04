@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
+import { fillDeliveryAddress } from './helpers/checkout';
 
 test.describe('E2E Customer Flow', () => {
   let productSlug: string;
@@ -33,6 +34,25 @@ test.describe('E2E Customer Flow', () => {
     }
   });
 
+  /**
+   * Archive the fixture product afterwards.
+   *
+   * Without this, every E2E run leaves a live "E2E Test Product" in the
+   * catalogue — and they accumulate. They then appear on the storefront, in the
+   * sitemap and in the Google Merchant feed, which is a real problem rather
+   * than untidiness: Google will happily index and advertise them.
+   *
+   * Archived rather than deleted, because the test also creates an order and
+   * the order history should stay intact.
+   */
+  test.afterAll(async () => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    await supabase.from('products').update({ status: 'archived' }).eq('slug', productSlug);
+  });
+
   test('User can browse products, add to cart, and complete checkout', async ({ page }) => {
     // 3. Open a product detail page (bypass cached homepage)
     await page.goto(`/products/${productSlug}`);
@@ -62,18 +82,9 @@ test.describe('E2E Customer Flow', () => {
     await page.getByRole('button', { name: /Checkout/i }).click();
     await page.waitForURL('/checkout');
     
-    // 14. Enters/uses an address
-    await page.fill('input[name="firstName"]', 'Test');
-    await page.fill('input[name="lastName"]', 'User');
-    await page.fill('input[name="email"]', `test-${Date.now()}@example.com`);
-    await page.fill('input[name="phone"]', '+1234567890');
-    await page.fill('input[name="address1"]', '123 Test St');
-    await page.fill('input[name="city"]', 'Test City');
-    await page.fill('input[name="state"]', 'NY');
-    await page.fill('input[name="postalCode"]', '10001');
-    
-    await page.fill('input[name="country"]', 'US');
-    
+    // 14. Enters/uses an address. The form is country-aware — see the helper.
+    await fillDeliveryAddress(page);
+
     // 16. Select the simulated gateway (demo-mode only, see playwright.config)
     const mockPayment = page.locator('input[value="mock"]');
     await expect(mockPayment).toBeVisible();

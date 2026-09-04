@@ -123,15 +123,15 @@ export function SecurityPanel({ email }: { email: string }) {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-heading text-xl font-bold text-slate-900">Login &amp; security</h1>
+      <h1 className="font-heading text-xl font-bold text-brand-ink">Login &amp; security</h1>
 
       {/* Change password */}
       <form
         onSubmit={handlePasswordChange}
-        className="space-y-5 rounded-brand-xl border border-slate-200 bg-white p-5 shadow-subtle sm:p-6"
+        className="space-y-5 rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle sm:p-6"
       >
-        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-slate-900">
-          <ShieldCheck className="h-4 w-4 text-emerald-600" /> Change password
+        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-brand-ink">
+          <ShieldCheck className="h-4 w-4 text-brand-primary" /> Change password
         </h2>
 
         {passwordError && (
@@ -144,7 +144,7 @@ export function SecurityPanel({ email }: { email: string }) {
           </p>
         )}
         {passwordSaved && (
-          <p role="status" className="rounded-brand bg-emerald-50 p-3 text-sm text-emerald-800">
+          <p role="status" className="rounded-brand bg-brand-success/10 p-3 text-sm text-brand-success">
             Your password has been changed.
           </p>
         )}
@@ -183,13 +183,13 @@ export function SecurityPanel({ email }: { email: string }) {
       {/* Change email */}
       <form
         onSubmit={handleEmailChange}
-        className="space-y-5 rounded-brand-xl border border-slate-200 bg-white p-5 shadow-subtle sm:p-6"
+        className="space-y-5 rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle sm:p-6"
       >
-        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-slate-900">
-          <Mail className="h-4 w-4 text-emerald-600" /> Change email address
+        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-brand-ink">
+          <Mail className="h-4 w-4 text-brand-primary" /> Change email address
         </h2>
-        <p className="text-xs text-slate-500">
-          Currently <span className="font-semibold text-slate-900">{email}</span>. We will email
+        <p className="text-xs text-brand-muted-ink">
+          Currently <span className="font-semibold text-brand-ink">{email}</span>. We will email
           both the old and the new address to confirm.
         </p>
 
@@ -199,7 +199,7 @@ export function SecurityPanel({ email }: { email: string }) {
           </p>
         )}
         {emailNotice && (
-          <p role="status" className="rounded-brand bg-emerald-50 p-3 text-sm text-emerald-800">
+          <p role="status" className="rounded-brand bg-brand-success/10 p-3 text-sm text-brand-success">
             {emailNotice}
           </p>
         )}
@@ -220,11 +220,11 @@ export function SecurityPanel({ email }: { email: string }) {
       </form>
 
       {/* Sessions */}
-      <div className="space-y-4 rounded-brand-xl border border-slate-200 bg-white p-5 shadow-subtle sm:p-6">
-        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-slate-900">
-          <LogOut className="h-4 w-4 text-slate-500" /> Active sessions
+      <div className="space-y-4 rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle sm:p-6">
+        <h2 className="flex items-center gap-2 font-heading text-base font-bold text-brand-ink">
+          <LogOut className="h-4 w-4 text-brand-muted-ink" /> Active sessions
         </h2>
-        <p className="text-xs leading-relaxed text-slate-500">
+        <p className="text-xs leading-relaxed text-brand-muted-ink">
           Signed in on a shared or lost device? This signs you out everywhere at once and forces a
           fresh login on every device.
         </p>

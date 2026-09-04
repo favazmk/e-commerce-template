@@ -52,11 +52,11 @@ export function BackInStockForm({ productId, variantId, productName }: BackInSto
 
   if (status === "done") {
     return (
-      <div className="flex items-start gap-3 rounded-brand-xl border border-emerald-200 bg-emerald-50 p-4">
-        <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+      <div className="flex items-start gap-3 rounded-brand-xl border border-brand-success/30 bg-brand-success/10 p-4">
+        <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-primary" />
         <div>
-          <p className="text-sm font-semibold text-emerald-900">You are on the list</p>
-          <p className="mt-0.5 text-xs text-emerald-700">
+          <p className="text-sm font-semibold text-brand-success">You are on the list</p>
+          <p className="mt-0.5 text-xs text-brand-primary">
             We will email you the moment {productName} is back in stock.
           </p>
         </div>
@@ -67,13 +67,13 @@ export function BackInStockForm({ productId, variantId, productName }: BackInSto
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-3 rounded-brand-xl border border-slate-200 bg-slate-50 p-4"
+      className="space-y-3 rounded-brand-xl border border-brand-border bg-brand-subtle p-4"
     >
       <div className="flex items-start gap-3">
-        <BellRing className="mt-0.5 h-5 w-5 flex-shrink-0 text-slate-500" />
+        <BellRing className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-muted-ink" />
         <div>
-          <p className="text-sm font-semibold text-slate-900">Sold out — want to know when it returns?</p>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="text-sm font-semibold text-brand-ink">Sold out — want to know when it returns?</p>
+          <p className="mt-0.5 text-xs text-brand-muted-ink">
             One email when it is back. Nothing else, and no sign-up needed.
           </p>
         </div>

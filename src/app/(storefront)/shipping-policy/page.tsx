@@ -46,8 +46,8 @@ export default async function ShippingPolicyPage() {
           <p>Delivery options are shown at checkout once you enter your address.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full border border-slate-200 text-left text-xs">
-              <thead className="bg-slate-100 font-bold uppercase text-slate-700">
+            <table className="min-w-full border border-brand-border text-left text-xs">
+              <thead className="bg-brand-subtle font-bold uppercase text-brand-muted-ink">
                 <tr>
                   <th className="border-b p-3">Option</th>
                   <th className="border-b p-3">Estimated transit</th>
@@ -55,10 +55,10 @@ export default async function ShippingPolicyPage() {
                   <th className="border-b p-3">Free over</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-brand-border">
                 {methods.map((method) => (
                   <tr key={method.id}>
-                    <td className="p-3 font-semibold text-slate-900">{method.name}</td>
+                    <td className="p-3 font-semibold text-brand-ink">{method.name}</td>
                     <td className="p-3">{method.estimated_days || "Shown at checkout"}</td>
                     <td className="p-3">
                       {Number(method.rate) === 0 ? "Free" : formatPrice(Number(method.rate))}
@@ -74,7 +74,7 @@ export default async function ShippingPolicyPage() {
             </table>
           </div>
         )}
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-brand-muted-ink">
           The exact charge for your order is calculated at checkout, before you pay.
         </p>
       </LegalSection>
@@ -101,11 +101,11 @@ export default async function ShippingPolicyPage() {
         <p>
           You receive an email when your order is confirmed and again when it ships. You can check
           the status at any time from{" "}
-          <Link href="/account/orders" className="font-semibold text-emerald-600 hover:underline">
+          <Link href="/account/orders" className="font-semibold text-brand-primary hover:underline">
             your orders
           </Link>
           , or — if you checked out as a guest — on the{" "}
-          <Link href="/track-order" className="font-semibold text-emerald-600 hover:underline">
+          <Link href="/track-order" className="font-semibold text-brand-primary hover:underline">
             order tracking page
           </Link>{" "}
           using your order number and email address.
@@ -135,7 +135,7 @@ export default async function ShippingPolicyPage() {
           Check your parcel on arrival. If it looks damaged, photograph it before opening if you can
           and tell us within a reasonable time of delivery. We will arrange a replacement or a full
           refund — see the{" "}
-          <Link href="/refund-policy" className="font-semibold text-emerald-600 hover:underline">
+          <Link href="/refund-policy" className="font-semibold text-brand-primary hover:underline">
             returns policy
           </Link>
           .

@@ -92,20 +92,20 @@ function RegisterForm() {
         subtitle="Your account is created — we just need to check the address is yours."
       >
         <div className="space-y-5 text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-success/10 text-brand-primary">
             <MailCheck className="h-7 w-7" />
           </span>
-          <p className="text-sm leading-relaxed text-slate-600">
+          <p className="text-sm leading-relaxed text-brand-muted-ink">
             We sent a confirmation link to{" "}
-            <span className="font-semibold text-slate-900">{email}</span>. Open it and you will be
+            <span className="font-semibold text-brand-ink">{email}</span>. Open it and you will be
             signed in automatically.
           </p>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-brand-faint-ink">
             Nothing after a few minutes? Check your spam folder, or{" "}
             <button
               type="button"
               onClick={() => setConfirmationSent(false)}
-              className="font-semibold text-emerald-600 hover:underline"
+              className="font-semibold text-brand-primary hover:underline"
             >
               try a different address
             </button>
@@ -126,7 +126,7 @@ function RegisterForm() {
           Already have an account?{" "}
           <Link
             href={`/login?redirectTo=${encodeURIComponent(redirectTo)}`}
-            className="font-semibold text-emerald-600 hover:underline"
+            className="font-semibold text-brand-primary hover:underline"
           >
             Sign in
           </Link>
@@ -204,7 +204,7 @@ function RegisterForm() {
 export default function RegisterPage() {
   return (
     <Suspense
-      fallback={<div className="px-4 py-24 text-center text-sm text-slate-500">Loading…</div>}
+      fallback={<div className="px-4 py-24 text-center text-sm text-brand-muted-ink">Loading…</div>}
     >
       <RegisterForm />
     </Suspense>

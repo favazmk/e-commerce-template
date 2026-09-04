@@ -22,13 +22,13 @@ export default function TrackOrderPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
       <header className="mb-8 text-center">
-        <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+        <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-success/10 text-brand-primary">
           <Package className="h-7 w-7" />
         </span>
-        <h1 className="font-heading text-2xl font-bold text-slate-900 sm:text-3xl">
+        <h1 className="font-heading text-2xl font-bold text-brand-ink sm:text-3xl">
           Track your order
         </h1>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-brand-muted-ink">
           No account needed — just your order number and the email you used.
         </p>
       </header>

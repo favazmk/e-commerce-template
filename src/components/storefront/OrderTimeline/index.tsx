@@ -63,8 +63,8 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
               <span
                 className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                   reached
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-slate-200 bg-white text-slate-300"
+                    ? "border-brand-success bg-brand-success text-white"
+                    : "border-brand-border bg-white text-brand-faint-ink"
                 }`}
                 aria-hidden="true"
               >
@@ -76,7 +76,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
               </span>
               {!isLast && (
                 <span
-                  className={`w-0.5 flex-1 ${reached && currentIndex > index ? "bg-emerald-600" : "bg-slate-200"}`}
+                  className={`w-0.5 flex-1 ${reached && currentIndex > index ? "bg-brand-primary" : "bg-brand-border"}`}
                   style={{ minHeight: "2rem" }}
                   aria-hidden="true"
                 />
@@ -87,18 +87,18 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
             <div className={`flex-1 ${isLast ? "pb-0" : "pb-6"}`}>
               <p
                 className={`text-sm font-semibold ${
-                  isCurrent ? "text-emerald-700" : reached ? "text-slate-900" : "text-slate-400"
+                  isCurrent ? "text-brand-primary" : reached ? "text-brand-ink" : "text-brand-faint-ink"
                 }`}
               >
                 {orderStatusLabel(step)}
                 {isCurrent && (
-                  <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+                  <span className="ml-2 rounded-full bg-brand-success/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-primary">
                     Current
                   </span>
                 )}
               </p>
               {timestamp && (
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-brand-muted-ink">
                   {new Date(timestamp).toLocaleString(undefined, {
                     day: "numeric",
                     month: "short",
@@ -108,7 +108,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                 </p>
               )}
               {isCurrent && !timestamp && order.shipping_method?.estimated_days && (
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-brand-muted-ink">
                   Estimated delivery: {order.shipping_method.estimated_days}
                 </p>
               )}

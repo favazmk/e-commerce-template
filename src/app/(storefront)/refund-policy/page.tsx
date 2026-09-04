@@ -68,11 +68,11 @@ export default async function RefundPolicyPage() {
           <p>
             You can request a return within <strong>{windowDays} days</strong> of the date your
             order is delivered. Start the request from{" "}
-            <Link href="/account/orders" className="font-semibold text-emerald-600 hover:underline">
+            <Link href="/account/orders" className="font-semibold text-brand-primary hover:underline">
               your orders
             </Link>
             , or{" "}
-            <Link href="/contact" className="font-semibold text-emerald-600 hover:underline">
+            <Link href="/contact" className="font-semibold text-brand-primary hover:underline">
               contact us
             </Link>{" "}
             with your order number.

@@ -20,14 +20,14 @@ export function EmptyState({
   actionHref,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-brand-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-12 text-center my-6">
+    <div className="flex flex-col items-center justify-center rounded-brand-xl border-2 border-dashed border-brand-border bg-brand-subtle/50 p-12 text-center my-6">
       {Icon && (
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-subtle text-slate-400">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-subtle text-brand-faint-ink">
           <Icon className="h-7 w-7" />
         </div>
       )}
-      <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-      <p className="mt-1 max-w-md text-sm text-slate-500">{description}</p>
+      <h3 className="text-base font-semibold text-brand-ink">{title}</h3>
+      <p className="mt-1 max-w-md text-sm text-brand-muted-ink">{description}</p>
       {actionText && (
         <div className="mt-6">
           {actionHref ? (

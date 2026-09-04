@@ -1,19 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { Check, Heart, ShoppingBag } from "lucide-react";
+import { Check, Heart, ShoppingBag, Star } from "lucide-react";
 import { useCart } from "@/features/cart/CartContext";
 import { useWishlist } from "@/features/wishlist/WishlistContext";
 import { useStoreFeatures } from "@/features/settings/StoreFeaturesContext";
 import { ProductCardVariant } from "@/theme/theme.config";
 import { Product } from "@/types/database";
 import type { ProductStats } from "@/repositories/interfaces/merchandising.repository.interface";
-import { StarRating } from "@/components/ui/star-rating";
 import { formatPrice } from "@/lib/config/store.config";
-import { priceBreakdown, salesProof, stockSignal } from "@/lib/commerce/merchandising";
+import {
+  BADGE_TONE_CLASSES,
+  colourSwatches,
+  priceBreakdown,
+  resolveBadge,
+  salesProof,
+  sizeOptions,
+  stockSignal,
+} from "@/lib/commerce/merchandising";
 import { toAnalyticsItem } from "@/services/analytics.service";
 import { ProductImage } from "../ProductImage";
+import { ColourPicker, SizePicker } from "./VariantPicker";
 
 export interface ProductCardProps {
   product: Product;
@@ -24,6 +32,21 @@ export interface ProductCardProps {
   priority?: boolean;
 }
 
+/**
+ * Product card.
+ *
+ * Laid out the way high-volume fashion marketplaces lay one out, because those
+ * conventions are what shoppers have been trained to read:
+ *
+ * - The rating chip sits ON the image, bottom-left. It is the first trust
+ *   signal scanned, and putting it there costs no vertical space in a grid.
+ * - Brand is bold and above the product name, which is grey and truncated to
+ *   one line. Shoppers scan brands first and read names second.
+ * - Price order is: what you pay (bold), what it was (struck through), how much
+ *   off (orange). The percentage is last because it is the least concrete.
+ * - Size and colour are selectable in the grid, so "does it come in my size?"
+ *   is answered without a round trip to the product page.
+ */
 export function ProductCard({
   product,
   variant = "luxury",
@@ -33,23 +56,54 @@ export function ProductCard({
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { wishlist: wishlistEnabled } = useStoreFeatures();
+
   const [isHovered, setIsHovered] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
 
-  const isFavorite = isInWishlist(product.id);
-  const primaryImage = product.images?.[0]?.url;
-  const hoverImage = product.images?.[1]?.url || primaryImage;
+  const activeVariants = useMemo(
+    () => (product.variants || []).filter((entry) => entry.is_active),
+    [product.variants]
+  );
 
-  const pricing = priceBreakdown(product.price, product.compare_at_price);
+  // Preselect the variant the merchant marked as default, else the first that
+  // is actually purchasable — never an out-of-stock one.
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(() => {
+    const preferred =
+      activeVariants.find((entry) => entry.is_default && entry.stock > 0) ||
+      activeVariants.find((entry) => entry.stock > 0) ||
+      activeVariants[0];
+    return preferred?.id ?? null;
+  });
+
+  const selectedVariant = activeVariants.find((entry) => entry.id === selectedVariantId) || null;
+
+  const sizes = useMemo(() => sizeOptions(activeVariants), [activeVariants]);
+  const colours = useMemo(() => colourSwatches(activeVariants), [activeVariants]);
+
+  const price = selectedVariant?.price ?? product.price;
+  const compareAt = selectedVariant?.compare_at_price ?? product.compare_at_price;
+  const pricing = priceBreakdown(price, compareAt);
+
+  const badge = resolveBadge(product, stats);
   const scarcity = stockSignal(product);
   const proof = salesProof(stats);
   const soldOut = product.stock_quantity === 0;
 
+  const isFavorite = isInWishlist(product.id);
+  // The selected colour's own photograph wins, so changing colour changes the
+  // picture — otherwise a swatch picker is decorative.
+  const primaryImage = selectedVariant?.image_url || product.images?.[0]?.url;
+  const hoverImage = product.images?.[1]?.url || primaryImage;
+
   const handleQuickAdd = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    const defaultVariant = product.variants?.[0] || null;
-    addItem(product.id, defaultVariant?.id || null, 1, toAnalyticsItem(product, 1, defaultVariant));
+    addItem(
+      product.id,
+      selectedVariant?.id || null,
+      1,
+      toAnalyticsItem(product, 1, selectedVariant)
+    );
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 1500);
   };
@@ -60,13 +114,13 @@ export function ProductCard({
     toggleWishlist(product);
   };
 
-  // 1. Minimal Variant
+  /* --- Minimal ---------------------------------------------------------- */
   if (variant === "minimal") {
     return (
       <div className="group relative flex flex-col">
         <Link
           href={`/products/${product.slug}`}
-          className="relative block aspect-[3/4] w-full overflow-hidden rounded-brand bg-slate-50"
+          className="relative block aspect-[3/4] w-full overflow-hidden rounded-brand bg-brand-subtle"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
@@ -79,46 +133,45 @@ export function ProductCard({
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </Link>
-        <div className="mt-3 flex items-start justify-between">
+        <div className="mt-2.5 flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <h3 className="truncate text-sm font-medium text-slate-900 hover:underline">
-              <Link href={`/products/${product.slug}`}>{product.name}</Link>
+            <h3 className="truncate text-sm font-bold text-brand-ink">
+              <Link href={`/products/${product.slug}`}>{product.brand || product.name}</Link>
             </h3>
-            <p className="mt-0.5 truncate text-xs text-slate-500">{product.brand}</p>
+            <p className="mt-0.5 truncate text-xs text-brand-muted-ink">{product.name}</p>
           </div>
-          <p className="ml-3 flex-shrink-0 text-sm font-semibold text-slate-900">
-            {formatPrice(product.price)}
-          </p>
+          <p className="flex-shrink-0 text-sm font-bold text-brand-ink">{formatPrice(price)}</p>
         </div>
       </div>
     );
   }
 
-  // 2. Compact Variant — used in rails and recommendation strips
+  /* --- Compact (rails, mini-cart) --------------------------------------- */
   if (variant === "compact") {
     return (
-      <div className="flex items-center gap-4 rounded-brand border border-slate-100 bg-white p-3 shadow-subtle transition-colors hover:border-slate-300">
+      <div className="flex items-center gap-3 rounded-brand border border-brand-border bg-white p-2.5 transition-colors hover:border-brand-border-strong">
         <Link
           href={`/products/${product.slug}`}
-          className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100"
+          className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-brand bg-brand-subtle"
         >
           <ProductImage
             src={primaryImage}
             seed={product.name}
             alt={product.name}
-            sizes="80px"
+            sizes="64px"
             compact
             className="object-cover"
           />
         </Link>
         <div className="min-w-0 flex-1">
-          <h4 className="truncate text-sm font-semibold text-slate-900">
-            <Link href={`/products/${product.slug}`}>{product.name}</Link>
+          <h4 className="truncate text-xs font-bold text-brand-ink">
+            <Link href={`/products/${product.slug}`}>{product.brand || product.name}</Link>
           </h4>
-          <div className="mt-0.5 flex items-baseline gap-1.5">
-            <span className="text-xs font-bold text-slate-900">{formatPrice(product.price)}</span>
+          <p className="truncate text-xs text-brand-muted-ink">{product.name}</p>
+          <div className="mt-1 flex items-baseline gap-1.5">
+            <span className="text-xs font-bold text-brand-ink">{formatPrice(price)}</span>
             {pricing.hasDiscount && (
-              <span className="text-[11px] text-slate-400 line-through">
+              <span className="text-[11px] text-brand-faint-ink line-through">
                 {formatPrice(pricing.compareAtPrice!)}
               </span>
             )}
@@ -126,24 +179,23 @@ export function ProductCard({
           <button
             onClick={handleQuickAdd}
             disabled={soldOut}
-            className="mt-2 flex items-center gap-1 text-xs font-semibold text-brand-primary hover:underline disabled:text-slate-400 disabled:no-underline"
+            className="mt-1.5 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-brand-primary hover:underline disabled:text-brand-faint-ink disabled:no-underline"
           >
-            <ShoppingBag className="h-3.5 w-3.5" /> {soldOut ? "Sold out" : "Quick add"}
+            <ShoppingBag className="h-3 w-3" /> {soldOut ? "Sold out" : "Add"}
           </button>
         </div>
       </div>
     );
   }
 
-  // 3. Luxury / Modern Default Variant
+  /* --- Default grid card ------------------------------------------------ */
   return (
     <div
-      className="group relative flex flex-col overflow-hidden rounded-brand-lg border border-slate-100/80 bg-white shadow-subtle transition-all duration-300 hover:-translate-y-1 hover:shadow-float"
+      className="group relative flex flex-col overflow-hidden rounded-brand border border-brand-border bg-white transition-all duration-200 hover:shadow-float"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Image */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-50">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-brand-subtle">
         <Link href={`/products/${product.slug}`} className="block h-full w-full">
           <ProductImage
             src={isHovered ? hoverImage : primaryImage}
@@ -151,48 +203,43 @@ export function ProductCard({
             alt={product.name}
             priority={priority}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+            className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
           />
         </Link>
 
-        {/* One badge column, ranked by what a shopper acts on: a discount beats
-            an editorial "featured" flag, and sold-out overrides everything. */}
-        <div className="absolute left-2.5 top-2.5 z-10 flex flex-col items-start gap-1.5 sm:left-3 sm:top-3">
+        {/* One badge, top-left. Sold out overrides everything. */}
+        <div className="absolute left-0 top-2.5 z-10">
           {soldOut ? (
-            <span className="rounded-brand-sm bg-slate-900/85 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">
+            <span className="rounded-r-brand-sm bg-brand-ink/90 px-2 py-1 text-2xs font-bold uppercase tracking-wider text-white">
               Sold out
             </span>
           ) : (
-            <>
-              {pricing.hasDiscount && pricing.discountPercent >= 5 && (
-                <span className="rounded-brand-sm bg-rose-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
-                  {pricing.discountPercent}% off
-                </span>
-              )}
-              {scarcity && (
-                <span
-                  className={`rounded-brand-sm px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm ${
-                    scarcity.tone === "danger"
-                      ? "bg-rose-50 text-rose-700 ring-1 ring-rose-200"
-                      : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
-                  }`}
-                >
-                  {scarcity.message}
-                </span>
-              )}
-              {product.featured && !pricing.hasDiscount && !scarcity && (
-                <span className="rounded-brand-sm bg-slate-900/85 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">
-                  Featured
-                </span>
-              )}
-            </>
+            badge && (
+              <span
+                className={`rounded-r-brand-sm px-2 py-1 text-2xs font-bold uppercase tracking-wider ${BADGE_TONE_CLASSES[badge.tone]}`}
+              >
+                {badge.label}
+              </span>
+            )
           )}
         </div>
+
+        {/* Rating chip on the image, bottom-left — the first trust signal
+            scanned, and it costs no vertical space in the grid. */}
+        {stats && stats.review_count > 0 && (
+          <span className="rating-chip absolute bottom-2.5 left-2.5 z-10">
+            {stats.average_rating.toFixed(1)}
+            <Star className="h-3 w-3 fill-brand-rating text-brand-rating" aria-hidden="true" />
+            <span className="font-normal text-brand-faint-ink">
+              | {stats.review_count > 999 ? `${(stats.review_count / 1000).toFixed(1)}k` : stats.review_count}
+            </span>
+          </span>
+        )}
 
         {wishlistEnabled && (
           <button
             onClick={handleToggleWishlist}
-            className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:scale-110 hover:bg-white hover:text-rose-500 sm:right-3 sm:top-3 sm:h-9 sm:w-9"
+            className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-brand-muted-ink shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:text-brand-primary"
             aria-label={
               isFavorite
                 ? `Remove ${product.name} from wishlist`
@@ -200,89 +247,87 @@ export function ProductCard({
             }
             aria-pressed={isFavorite}
           >
-            <Heart className={`h-4 w-4 ${isFavorite ? "fill-rose-500 text-rose-500" : ""}`} />
+            <Heart className={`h-4 w-4 ${isFavorite ? "fill-brand-primary text-brand-primary" : ""}`} />
           </button>
         )}
 
         {/* Quick add. Always visible on touch devices — a hover-only control is
-            unreachable on a phone, which is where most of the traffic is. */}
-        <div className="absolute inset-x-2.5 bottom-2.5 z-10 transition-all duration-300 group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 sm:inset-x-3 sm:bottom-3 [@media(hover:hover)]:translate-y-2 [@media(hover:hover)]:opacity-0">
+            unreachable on a phone, which is where most traffic is. */}
+        <div className="absolute inset-x-0 bottom-0 z-10 translate-y-0 transition-transform duration-200 [@media(hover:hover)]:translate-y-full [@media(hover:hover)]:group-hover:translate-y-0">
           <button
             onClick={handleQuickAdd}
             disabled={soldOut}
-            className="flex w-full items-center justify-center gap-2 rounded-brand bg-slate-900/95 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-white shadow-elevated backdrop-blur-sm transition-all hover:bg-brand-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-400 sm:py-3 sm:text-xs"
+            className="flex w-full items-center justify-center gap-1.5 bg-brand-ink/95 py-2.5 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur-sm transition-colors hover:bg-brand-primary disabled:bg-brand-faint-ink"
           >
             {isAdded ? (
               <>
-                <Check className="h-4 w-4 text-emerald-400" /> Added to bag
+                <Check className="h-3.5 w-3.5" /> Added
               </>
             ) : soldOut ? (
               "Sold out"
             ) : (
               <>
-                <ShoppingBag className="h-4 w-4" /> Quick add
+                <ShoppingBag className="h-3.5 w-3.5" /> Add to bag
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* Content — brand first, then name, the hierarchy shoppers scan by */}
-      <div className="flex flex-1 flex-col p-3 sm:p-4">
+      <div className="flex flex-1 flex-col gap-1 p-2.5 sm:p-3">
+        {/* Brand bold, name grey — the order shoppers scan in. */}
+        <h3 className="truncate text-sm font-bold leading-tight text-brand-ink">
+          <Link href={`/products/${product.slug}`}>{product.brand || product.name}</Link>
+        </h3>
         {product.brand && (
-          <div className="mb-1 truncate text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 sm:text-[11px]">
-            {product.brand}
-          </div>
+          <p className="truncate text-xs leading-tight text-brand-muted-ink">{product.name}</p>
         )}
 
-        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors group-hover:text-brand-primary">
-          <Link href={`/products/${product.slug}`}>{product.name}</Link>
-        </h3>
+        {/* Price: what you pay, what it was, how much off. */}
+        <div className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5">
+          <span className="text-sm font-bold text-brand-ink">{formatPrice(price)}</span>
+          {pricing.hasDiscount && (
+            <>
+              <span className="text-xs text-brand-faint-ink line-through">
+                {formatPrice(pricing.compareAtPrice!)}
+              </span>
+              <span className="text-xs font-bold text-brand-discount">
+                ({pricing.discountPercent}% OFF)
+              </span>
+            </>
+          )}
+        </div>
 
-        {stats && stats.review_count > 0 && (
-          <div className="mt-2">
-            <StarRating
-              rating={stats.average_rating}
-              count={stats.review_count}
-              size="xs"
-              variant="pill"
+        {/* In-grid variant selection. */}
+        {colours.length > 1 && (
+          <div className="mt-1">
+            <ColourPicker
+              swatches={colours}
+              selectedVariantId={selectedVariantId}
+              onSelect={setSelectedVariantId}
             />
           </div>
         )}
 
-        {/* Price row: the discounted figure leads, the strike-through anchors it,
-            and the saving is stated in money because a percentage alone is
-            abstract at the moment of decision. */}
-        <div className="mt-auto pt-3">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="text-base font-bold text-slate-900">
-              {formatPrice(product.price)}
-            </span>
-            {pricing.hasDiscount && (
-              <>
-                <span className="text-xs text-slate-400 line-through">
-                  {formatPrice(pricing.compareAtPrice!)}
-                </span>
-                <span className="text-xs font-bold text-emerald-600">
-                  Save {formatPrice(pricing.savings)}
-                </span>
-              </>
-            )}
+        {sizes.length > 0 && (
+          <div className="mt-1">
+            <SizePicker
+              sizes={sizes}
+              selectedVariantId={selectedVariantId}
+              onSelect={setSelectedVariantId}
+            />
           </div>
+        )}
 
-          <div className="mt-1.5 flex min-h-[1rem] items-center justify-between gap-2">
-            {proof ? (
-              <span className="truncate text-[11px] font-medium text-slate-500">{proof}</span>
-            ) : (
-              <span />
-            )}
-            {product.variants && product.variants.length > 1 && (
-              <span className="flex-shrink-0 text-[11px] font-medium text-slate-400">
-                {product.variants.length} options
-              </span>
-            )}
-          </div>
-        </div>
+        {/* Scarcity outranks social proof: it is the more actionable of the
+            two, and showing both makes the card shout. */}
+        {scarcity ? (
+          <p className="mt-0.5 truncate text-[11px] font-bold text-brand-urgent">
+            {scarcity.message}
+          </p>
+        ) : proof ? (
+          <p className="mt-0.5 truncate text-[11px] font-medium text-brand-discount">{proof}</p>
+        ) : null}
       </div>
     </div>
   );

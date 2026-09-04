@@ -1,45 +1,134 @@
-/* Only the families referenced by the default theme are loaded. Clients that
-   swap fontHeading/fontBody should update this import to match. */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+/* Figtree carries the dense, slightly condensed feel that large fashion
+   marketplaces use for product copy; Inter is the metric-compatible fallback. */
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   DESIGN TOKENS
+
+   Modelled on how high-volume fashion marketplaces (Myntra, Ajio, Nykaa)
+   actually build a storefront, because those patterns are the ones shoppers
+   have been trained on:
+
+   - Text is a dense blue-charcoal, not pure black and not grey-500. Pure black
+     on white is harsh at small sizes; a generic slate palette is what makes a
+     storefront read as "a template".
+   - Exactly one hot accent, reserved for the primary action. If everything is
+     accented, nothing is.
+   - Ratings are green, discounts are orange, urgency is red. These three are
+     near-universal in commerce and shoppers parse them pre-attentively — using
+     a single brand colour for all three throws that away.
+   - Borders are a single hairline value, close to the background. Heavy
+     borders and large shadows make a catalog feel cluttered at grid density.
+
+   Every value is a CSS variable so a client store can rebrand without touching
+   a component (AGENTS.md sections 2 and 9).
+   ========================================================================== */
+
 :root {
-  --brand-primary: #0f172a;
-  --brand-secondary: #334155;
-  --brand-accent: #10b981;
+  /* --- Text ------------------------------------------------------------ */
+  /* Primary copy. The single most-used colour on the page. */
+  --brand-ink: #282c3f;
+  /* Secondary copy: product names, helper text, metadata. */
+  --brand-muted-ink: #696b79;
+  /* Tertiary: timestamps, counts, disabled labels. */
+  --brand-faint-ink: #94969f;
+
+  /* --- Brand ----------------------------------------------------------- */
+  /* The one hot accent. Primary CTAs, active states, links. */
+  --brand-primary: #f5325b;
+  --brand-primary-hover: #d81e49;
+  /* Deep neutral used for secondary buttons and the footer. */
+  --brand-secondary: #282c3f;
+  /* Kept for backwards compatibility with existing components. */
+  --brand-accent: #f5325b;
+
+  /* --- Semantic -------------------------------------------------------- */
+  /* Ratings and "in stock". Green reads as approval before it is read at all. */
+  --brand-rating: #14958f;
+  --brand-success: #03a685;
+  /* Discount percentages and offer copy. */
+  --brand-discount: #ff690f;
+  /* Scarcity: "Only 2 left". Distinct from discount on purpose. */
+  --brand-urgent: #ff5a5a;
+  --brand-danger: #e5343d;
+
+  /* --- Surfaces -------------------------------------------------------- */
   --brand-surface: #ffffff;
-  --brand-muted: #f8fafc;
-  --brand-border: #e2e8f0;
-  --brand-radius: 0.5rem;
-  --brand-radius-sm: 0.25rem;
-  --brand-radius-lg: 0.75rem;
-  --brand-radius-xl: 1rem;
-  --font-heading: 'Outfit', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  /* Section backgrounds and inactive chips. */
+  --brand-subtle: #f5f5f6;
+  --brand-muted: #fafafb;
+  /* One hairline value, used everywhere. */
+  --brand-border: #eaeaec;
+  --brand-border-strong: #d4d5d9;
+
+  /* --- Radius ---------------------------------------------------------- */
+  /* Marketplace UI is squarer than the 2020s SaaS default; softening
+     everything to 12px is a large part of why a store reads as generic. */
+  --brand-radius: 4px;
+  --brand-radius-sm: 2px;
+  --brand-radius-lg: 8px;
+  --brand-radius-xl: 12px;
+  --brand-radius-full: 9999px;
+
+  /* --- Type ------------------------------------------------------------ */
+  --font-heading: 'Figtree', 'Inter', system-ui, sans-serif;
+  --font-body: 'Figtree', 'Inter', system-ui, sans-serif;
 }
 
 @layer base {
   * {
     @apply border-brand-border;
   }
+
   body {
-    @apply bg-brand-surface text-slate-900 font-body antialiased selection:bg-emerald-500 selection:text-white;
+    @apply bg-brand-surface font-body text-brand-ink antialiased;
     /* Defensive: a single mis-sized child should never make the whole page
        scroll sideways on a phone. Wide content still scrolls in its own
        overflow-x container. */
     overflow-x: hidden;
+    /* Slightly tighter than the browser default; marketplace copy is dense. */
+    letter-spacing: -0.005em;
   }
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading tracking-tight text-slate-900;
+    @apply font-heading font-bold tracking-tight text-brand-ink;
+  }
+
+  ::selection {
+    background-color: var(--brand-primary);
+    color: #ffffff;
+  }
+}
+
+@layer components {
+  /* Uppercase micro-label above a heading, used across the storefront. */
+  .eyebrow {
+    @apply text-[11px] font-bold uppercase tracking-[0.18em] text-brand-primary;
+  }
+
+  /* The rating chip that sits on a product image. */
+  .rating-chip {
+    @apply inline-flex items-center gap-1 rounded-brand-sm bg-white/95 px-1.5 py-0.5 text-[11px] font-bold text-brand-ink shadow-sm backdrop-blur-sm;
+  }
+
+  /* Horizontal scroller that bleeds to the screen edge on phones — the visual
+     cue that a rail scrolls. */
+  .edge-scroller {
+    @apply -mx-4 overflow-x-auto px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:overflow-visible lg:px-0;
+    scrollbar-width: none;
+  }
+  .edge-scroller::-webkit-scrollbar {
+    display: none;
   }
 }
 
 /* Smooth micro-interactions */
 .smooth-transition {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Custom minimal scrollbar */
@@ -49,16 +138,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--brand-subtle);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--brand-border-strong);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--brand-faint-ink);
 }
 
 /* Respect the user's reduced-motion preference. */

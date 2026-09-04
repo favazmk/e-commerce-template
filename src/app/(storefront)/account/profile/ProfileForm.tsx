@@ -49,11 +49,11 @@ export function ProfileForm({ user }: { user: User }) {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-heading text-xl font-bold text-slate-900">Profile</h1>
+      <h1 className="font-heading text-xl font-bold text-brand-ink">Profile</h1>
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-5 rounded-brand-xl border border-slate-200 bg-white p-5 shadow-subtle sm:p-6"
+        className="space-y-5 rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle sm:p-6"
       >
         {error && (
           <p role="alert" className="rounded-brand bg-rose-50 p-3 text-sm text-rose-700">
@@ -61,7 +61,7 @@ export function ProfileForm({ user }: { user: User }) {
           </p>
         )}
         {saved && (
-          <p role="status" className="rounded-brand bg-emerald-50 p-3 text-sm text-emerald-800">
+          <p role="status" className="rounded-brand bg-brand-success/10 p-3 text-sm text-brand-success">
             Your details have been saved.
           </p>
         )}

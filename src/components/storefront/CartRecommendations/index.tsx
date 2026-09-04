@@ -68,15 +68,15 @@ export function CartRecommendations({
 
   return (
     <section
-      className="rounded-brand-xl border border-slate-200 bg-white p-5 shadow-subtle"
+      className="rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle"
       aria-label={title}
     >
-      <h2 className="font-heading text-base font-bold text-slate-900">{title}</h2>
-      <p className="mt-1 text-xs text-slate-500">
+      <h2 className="font-heading text-base font-bold text-brand-ink">{title}</h2>
+      <p className="mt-1 text-xs text-brand-muted-ink">
         Often bought with what is already in your bag.
       </p>
 
-      <ul className="mt-4 divide-y divide-slate-100">
+      <ul className="mt-4 divide-y divide-brand-border">
         {products.map((product) => {
           const pricing = priceBreakdown(product.price, product.compare_at_price);
           const justAdded = addedId === product.id;
@@ -85,7 +85,7 @@ export function CartRecommendations({
             <li key={product.id} className="flex items-center gap-3 py-3">
               <Link
                 href={`/products/${product.slug}`}
-                className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-brand border border-slate-100 bg-slate-50"
+                className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-brand border border-brand-border bg-brand-subtle"
               >
                 <ProductImage
                   src={product.images?.[0]?.url}
@@ -98,17 +98,17 @@ export function CartRecommendations({
               </Link>
 
               <div className="min-w-0 flex-1">
-                <h3 className="truncate text-sm font-medium text-slate-900">
+                <h3 className="truncate text-sm font-medium text-brand-ink">
                   <Link href={`/products/${product.slug}`} className="hover:underline">
                     {product.name}
                   </Link>
                 </h3>
                 <div className="mt-0.5 flex items-baseline gap-2">
-                  <span className="text-sm font-bold text-slate-900">
+                  <span className="text-sm font-bold text-brand-ink">
                     {formatPrice(product.price)}
                   </span>
                   {pricing.hasDiscount && (
-                    <span className="text-xs text-slate-400 line-through">
+                    <span className="text-xs text-brand-faint-ink line-through">
                       {formatPrice(pricing.compareAtPrice!)}
                     </span>
                   )}
@@ -120,8 +120,8 @@ export function CartRecommendations({
                 onClick={() => handleAdd(product)}
                 className={`flex flex-shrink-0 items-center gap-1 rounded-brand border px-3 py-1.5 text-xs font-semibold transition-colors ${
                   justAdded
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                    : "border-slate-300 text-slate-800 hover:border-slate-900 hover:bg-slate-900 hover:text-white"
+                    ? "border-brand-success/40 bg-brand-success/10 text-brand-primary"
+                    : "border-brand-border-strong text-brand-ink hover:border-brand-ink hover:bg-brand-ink hover:text-white"
                 }`}
                 aria-label={`Add ${product.name} to bag`}
               >

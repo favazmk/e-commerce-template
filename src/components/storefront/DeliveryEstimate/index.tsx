@@ -65,23 +65,23 @@ export function DeliveryEstimate({
   const shortfall = selected.free_threshold ? selected.free_threshold - itemPrice : 0;
 
   return (
-    <div className="space-y-3 rounded-brand-xl border border-slate-200 bg-slate-50/60 p-4">
+    <div className="space-y-3 rounded-brand-xl border border-brand-border bg-brand-subtle/60 p-4">
       <div className="flex items-start gap-3">
-        <Truck className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+        <Truck className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-primary" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-slate-900">
+          <p className="text-sm font-semibold text-brand-ink">
             Arrives {formatDeliveryWindow(window)}
           </p>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="mt-0.5 text-xs text-brand-muted-ink">
             {selected.name}
             {" · "}
             {qualifiesFree || selected.rate === 0 ? (
-              <span className="font-semibold text-emerald-600">Free delivery</span>
+              <span className="font-semibold text-brand-primary">Free delivery</span>
             ) : (
               <>
                 {formatPrice(selected.rate)}
                 {selected.free_threshold && shortfall > 0 && (
-                  <span className="text-slate-600">
+                  <span className="text-brand-muted-ink">
                     {" "}
                     — free over {formatPrice(selected.free_threshold)}
                   </span>
@@ -102,8 +102,8 @@ export function DeliveryEstimate({
               onClick={() => setSelectedId(option.id)}
               className={`rounded-brand-full border px-3 py-1 text-[11px] font-semibold transition-colors ${
                 option.id === selected.id
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
+                  ? "border-brand-ink bg-brand-ink text-white"
+                  : "border-brand-border bg-white text-brand-muted-ink hover:border-brand-ink"
               }`}
             >
               {option.name}
@@ -112,19 +112,19 @@ export function DeliveryEstimate({
         </div>
       )}
 
-      <div className="space-y-2 border-t border-slate-200 pt-3 pl-8 text-xs text-slate-600">
+      <div className="space-y-2 border-t border-brand-border pt-3 pl-8 text-xs text-brand-muted-ink">
         {returnWindowDays > 0 && (
           <p className="flex items-center gap-2">
-            <RotateCcw className="h-3.5 w-3.5 flex-shrink-0 text-slate-400" />
+            <RotateCcw className="h-3.5 w-3.5 flex-shrink-0 text-brand-faint-ink" />
             {returnWindowDays}-day returns — start one from your account
           </p>
         )}
         <p className="flex items-center gap-2">
-          <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0 text-slate-400" />
+          <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0 text-brand-faint-ink" />
           Secure checkout — card details never touch our servers
         </p>
         <p className="flex items-center gap-2">
-          <Package className="h-3.5 w-3.5 flex-shrink-0 text-slate-400" />
+          <Package className="h-3.5 w-3.5 flex-shrink-0 text-brand-faint-ink" />
           Tracked from dispatch to your door
         </p>
       </div>

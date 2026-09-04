@@ -63,7 +63,7 @@ export function TrackOrderForm() {
     <div className="space-y-8">
       <form
         onSubmit={handleSubmit}
-        className="space-y-5 rounded-brand-xl border border-slate-200 bg-white p-5 shadow-subtle sm:p-6"
+        className="space-y-5 rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle sm:p-6"
       >
         {error && (
           <p role="alert" className="flex gap-2 rounded-brand bg-rose-50 p-3 text-sm text-rose-700">
@@ -101,23 +101,23 @@ export function TrackOrderForm() {
       </form>
 
       {order && (
-        <section className="overflow-hidden rounded-brand-xl border border-slate-200 bg-white shadow-subtle">
-          <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/60 p-5">
+        <section className="overflow-hidden rounded-brand-xl border border-brand-border bg-white shadow-subtle">
+          <header className="flex flex-wrap items-center justify-between gap-3 border-b border-brand-border bg-brand-subtle/60 p-5">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-faint-ink">
                 Order
               </span>
-              <p className="font-heading text-lg font-bold text-slate-900">#{order.orderNumber}</p>
-              <p className="text-xs text-slate-500">
+              <p className="font-heading text-lg font-bold text-brand-ink">#{order.orderNumber}</p>
+              <p className="text-xs text-brand-muted-ink">
                 Placed {new Date(order.placedAt).toLocaleDateString()}
                 {order.shippingCity ? ` · Shipping to ${order.shippingCity}` : ""}
               </p>
             </div>
             <div className="text-right">
-              <span className="rounded-brand-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-700">
+              <span className="rounded-brand-full bg-brand-success/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-primary">
                 {order.statusLabel}
               </span>
-              <p className="mt-2 text-sm font-bold text-slate-900">
+              <p className="mt-2 text-sm font-bold text-brand-ink">
                 {formatPrice(order.total, order.currency)}
               </p>
             </div>
@@ -126,7 +126,7 @@ export function TrackOrderForm() {
           {/* Horizontal progress rail — reads at a glance, which is the whole
               point of a tracking page. */}
           {currentIndex >= 0 && (
-            <ol className="flex overflow-x-auto border-b border-slate-100 p-5">
+            <ol className="flex overflow-x-auto border-b border-brand-border p-5">
               {ORDER_JOURNEY.map((step, index) => {
                 const reached = index <= currentIndex;
                 return (
@@ -134,14 +134,14 @@ export function TrackOrderForm() {
                     <div className="flex w-full items-center">
                       <span
                         className={`h-0.5 flex-1 ${
-                          index === 0 ? "bg-transparent" : reached ? "bg-emerald-600" : "bg-slate-200"
+                          index === 0 ? "bg-transparent" : reached ? "bg-brand-primary" : "bg-brand-border"
                         }`}
                       />
                       <span
                         className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 ${
                           reached
-                            ? "border-emerald-600 bg-emerald-600 text-white"
-                            : "border-slate-200 bg-white text-slate-300"
+                            ? "border-brand-success bg-brand-success text-white"
+                            : "border-brand-border bg-white text-brand-faint-ink"
                         }`}
                       >
                         {reached ? (
@@ -155,14 +155,14 @@ export function TrackOrderForm() {
                           index === ORDER_JOURNEY.length - 1
                             ? "bg-transparent"
                             : index < currentIndex
-                              ? "bg-emerald-600"
-                              : "bg-slate-200"
+                              ? "bg-brand-primary"
+                              : "bg-brand-border"
                         }`}
                       />
                     </div>
                     <span
                       className={`text-center text-[11px] font-semibold ${
-                        reached ? "text-slate-900" : "text-slate-400"
+                        reached ? "text-brand-ink" : "text-brand-faint-ink"
                       }`}
                     >
                       {orderStatusLabel(step)}
@@ -174,16 +174,16 @@ export function TrackOrderForm() {
           )}
 
           {order.estimatedDelivery && (
-            <p className="border-b border-slate-100 px-5 py-3 text-sm text-slate-600">
+            <p className="border-b border-brand-border px-5 py-3 text-sm text-brand-muted-ink">
               Estimated delivery:{" "}
-              <span className="font-semibold text-slate-900">{order.estimatedDelivery}</span>
+              <span className="font-semibold text-brand-ink">{order.estimatedDelivery}</span>
             </p>
           )}
 
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-brand-border">
             {order.items.map((item, index) => (
               <li key={index} className="flex items-center gap-3 px-5 py-3">
-                <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-brand border border-slate-100 bg-slate-50">
+                <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-brand border border-brand-border bg-brand-subtle">
                   <ProductImage
                     src={item.image}
                     seed={item.name}
@@ -193,15 +193,15 @@ export function TrackOrderForm() {
                     className="object-cover"
                   />
                 </div>
-                <span className="min-w-0 flex-1 truncate text-sm text-slate-800">{item.name}</span>
-                <span className="text-xs text-slate-400">×{item.quantity}</span>
+                <span className="min-w-0 flex-1 truncate text-sm text-brand-ink">{item.name}</span>
+                <span className="text-xs text-brand-faint-ink">×{item.quantity}</span>
               </li>
             ))}
           </ul>
 
-          <footer className="border-t border-slate-100 bg-slate-50/60 px-5 py-4 text-xs text-slate-500">
+          <footer className="border-t border-brand-border bg-brand-subtle/60 px-5 py-4 text-xs text-brand-muted-ink">
             Something not right?{" "}
-            <Link href="/contact" className="font-semibold text-emerald-600 hover:underline">
+            <Link href="/contact" className="font-semibold text-brand-primary hover:underline">
               Contact support
             </Link>{" "}
             with your order number.

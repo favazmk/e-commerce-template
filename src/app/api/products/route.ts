@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidateProduct } from "@/lib/cache/revalidate";
 import { ProductService } from "@/services/product.service";
 import { requireAdmin } from "@/lib/auth/session";
 import { ChangeLogService } from "@/services/changelog.service";
@@ -59,8 +59,10 @@ export async function POST(request: NextRequest) {
       actor: auth.user,
     });
 
-    revalidatePath("/admin/products");
-    revalidatePath("/products");
+    // Refreshes the sitemap, the Google and Meta feeds, the homepage rails
+    // and the product's own category page — not just the listing.
+    revalidateProduct({ slug: created.slug, categorySlug: created.category?.slug });
+
     return NextResponse.json({ success: true, data: created });
   } catch (error: any) {
     return NextResponse.json(

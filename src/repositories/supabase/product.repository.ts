@@ -187,6 +187,8 @@ export class SupabaseProductRepository extends SupabaseRepository implements IPr
     "low_stock_threshold",
     "status",
     "featured",
+    "badge_label",
+    "badge_tone",
     "seo_title",
     "seo_description",
     "tags",
@@ -265,6 +267,10 @@ export class SupabaseProductRepository extends SupabaseRepository implements IPr
         stock: Math.max(0, Number(v.stock) || 0),
         image_url: v.image_url || null,
         is_active: v.is_active !== undefined ? Boolean(v.is_active) : true,
+        swatch_hex: typeof v.swatch_hex === "string" && /^#[0-9a-f]{6}$/i.test(v.swatch_hex)
+          ? v.swatch_hex
+          : null,
+        is_default: Boolean(v.is_default),
         attributes: v.attributes || {},
         updated_at: new Date().toISOString(),
       };

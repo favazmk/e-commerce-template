@@ -36,22 +36,22 @@ export default async function AccountLayout({ children }: { children: React.Reac
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       {/* Identity banner */}
-      <div className="mb-8 flex flex-col items-center gap-5 rounded-brand-xl bg-slate-900 p-6 text-white shadow-float sm:flex-row sm:p-8">
-        <div className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-emerald-500 bg-slate-800">
+      <div className="mb-8 flex flex-col items-center gap-5 rounded-brand-xl bg-brand-ink p-6 text-white shadow-float sm:flex-row sm:p-8">
+        <div className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-brand-primary bg-brand-ink">
           {user.avatar_url ? (
             <Image fill sizes="64px" src={user.avatar_url} alt="" className="object-cover" />
           ) : (
-            <span className="text-lg font-bold text-emerald-400">{initials}</span>
+            <span className="text-lg font-bold text-brand-primary">{initials}</span>
           )}
         </div>
         <div className="min-w-0 flex-1 text-center sm:text-left">
-          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-400">
+          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-primary">
             My account
           </span>
           <h1 className="mt-1 break-words font-heading text-2xl font-bold sm:text-3xl">
             {user.name || "Welcome back"}
           </h1>
-          <p className="mt-1 break-all text-xs text-slate-400">
+          <p className="mt-1 break-all text-xs text-brand-faint-ink">
             {user.email} &bull; Member since {memberSince}
           </p>
         </div>

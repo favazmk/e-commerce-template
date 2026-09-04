@@ -100,20 +100,20 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       />
 
       <nav aria-label="Breadcrumb" className="mb-5">
-        <ol className="flex items-center gap-1 text-xs text-slate-500">
+        <ol className="flex items-center gap-1 text-xs text-brand-muted-ink">
           <li>
-            <Link href="/" className="transition-colors hover:text-slate-900">
+            <Link href="/" className="transition-colors hover:text-brand-ink">
               Home
             </Link>
           </li>
-          <ChevronRight className="h-3 w-3 text-slate-300" aria-hidden="true" />
-          <li className="font-semibold text-slate-900">Products</li>
+          <ChevronRight className="h-3 w-3 text-brand-faint-ink" aria-hidden="true" />
+          <li className="font-semibold text-brand-ink">Products</li>
         </ol>
       </nav>
 
-      <header className="mb-8 border-b border-slate-100 pb-6">
-        <h1 className="font-heading text-2xl font-bold text-slate-900 sm:text-4xl">{heading}</h1>
-        <p className="mt-1.5 max-w-2xl text-sm text-slate-500">
+      <header className="mb-8 border-b border-brand-border pb-6">
+        <h1 className="font-heading text-2xl font-bold text-brand-ink sm:text-4xl">{heading}</h1>
+        <p className="mt-1.5 max-w-2xl text-sm text-brand-muted-ink">
           {params.q
             ? `${result.total} ${result.total === 1 ? "match" : "matches"} found.`
             : "Browse the full range. Filter by category, price or brand to narrow it down."}

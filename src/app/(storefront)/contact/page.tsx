@@ -16,13 +16,13 @@ export default function ContactPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center max-w-xl mx-auto mb-16">
-        <span className="text-xs uppercase font-bold tracking-widest text-emerald-600">
+        <span className="text-xs uppercase font-bold tracking-widest text-brand-primary">
           Client Concierge
         </span>
-        <h1 className="text-3xl sm:text-4xl font-bold font-heading text-slate-900 mt-1">
+        <h1 className="text-3xl sm:text-4xl font-bold font-heading text-brand-ink mt-1">
           How May We Assist You?
         </h1>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-brand-muted-ink">
           Our client advisory team is available Monday through Friday to address bespoke inquiries,
           sizing consultations, and order assistance.
         </p>
@@ -31,12 +31,12 @@ export default function ContactPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-5xl mx-auto">
         {/* Contact Info Cards */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="rounded-brand-xl bg-slate-900 text-white p-8 shadow-float space-y-6">
+          <div className="rounded-brand-xl bg-brand-ink text-white p-8 shadow-float space-y-6">
             <h2 className="text-xl font-bold font-heading">Direct Concierge</h2>
 
-            <div className="space-y-4 text-xs text-slate-300">
+            <div className="space-y-4 text-xs text-brand-faint-ink">
               <div className="flex items-start gap-3">
-                <Mail className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                <Mail className="h-5 w-5 text-brand-primary flex-shrink-0" />
                 <div>
                   <p className="font-bold text-white">Email Advisory</p>
                   <p>concierge@auraluxury.com</p>
@@ -44,7 +44,7 @@ export default function ContactPage() {
               </div>
 
               <div className="flex items-start gap-3">
-                <Phone className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                <Phone className="h-5 w-5 text-brand-primary flex-shrink-0" />
                 <div>
                   <p className="font-bold text-white">Telephone Inquiries</p>
                   <p>+1 (800) 555-0199</p>
@@ -52,7 +52,7 @@ export default function ContactPage() {
               </div>
 
               <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                <MapPin className="h-5 w-5 text-brand-primary flex-shrink-0" />
                 <div>
                   <p className="font-bold text-white">Showroom & Headquarters</p>
                   <p>740 Madison Avenue, New York, NY 10065</p>
@@ -64,14 +64,14 @@ export default function ContactPage() {
 
         {/* Contact Form */}
         <div className="lg:col-span-7">
-          <div className="rounded-brand-xl border border-slate-200 bg-white p-8 shadow-subtle">
+          <div className="rounded-brand-xl border border-brand-border bg-white p-8 shadow-subtle">
             {submitted ? (
               <div className="py-12 text-center space-y-3">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-success/15 text-brand-primary">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">Message Received</h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                <h3 className="text-lg font-bold text-brand-ink">Message Received</h3>
+                <p className="text-xs text-brand-muted-ink max-w-sm mx-auto">
                   Thank you for contacting us. A dedicated concierge advisor will respond to your
                   inquiry within 24 hours.
                 </p>
@@ -84,13 +84,13 @@ export default function ContactPage() {
                 </div>
                 <Input label="Subject / Order Number" placeholder="e.g. Inquiring about overcoat sizing" />
                 <div className="space-y-1.5 text-left">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-brand-muted-ink">
                     Message
                   </label>
                   <textarea
                     required
                     rows={4}
-                    className="block w-full rounded-brand border border-slate-300 p-3 text-sm focus:border-slate-900 focus:outline-none"
+                    className="block w-full rounded-brand border border-brand-border-strong p-3 text-sm focus:border-brand-ink focus:outline-none"
                     placeholder="Provide details about your request..."
                   />
                 </div>

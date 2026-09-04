@@ -64,11 +64,11 @@ export function RecentlyViewed({
   return (
     <section className="py-8 sm:py-10" aria-label={title}>
       <div className="mb-5 flex items-end justify-between gap-4">
-        <h2 className="font-heading text-lg font-bold text-slate-900 sm:text-xl">{title}</h2>
+        <h2 className="font-heading text-lg font-bold text-brand-ink sm:text-xl">{title}</h2>
         <button
           type="button"
           onClick={clear}
-          className="flex-shrink-0 text-xs font-semibold text-slate-400 hover:text-slate-700 hover:underline"
+          className="flex-shrink-0 text-xs font-semibold text-brand-faint-ink hover:text-brand-ink hover:underline"
         >
           Clear history
         </button>

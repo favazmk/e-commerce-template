@@ -77,7 +77,7 @@ function LoginForm() {
           New here?{" "}
           <Link
             href={`/register?redirectTo=${encodeURIComponent(redirectTo)}`}
-            className="font-semibold text-emerald-600 hover:underline"
+            className="font-semibold text-brand-primary hover:underline"
           >
             Create an account
           </Link>
@@ -97,7 +97,7 @@ function LoginForm() {
       {notice && (
         <div
           role="status"
-          className="mb-5 flex gap-2 rounded-brand border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"
+          className="mb-5 flex gap-2 rounded-brand border border-brand-success/30 bg-brand-success/10 p-3 text-sm text-brand-success"
         >
           <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0" />
           <span>{notice}</span>
@@ -131,7 +131,7 @@ function LoginForm() {
           <div className="text-right">
             <Link
               href="/forgot-password"
-              className="text-xs font-semibold text-slate-500 hover:text-emerald-600 hover:underline"
+              className="text-xs font-semibold text-brand-muted-ink hover:text-brand-primary hover:underline"
             >
               Forgot your password?
             </Link>
@@ -149,7 +149,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense
-      fallback={<div className="px-4 py-24 text-center text-sm text-slate-500">Loading…</div>}
+      fallback={<div className="px-4 py-24 text-center text-sm text-brand-muted-ink">Loading…</div>}
     >
       <LoginForm />
     </Suspense>

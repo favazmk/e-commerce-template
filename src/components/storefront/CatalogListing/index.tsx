@@ -99,12 +99,12 @@ export async function CatalogListing({
       {/* Filters. A <details> element gives a working accordion on phones with
           no JavaScript, so the filter panel is usable before hydration. */}
       <aside className="lg:col-span-1">
-        <details className="group rounded-brand-xl border border-slate-200 bg-white lg:open" open>
-          <summary className="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-bold text-slate-900 lg:hidden">
+        <details className="group rounded-brand-xl border border-brand-border bg-white lg:open" open>
+          <summary className="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-bold text-brand-ink lg:hidden">
             <span className="flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4" /> Filters
               {hasActiveFilters && (
-                <span className="rounded-full bg-emerald-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                <span className="rounded-full bg-brand-primary px-1.5 py-0.5 text-[10px] font-bold text-white">
                   on
                 </span>
               )}
@@ -112,7 +112,7 @@ export async function CatalogListing({
             <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
           </summary>
 
-          <div className="space-y-6 border-t border-slate-100 p-4 lg:border-t-0 lg:p-0">
+          <div className="space-y-6 border-t border-brand-border p-4 lg:border-t-0 lg:p-0">
             {hasActiveFilters && (
               <Link
                 href={basePath}
@@ -124,7 +124,7 @@ export async function CatalogListing({
 
             {categories.length > 0 && (
               <div>
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-900">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-brand-ink">
                   Category
                 </h2>
                 <ul className="space-y-1.5 text-sm">
@@ -133,8 +133,8 @@ export async function CatalogListing({
                       href="/products"
                       className={`block py-1 transition-colors ${
                         !filters.category
-                          ? "font-bold text-emerald-600"
-                          : "text-slate-600 hover:text-slate-900"
+                          ? "font-bold text-brand-primary"
+                          : "text-brand-muted-ink hover:text-brand-ink"
                       }`}
                     >
                       All products
@@ -146,8 +146,8 @@ export async function CatalogListing({
                         href={`/categories/${category.slug}`}
                         className={`block py-1 transition-colors ${
                           filters.category === category.slug
-                            ? "font-bold text-emerald-600"
-                            : "text-slate-600 hover:text-slate-900"
+                            ? "font-bold text-brand-primary"
+                            : "text-brand-muted-ink hover:text-brand-ink"
                         }`}
                       >
                         {category.name}
@@ -159,8 +159,8 @@ export async function CatalogListing({
             )}
 
             {priceBands.length > 0 && (
-              <div className="border-t border-slate-100 pt-5">
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-900">
+              <div className="border-t border-brand-border pt-5">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-brand-ink">
                   Price
                 </h2>
                 <ul className="space-y-1.5 text-sm">
@@ -174,8 +174,8 @@ export async function CatalogListing({
                         })}
                         className={`block py-1 transition-colors ${
                           priceBandActive(band)
-                            ? "font-bold text-emerald-600"
-                            : "text-slate-600 hover:text-slate-900"
+                            ? "font-bold text-brand-primary"
+                            : "text-brand-muted-ink hover:text-brand-ink"
                         }`}
                       >
                         {band.label}
@@ -187,8 +187,8 @@ export async function CatalogListing({
             )}
 
             {brands.length > 1 && (
-              <div className="border-t border-slate-100 pt-5">
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-900">
+              <div className="border-t border-brand-border pt-5">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-brand-ink">
                   Brand
                 </h2>
                 <ul className="max-h-56 space-y-1.5 overflow-y-auto text-sm">
@@ -201,8 +201,8 @@ export async function CatalogListing({
                         })}
                         className={`block py-1 transition-colors ${
                           filters.brand === brand
-                            ? "font-bold text-emerald-600"
-                            : "text-slate-600 hover:text-slate-900"
+                            ? "font-bold text-brand-primary"
+                            : "text-brand-muted-ink hover:text-brand-ink"
                         }`}
                       >
                         {brand}
@@ -213,16 +213,16 @@ export async function CatalogListing({
               </div>
             )}
 
-            <div className="border-t border-slate-100 pt-5">
-              <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-900">
+            <div className="border-t border-brand-border pt-5">
+              <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-brand-ink">
                 Availability
               </h2>
               <Link
                 href={buildHref({ inStock: !filters.inStock, page: null })}
                 className={`block py-1 text-sm transition-colors ${
                   filters.inStock
-                    ? "font-bold text-emerald-600"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "font-bold text-brand-primary"
+                    : "text-brand-muted-ink hover:text-brand-ink"
                 }`}
               >
                 {filters.inStock ? "✓ In stock only" : "In stock only"}
@@ -234,14 +234,14 @@ export async function CatalogListing({
 
       {/* Results */}
       <div className="lg:col-span-3">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-          <p className="text-xs font-medium text-slate-500">
-            <span className="font-bold text-slate-900">{total}</span>{" "}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-brand-border pb-4">
+          <p className="text-xs font-medium text-brand-muted-ink">
+            <span className="font-bold text-brand-ink">{total}</span>{" "}
             {total === 1 ? "product" : "products"}
           </p>
 
           <div className="flex items-center gap-2 overflow-x-auto">
-            <span className="flex-shrink-0 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="flex-shrink-0 text-[11px] font-bold uppercase tracking-wider text-brand-faint-ink">
               Sort
             </span>
             {SORT_OPTIONS.map((option) => (
@@ -250,8 +250,8 @@ export async function CatalogListing({
                 href={buildHref({ sort: option.value, page: null })}
                 className={`flex-shrink-0 whitespace-nowrap rounded-brand-full border px-3 py-1 text-xs font-semibold transition-colors ${
                   (filters.sort || "featured") === option.value
-                    ? "border-slate-900 bg-slate-900 text-white"
-                    : "border-slate-200 text-slate-600 hover:border-slate-400"
+                    ? "border-brand-ink bg-brand-ink text-white"
+                    : "border-brand-border text-brand-muted-ink hover:border-brand-ink"
                 }`}
               >
                 {option.label}
@@ -328,14 +328,14 @@ function Pagination({
   return (
     <nav
       aria-label="Pagination"
-      className="mt-10 flex items-center justify-center gap-1.5 border-t border-slate-100 pt-8"
+      className="mt-10 flex items-center justify-center gap-1.5 border-t border-brand-border pt-8"
     >
       {page > 1 && (
         <Link
           href={buildHref(page - 1)}
           rel="prev"
           aria-label="Previous page"
-          className="flex h-9 w-9 items-center justify-center rounded-brand bg-slate-100 text-slate-700 transition-colors hover:bg-slate-200"
+          className="flex h-9 w-9 items-center justify-center rounded-brand bg-brand-subtle text-brand-muted-ink transition-colors hover:bg-brand-border"
         >
           <ChevronLeft className="h-4 w-4" />
         </Link>
@@ -343,7 +343,7 @@ function Pagination({
 
       {pages.map((entry, index) =>
         entry === "gap" ? (
-          <span key={`gap-${index}`} className="px-1 text-slate-400">
+          <span key={`gap-${index}`} className="px-1 text-brand-faint-ink">
             …
           </span>
         ) : (
@@ -354,7 +354,7 @@ function Pagination({
             className={`flex h-9 min-w-[2.25rem] items-center justify-center rounded-brand px-2 text-sm font-semibold transition-colors ${
               entry === page
                 ? "bg-brand-primary text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                : "bg-brand-subtle text-brand-muted-ink hover:bg-brand-border"
             }`}
           >
             {entry}
@@ -367,7 +367,7 @@ function Pagination({
           href={buildHref(page + 1)}
           rel="next"
           aria-label="Next page"
-          className="flex h-9 w-9 items-center justify-center rounded-brand bg-slate-100 text-slate-700 transition-colors hover:bg-slate-200"
+          className="flex h-9 w-9 items-center justify-center rounded-brand bg-brand-subtle text-brand-muted-ink transition-colors hover:bg-brand-border"
         >
           <ChevronRight className="h-4 w-4" />
         </Link>

@@ -1,0 +1,191 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  # Lets you re-run the security check on demand, e.g. after applying a
+  # migration to a client database, without pushing a commit.
+  workflow_dispatch:
+
+concurrency:
+  # A new push supersedes an in-flight run on the same ref.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Fast feedback. Needs no credentials, so it runs on every push and on forks.
+  # ---------------------------------------------------------------------------
+  quality:
+    name: Lint, types, unit tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Unit tests
+        # Integration tests need a real database; they run in the job below,
+        # which only fires when credentials are available.
+        run: npx vitest run --exclude "**/tests/integration/**" --exclude "**/tests/e2e/**"
+
+      - name: Build
+        run: npm run build
+        env:
+          # A build needs these to be present but not valid — nothing is queried
+          # at build time that a placeholder cannot satisfy.
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
+
+  # ---------------------------------------------------------------------------
+  # Everything that needs a real database.
+  #
+  # Skipped automatically when the repository has no Supabase secrets set, so a
+  # fork or a fresh clone still gets a green pipeline from the job above rather
+  # than a wall of red it cannot fix.
+  # ---------------------------------------------------------------------------
+  database:
+    name: Integration tests and security verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Never expose secrets to a pull request from a fork.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Check whether database credentials are configured
+        id: creds
+        run: |
+          if [ -n "${{ secrets.SUPABASE_URL }}" ] && [ -n "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Supabase secrets are not configured, so integration tests and the security verifier were skipped. Add SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY and DATABASE_URL under Settings -> Secrets -> Actions to enable them."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.creds.outputs.available == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.creds.outputs.available == 'true'
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.creds.outputs.available == 'true'
+        run: npm ci
+
+      - name: Write .env.local
+        if: steps.creds.outputs.available == 'true'
+        # The verifier and the migration runner both read .env.local rather than
+        # the process environment, matching how they are run locally.
+        run: |
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}"
+            echo "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}"
+            echo "DATABASE_URL=${DATABASE_URL}"
+          } > .env.local
+
+      - name: Integration tests
+        if: steps.creds.outputs.available == 'true'
+        run: npm run test:integration
+
+      # The most important step in this file.
+      #
+      # It performs real privilege-escalation and data-exfiltration attacks
+      # against the database and fails the build if any succeed. A migration
+      # file protects nothing until it has been applied, and a store with an
+      # unapplied security migration looks completely normal from outside — this
+      # is what tells the difference.
+      - name: Security verification
+        if: steps.creds.outputs.available == 'true'
+        run: npm run verify:security
+
+  # ---------------------------------------------------------------------------
+  # End-to-end. Separate job so a browser failure does not mask a type error,
+  # and so the slowest job does not gate the fast feedback above.
+  # ---------------------------------------------------------------------------
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: Check whether database credentials are configured
+        id: creds
+        run: |
+          if [ -n "${{ secrets.SUPABASE_URL }}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.creds.outputs.available == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.creds.outputs.available == 'true'
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.creds.outputs.available == 'true'
+        run: npm ci
+
+      - name: Install Playwright browsers
+        if: steps.creds.outputs.available == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Write .env.local
+        if: steps.creds.outputs.available == 'true'
+        run: |
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}"
+            echo "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}"
+          } > .env.local
+
+      - name: Run Playwright
+        if: steps.creds.outputs.available == 'true'
+        # playwright.config.ts builds the app in demo mode and starts its own
+        # server, so the checkout specs can complete a purchase without a live
+        # payment gateway.
+        run: npx playwright test
+
+      - name: Upload report on failure
+        if: failure() && steps.creds.outputs.available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

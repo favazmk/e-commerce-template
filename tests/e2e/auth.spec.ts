@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
+import { fillDeliveryAddress } from './helpers/checkout';
 
 test.describe('E2E Auth & Security Flow', () => {
   test('Register form rejects a weak or mismatched password before submitting', async ({ page }) => {
@@ -141,21 +142,24 @@ test.describe('E2E Auth & Security Flow', () => {
       status: 'active'
     }).select().single();
 
+    // Archive the fixture afterwards so it never reaches the live storefront,
+    // the sitemap or the Google Merchant feed.
+    const archiveFixture = async () => {
+      await supabase.from('products').update({ status: 'archived' }).eq('slug', pSlug);
+    };
+
+    try {
     await page.goto(`/products/${p.slug}`);
     await page.getByRole('button', { name: /Add to bag/i }).first().click();
     await expect(page.getByRole('button', { name: /Added to bag/i }).first()).toBeVisible();
 
     await page.goto('/checkout');
-    // Fill Dummy Address
-    await page.fill('input[name="firstName"]', 'Hacker');
-    await page.fill('input[name="lastName"]', 'User');
-    await page.fill('input[name="email"]', 'hacker@example.com');
-    await page.fill('input[name="phone"]', '1234567890');
-    await page.fill('input[name="address1"]', '123 Fake St');
-    await page.fill('input[name="city"]', 'Hackville');
-    await page.fill('input[name="state"]', 'NY');
-    await page.fill('input[name="postalCode"]', '10001');
-    await page.fill('input[name="country"]', 'US');
+    await fillDeliveryAddress(page, {
+      firstName: 'Hacker',
+      email: 'hacker@example.com',
+      address1: '123 Fake St',
+      city: 'Hackville',
+    });
 
     const mockPayment = page.locator('input[value="mock"]');
     await expect(mockPayment).toBeVisible();
@@ -190,5 +194,8 @@ test.describe('E2E Auth & Security Flow', () => {
     // amounts, so the receipt must show the real total, not 0.01.
     const bodyText = await page.locator('body').innerText();
     expect(bodyText).not.toContain('0.01');
+    } finally {
+      await archiveFixture();
+    }
   });
 });

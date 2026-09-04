@@ -17,13 +17,15 @@ export function Badge({
   const baseStyles =
     "inline-flex items-center font-medium rounded-full tracking-wide";
 
+  // Semantic, not decorative: green means approved, orange means a deal, red
+  // means running out. Shoppers read these before they read the label.
   const variantStyles = {
-    default: "bg-slate-100 text-slate-800",
-    success: "bg-emerald-50 text-emerald-700 border border-emerald-200/60",
-    warning: "bg-amber-50 text-amber-700 border border-amber-200/60",
-    danger: "bg-rose-50 text-rose-700 border border-rose-200/60",
-    accent: "bg-emerald-600 text-white shadow-sm",
-    outline: "border border-slate-300 text-slate-700",
+    default: "bg-brand-subtle text-brand-muted-ink",
+    success: "bg-brand-success/10 text-brand-success border border-brand-success/25",
+    warning: "bg-brand-discount/10 text-brand-discount border border-brand-discount/25",
+    danger: "bg-brand-urgent/10 text-brand-danger border border-brand-urgent/25",
+    accent: "bg-brand-primary text-white",
+    outline: "border border-brand-border-strong text-brand-muted-ink",
   };
 
   const sizeStyles = {

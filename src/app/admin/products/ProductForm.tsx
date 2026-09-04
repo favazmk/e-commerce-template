@@ -3,7 +3,14 @@
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Sparkles, ArrowLeft, Star } from "lucide-react";
-import { Category, Product, ProductImage, ProductVariant } from "@/types/database";
+import {
+  Category,
+  Product,
+  ProductBadgeTone,
+  ProductImage,
+  ProductVariant,
+} from "@/types/database";
+import { BADGE_TONE_CLASSES } from "@/lib/commerce/merchandising";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImageUploader } from "@/components/admin/ImageUploader";
@@ -44,6 +51,10 @@ export function ProductForm({
   );
   const [status, setStatus] = useState<Product["status"]>(initialProduct?.status || "active");
   const [featured, setFeatured] = useState(initialProduct?.featured || false);
+  const [badgeLabel, setBadgeLabel] = useState(initialProduct?.badge_label || "");
+  const [badgeTone, setBadgeTone] = useState<ProductBadgeTone>(
+    initialProduct?.badge_tone || "primary"
+  );
 
   // Images — start from whatever the product already has, with no blank rows.
   const [images, setImages] = useState<Partial<ProductImage>[]>(
@@ -162,6 +173,10 @@ export function ProductForm({
         low_stock_threshold: Number(lowStockThreshold) || 5,
         status,
         featured,
+        // Empty means "let the storefront decide", so it is stored as null
+        // rather than as an empty string.
+        badge_label: badgeLabel.trim() || null,
+        badge_tone: badgeTone,
         images,
         variants,
         seo_title: seoTitle || name,
@@ -341,6 +356,64 @@ export function ProductForm({
           <label htmlFor="featuredToggle" className="text-xs font-semibold text-slate-800">
             Feature this product on homepage curations
           </label>
+        </div>
+
+        {/* ------------------------------------------------------ Badge --- */}
+        <div className="space-y-3 rounded-brand border border-slate-200 bg-slate-50 p-4">
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+              Product card badge
+            </h3>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
+              Shown on the corner of the product card. Leave the label blank and the storefront
+              picks one from real data — &ldquo;BESTSELLER&rdquo; once it is genuinely selling,
+              &ldquo;NEW&rdquo; for the first three weeks, otherwise nothing. Set a label here to
+              override that. One badge per product: two badges say less than one.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Input
+              label="Badge label (optional)"
+              value={badgeLabel}
+              maxLength={24}
+              onChange={(e) => setBadgeLabel(e.target.value)}
+              placeholder="e.g. BESTSELLER, LIMITED, EID EDIT"
+              helperText="Blank = decided automatically. Max 24 characters."
+            />
+
+            <div className="w-full space-y-1.5 text-left">
+              <label
+                htmlFor="badgeTone"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700"
+              >
+                Badge colour
+              </label>
+              <select
+                id="badgeTone"
+                value={badgeTone}
+                onChange={(e) => setBadgeTone(e.target.value as ProductBadgeTone)}
+                className="block w-full rounded-brand border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
+              >
+                <option value="primary">Brand — general highlight</option>
+                <option value="success">Green — new arrival, in stock</option>
+                <option value="discount">Orange — bestseller, deal</option>
+                <option value="urgent">Red — limited, last chance</option>
+                <option value="neutral">Dark — understated</option>
+              </select>
+
+              {badgeLabel.trim() && (
+                <div className="pt-1.5">
+                  <span className="mr-2 text-[11px] text-slate-500">Preview:</span>
+                  <span
+                    className={`inline-block rounded-brand-sm px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${BADGE_TONE_CLASSES[badgeTone]}`}
+                  >
+                    {badgeLabel.trim().toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

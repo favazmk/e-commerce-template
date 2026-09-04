@@ -23,12 +23,15 @@ export class ShippingService {
     const repo = RepositoryFactory.getSettingsRepository();
     const settings = await repo.getByKey("shipping");
     const shippingConfig = settings?.value || {};
+    // Region-neutral fallback for a store that has not configured shipping
+    // yet. Real rates are set in Admin -> Settings; naming a country here would
+    // ship one market's assumptions to every client (AGENTS.md 9, 25).
     return shippingConfig.zones || [
       {
         id: "zone-standard",
-        name: "Standard Ground Shipping",
-        rate: 15,
-        free_threshold: 200,
+        name: "Standard Delivery",
+        rate: 0,
+        free_threshold: undefined,
         estimated_days: "3-5 Business Days",
       },
     ];

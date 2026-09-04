@@ -661,10 +661,10 @@ export const initialHomepageSections: Partial<HomepageSection>[] = [
   {
     id: "sec-004",
     section_type: "banner",
-    title: "Sustainable Elegance, Zero Compromise",
-    subtitle: "100% Traceable Organic Materials & Fair Trade Artisans",
+    title: "Chosen carefully, checked before it ships",
+    subtitle: "Tracked delivery, easy returns, and a real person when you need one",
     content: {
-      ctaText: "Our Sustainability Manifesto",
+      ctaText: "About us",
       ctaLink: "/about",
     },
     image_url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop&q=80",

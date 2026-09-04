@@ -86,7 +86,7 @@ export default function ResetPasswordPage() {
 
   if (sessionState === "checking") {
     return (
-      <div className="px-4 py-24 text-center text-sm text-slate-500">Verifying your link…</div>
+      <div className="px-4 py-24 text-center text-sm text-brand-muted-ink">Verifying your link…</div>
     );
   }
 
@@ -101,7 +101,7 @@ export default function ResetPasswordPage() {
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-600">
             <AlertCircle className="h-7 w-7" />
           </span>
-          <p className="text-sm text-slate-600">Request a new link and try again.</p>
+          <p className="text-sm text-brand-muted-ink">Request a new link and try again.</p>
           <Link href="/forgot-password" className="inline-block">
             <Button size="sm">Request a new link</Button>
           </Link>
@@ -114,10 +114,10 @@ export default function ResetPasswordPage() {
     return (
       <AuthShell eyebrow="All set" title="Password updated" subtitle="You can now sign in.">
         <div className="space-y-5 text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-success/10 text-brand-primary">
             <CheckCircle2 className="h-7 w-7" />
           </span>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-brand-muted-ink">
             For safety we signed you out everywhere. Sign in with your new password to continue.
           </p>
           <Link href="/login?notice=Your%20password%20was%20updated." className="inline-block">

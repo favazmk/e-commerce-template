@@ -15,7 +15,6 @@ import {
 import { useCart } from "@/features/cart/CartContext";
 import { useWishlist } from "@/features/wishlist/WishlistContext";
 import { useRecentlyViewed } from "@/features/recently-viewed/useRecentlyViewed";
-import { ProductReviews } from "@/components/storefront/ProductReviews";
 import { ProductImage } from "@/components/storefront/ProductImage";
 import { StarRating } from "@/components/ui/star-rating";
 import { Button } from "@/components/ui/button";
@@ -181,33 +180,33 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
     <div className="mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-6 sm:pb-16 sm:pt-10 lg:px-8">
       {/* Breadcrumbs */}
       <nav aria-label="Breadcrumb" className="mb-6 sm:mb-8">
-        <ol className="flex flex-wrap items-center gap-1 text-xs text-slate-500">
+        <ol className="flex flex-wrap items-center gap-1 text-xs text-brand-muted-ink">
           <li>
-            <Link href="/" className="transition-colors hover:text-slate-900">
+            <Link href="/" className="transition-colors hover:text-brand-ink">
               Home
             </Link>
           </li>
-          <ChevronRight className="h-3 w-3 text-slate-300" aria-hidden="true" />
+          <ChevronRight className="h-3 w-3 text-brand-faint-ink" aria-hidden="true" />
           <li>
-            <Link href="/products" className="transition-colors hover:text-slate-900">
+            <Link href="/products" className="transition-colors hover:text-brand-ink">
               Products
             </Link>
           </li>
           {product.category && (
             <>
-              <ChevronRight className="h-3 w-3 text-slate-300" aria-hidden="true" />
+              <ChevronRight className="h-3 w-3 text-brand-faint-ink" aria-hidden="true" />
               <li>
                 <Link
                   href={`/categories/${product.category.slug}`}
-                  className="transition-colors hover:text-slate-900"
+                  className="transition-colors hover:text-brand-ink"
                 >
                   {product.category.name}
                 </Link>
               </li>
             </>
           )}
-          <ChevronRight className="h-3 w-3 text-slate-300" aria-hidden="true" />
-          <li className="max-w-[45vw] truncate font-semibold text-slate-900 sm:max-w-xs">
+          <ChevronRight className="h-3 w-3 text-brand-faint-ink" aria-hidden="true" />
+          <li className="max-w-[45vw] truncate font-semibold text-brand-ink sm:max-w-xs">
             {product.name}
           </li>
         </ol>
@@ -227,7 +226,7 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                     aria-current={selectedImageIndex === index}
                     className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-brand border-2 transition-all sm:h-20 sm:w-20 ${
                       selectedImageIndex === index
-                        ? "border-slate-900 shadow-sm"
+                        ? "border-brand-ink shadow-sm"
                         : "border-transparent opacity-60 hover:opacity-100"
                     }`}
                   >
@@ -244,7 +243,7 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
               </div>
             )}
 
-            <div className="relative aspect-[3/4] w-full flex-1 overflow-hidden rounded-brand-xl border border-slate-100 bg-slate-50 shadow-subtle">
+            <div className="relative aspect-[3/4] w-full flex-1 overflow-hidden rounded-brand-xl border border-brand-border bg-brand-subtle shadow-subtle">
               <ProductImage
                 src={images[selectedImageIndex]?.url || images[0]?.url}
                 seed={product.name}
@@ -267,11 +266,11 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
           <div className="space-y-5">
             <header>
               {product.brand && (
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-600">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand-primary">
                   {product.brand}
                 </span>
               )}
-              <h1 className="mt-1 font-heading text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
+              <h1 className="mt-1 font-heading text-2xl font-bold leading-tight text-brand-ink sm:text-3xl">
                 {product.name}
               </h1>
 
@@ -287,20 +286,20 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                   </a>
                 )}
                 {proof && (
-                  <span className="text-xs font-medium text-slate-500">{proof}</span>
+                  <span className="text-xs font-medium text-brand-muted-ink">{proof}</span>
                 )}
               </div>
             </header>
 
             {/* Price */}
-            <div className="border-b border-slate-100 pb-5">
+            <div className="border-b border-brand-border pb-5">
               <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="font-heading text-3xl font-bold text-slate-900">
+                <span className="font-heading text-3xl font-bold text-brand-ink">
                   {formatPrice(price)}
                 </span>
                 {pricing.hasDiscount && (
                   <>
-                    <span className="text-lg text-slate-400 line-through">
+                    <span className="text-lg text-brand-faint-ink line-through">
                       {formatPrice(pricing.compareAtPrice!)}
                     </span>
                     <span className="text-sm font-bold text-rose-600">
@@ -311,12 +310,12 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
               </div>
 
               {pricing.hasDiscount && (
-                <p className="mt-1 text-sm font-semibold text-emerald-600">
+                <p className="mt-1 text-sm font-semibold text-brand-primary">
                   You save {formatPrice(pricing.savings)}
                 </p>
               )}
               {commerce.taxNote && (
-                <p className="mt-1 text-xs text-slate-400">{commerce.taxNote}</p>
+                <p className="mt-1 text-xs text-brand-faint-ink">{commerce.taxNote}</p>
               )}
 
               {scarcity && (
@@ -333,19 +332,19 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
             </div>
 
             {product.short_description && (
-              <p className="text-sm leading-relaxed text-slate-600">{product.short_description}</p>
+              <p className="text-sm leading-relaxed text-brand-muted-ink">{product.short_description}</p>
             )}
 
             {/* Offers — real coupon codes the merchant has published */}
             {commerce.offers.length > 0 && (
-              <div className="rounded-brand-xl border border-dashed border-emerald-300 bg-emerald-50/50 p-4">
-                <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-800">
+              <div className="rounded-brand-xl border border-dashed border-brand-success/40 bg-brand-success/10/50 p-4">
+                <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-success">
                   <Tag className="h-3.5 w-3.5" /> Available offers
                 </h2>
                 <ul className="mt-2.5 space-y-1.5">
                   {commerce.offers.map((offer) => (
-                    <li key={offer.code} className="text-xs leading-relaxed text-slate-700">
-                      <span className="mr-1.5 rounded-brand-sm bg-white px-1.5 py-0.5 font-mono text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200">
+                    <li key={offer.code} className="text-xs leading-relaxed text-brand-muted-ink">
+                      <span className="mr-1.5 rounded-brand-sm bg-white px-1.5 py-0.5 font-mono text-[11px] font-bold text-brand-primary ring-1 ring-brand-primary/30">
                         {offer.code}
                       </span>
                       {offer.description}
@@ -359,11 +358,11 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
             {axes.map((axis) => (
               <div key={axis.name} className="space-y-2.5">
                 <div className="flex items-baseline justify-between">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                  <label className="text-xs font-bold uppercase tracking-wider text-brand-ink">
                     {axis.name}
                   </label>
                   {selection[axis.name] && (
-                    <span className="text-xs text-slate-500">{selection[axis.name]}</span>
+                    <span className="text-xs text-brand-muted-ink">{selection[axis.name]}</span>
                   )}
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -381,14 +380,14 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                         aria-pressed={isSelected}
                         className={`min-w-[3rem] rounded-brand border px-3.5 py-2 text-xs font-semibold transition-all ${
                           isSelected
-                            ? "border-slate-900 bg-slate-900 text-white shadow-sm"
+                            ? "border-brand-ink bg-brand-ink text-white shadow-sm"
                             : available
-                              ? "border-slate-200 bg-white text-slate-800 hover:border-slate-400"
+                              ? "border-brand-border bg-white text-brand-ink hover:border-brand-ink"
                               : // Unavailable options stay clickable but are
                                 // struck through, so the shopper can see the
                                 // full range rather than wondering what is
                                 // missing — the marketplace convention.
-                                "border-slate-200 bg-slate-50 text-slate-400 line-through"
+                                "border-brand-border bg-brand-subtle text-brand-faint-ink line-through"
                         }`}
                       >
                         {value}
@@ -409,18 +408,18 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
             ) : (
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center rounded-brand border border-slate-300 bg-white">
+                  <div className="flex items-center rounded-brand border border-brand-border-strong bg-white">
                     <button
                       type="button"
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       disabled={quantity <= 1}
-                      className="p-2.5 text-slate-500 transition-colors hover:text-slate-900 disabled:opacity-40"
+                      className="p-2.5 text-brand-muted-ink transition-colors hover:text-brand-ink disabled:opacity-40"
                       aria-label="Decrease quantity"
                     >
                       <Minus className="h-4 w-4" />
                     </button>
                     <span
-                      className="w-10 text-center text-sm font-semibold text-slate-900"
+                      className="w-10 text-center text-sm font-semibold text-brand-ink"
                       aria-live="polite"
                     >
                       {quantity}
@@ -429,7 +428,7 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                       type="button"
                       onClick={() => setQuantity((q) => Math.min(stock, q + 1))}
                       disabled={quantity >= stock}
-                      className="p-2.5 text-slate-500 transition-colors hover:text-slate-900 disabled:opacity-40"
+                      className="p-2.5 text-brand-muted-ink transition-colors hover:text-brand-ink disabled:opacity-40"
                       aria-label="Increase quantity"
                     >
                       <Plus className="h-4 w-4" />
@@ -444,7 +443,7 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                   >
                     {isAdded ? (
                       <>
-                        <Check className="h-5 w-5 text-emerald-400" /> Added to bag
+                        <Check className="h-5 w-5 text-brand-primary" /> Added to bag
                       </>
                     ) : (
                       <>
@@ -456,10 +455,10 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                   <button
                     type="button"
                     onClick={() => toggleWishlist(product)}
-                    className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-brand border transition-all hover:bg-slate-50 ${
+                    className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-brand border transition-all hover:bg-brand-subtle ${
                       isInWishlist(product.id)
                         ? "border-rose-200 bg-rose-50/40 text-rose-500"
-                        : "border-slate-200 text-slate-600"
+                        : "border-brand-border text-brand-muted-ink"
                     }`}
                     aria-label={
                       isInWishlist(product.id) ? "Remove from wishlist" : "Save to wishlist"
@@ -493,14 +492,14 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
             />
 
             {/* Details */}
-            <div className="divide-y divide-slate-100 border-t border-slate-100">
+            <div className="divide-y divide-brand-border border-t border-brand-border">
               {product.description && (
                 <details className="group py-4" open>
-                  <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-900">
+                  <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-wider text-brand-ink">
                     Description
-                    <Plus className="h-4 w-4 text-slate-400 transition-transform group-open:rotate-45" />
+                    <Plus className="h-4 w-4 text-brand-faint-ink transition-transform group-open:rotate-45" />
                   </summary>
-                  <div className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                  <div className="mt-3 whitespace-pre-line text-sm leading-relaxed text-brand-muted-ink">
                     {product.description}
                   </div>
                 </details>
@@ -508,15 +507,15 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
 
               {specifications.length > 0 && (
                 <details className="group py-4">
-                  <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-900">
+                  <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-wider text-brand-ink">
                     Product details
-                    <Plus className="h-4 w-4 text-slate-400 transition-transform group-open:rotate-45" />
+                    <Plus className="h-4 w-4 text-brand-faint-ink transition-transform group-open:rotate-45" />
                   </summary>
                   <dl className="mt-3 space-y-2 text-sm">
                     {specifications.map(([label, value]) => (
                       <div key={label} className="flex gap-3">
-                        <dt className="w-28 flex-shrink-0 text-slate-400">{label}</dt>
-                        <dd className="text-slate-700">{value}</dd>
+                        <dt className="w-28 flex-shrink-0 text-brand-faint-ink">{label}</dt>
+                        <dd className="text-brand-muted-ink">{value}</dd>
                       </div>
                     ))}
                   </dl>
@@ -524,20 +523,20 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
               )}
 
               <details className="group py-4">
-                <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-900">
+                <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-wider text-brand-ink">
                   Shipping &amp; returns
-                  <Plus className="h-4 w-4 text-slate-400 transition-transform group-open:rotate-45" />
+                  <Plus className="h-4 w-4 text-brand-faint-ink transition-transform group-open:rotate-45" />
                 </summary>
-                <div className="mt-3 space-y-2 text-sm leading-relaxed text-slate-600">
+                <div className="mt-3 space-y-2 text-sm leading-relaxed text-brand-muted-ink">
                   <p>
                     Delivery times and charges are shown above for your selected method and update
                     with your order total.
                   </p>
                   <p className="flex flex-wrap gap-x-4 gap-y-1">
-                    <Link href="/shipping-policy" className="font-semibold text-emerald-600 hover:underline">
+                    <Link href="/shipping-policy" className="font-semibold text-brand-primary hover:underline">
                       Full shipping policy
                     </Link>
-                    <Link href="/refund-policy" className="font-semibold text-emerald-600 hover:underline">
+                    <Link href="/refund-policy" className="font-semibold text-brand-primary hover:underline">
                       Returns &amp; refunds
                     </Link>
                   </p>
@@ -548,22 +547,18 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
         </div>
       </div>
 
-      {/* Reviews */}
-      <div id="reviews" className="mt-16 scroll-mt-24 sm:mt-20">
-        <ProductReviews productId={product.id} productName={product.name} />
-      </div>
 
       {/* Sticky mobile purchase bar.
           On a phone the buy button scrolls out of view within one swipe, and
           the shopper then has to scroll back up to act on a decision they have
           already made. This keeps the action reachable at all times. */}
       {!soldOut && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] backdrop-blur-md lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-brand-border bg-white/95 p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] backdrop-blur-md lg:hidden">
           <div className="flex items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-slate-900">{formatPrice(price)}</p>
+              <p className="truncate text-sm font-bold text-brand-ink">{formatPrice(price)}</p>
               {pricing.hasDiscount && (
-                <p className="truncate text-[11px] text-emerald-600">
+                <p className="truncate text-[11px] text-brand-primary">
                   Save {formatPrice(pricing.savings)}
                 </p>
               )}

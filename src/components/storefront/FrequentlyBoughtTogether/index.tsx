@@ -77,10 +77,10 @@ export function FrequentlyBoughtTogether({ anchor, companions }: FrequentlyBough
 
   return (
     <section
-      className="rounded-brand-xl border border-slate-200 bg-white p-5 shadow-subtle sm:p-6"
+      className="rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle sm:p-6"
       aria-label="Frequently bought together"
     >
-      <h2 className="font-heading text-base font-bold text-slate-900 sm:text-lg">
+      <h2 className="font-heading text-base font-bold text-brand-ink sm:text-lg">
         Frequently bought together
       </h2>
 
@@ -94,12 +94,12 @@ export function FrequentlyBoughtTogether({ anchor, companions }: FrequentlyBough
           return (
             <React.Fragment key={product.id}>
               {index > 0 && (
-                <Plus className="h-4 w-4 flex-shrink-0 text-slate-300" aria-hidden="true" />
+                <Plus className="h-4 w-4 flex-shrink-0 text-brand-faint-ink" aria-hidden="true" />
               )}
               <Link
                 href={`/products/${product.slug}`}
-                className={`relative block h-20 w-20 overflow-hidden rounded-brand border-2 bg-slate-50 transition-opacity sm:h-24 sm:w-24 ${
-                  isChosen ? "border-emerald-500" : "border-slate-200 opacity-40"
+                className={`relative block h-20 w-20 overflow-hidden rounded-brand border-2 bg-brand-subtle transition-opacity sm:h-24 sm:w-24 ${
+                  isChosen ? "border-brand-primary" : "border-brand-border opacity-40"
                 }`}
                 title={product.name}
               >
@@ -131,23 +131,23 @@ export function FrequentlyBoughtTogether({ anchor, companions }: FrequentlyBough
                 checked={isAnchor || selected.has(product.id)}
                 onChange={() => !isAnchor && toggle(product.id)}
                 disabled={isAnchor}
-                className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 disabled:opacity-60"
+                className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-brand-border-strong text-brand-primary focus:ring-brand-primary disabled:opacity-60"
               />
               <label htmlFor={`fbt-${product.id}`} className="min-w-0 flex-1 cursor-pointer">
-                <span className="block text-sm font-medium leading-snug text-slate-900">
+                <span className="block text-sm font-medium leading-snug text-brand-ink">
                   {isAnchor && (
-                    <span className="mr-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+                    <span className="mr-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-primary">
                       This item
                     </span>
                   )}
                   {product.name}
                 </span>
                 <span className="mt-0.5 flex items-baseline gap-2">
-                  <span className="text-sm font-bold text-slate-900">
+                  <span className="text-sm font-bold text-brand-ink">
                     {formatPrice(product.price)}
                   </span>
                   {pricing.hasDiscount && (
-                    <span className="text-xs text-slate-400 line-through">
+                    <span className="text-xs text-brand-faint-ink line-through">
                       {formatPrice(pricing.compareAtPrice!)}
                     </span>
                   )}
@@ -159,14 +159,14 @@ export function FrequentlyBoughtTogether({ anchor, companions }: FrequentlyBough
       </ul>
 
       {/* Total and CTA */}
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-5">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-brand-border pt-5">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-faint-ink">
             Total for {chosen.length} item{chosen.length === 1 ? "" : "s"}
           </p>
-          <p className="font-heading text-xl font-bold text-slate-900">{formatPrice(total)}</p>
+          <p className="font-heading text-xl font-bold text-brand-ink">{formatPrice(total)}</p>
           {savings > 0 && (
-            <p className="text-xs font-semibold text-emerald-600">
+            <p className="text-xs font-semibold text-brand-primary">
               You save {formatPrice(savings)}
             </p>
           )}

@@ -52,7 +52,7 @@ export function Drawer({
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300"
+        className="fixed inset-0 bg-brand-ink/50 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -73,17 +73,17 @@ export function Drawer({
           tabIndex={-1}
         >
           {/* Drawer Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-brand-border px-6 py-4">
             <h3
               id={titleId}
-              className="text-base font-semibold uppercase tracking-wider text-slate-900"
+              className="text-base font-semibold uppercase tracking-wider text-brand-ink"
             >
               {title}
             </h3>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+              className="rounded-full p-2 text-brand-faint-ink hover:bg-brand-subtle hover:text-brand-ink transition-colors"
               aria-label="Close panel"
             >
               <X className="h-5 w-5" />

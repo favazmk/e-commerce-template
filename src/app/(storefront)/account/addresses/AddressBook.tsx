@@ -1,11 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, MapPin, Pencil, Plus, Star, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Address } from "@/types/database";
+import {
+  getCountryFormat,
+  getDefaultCountry,
+  getSupportedCountries,
+} from "@/lib/config/regions";
 
 export interface AddressBookProps {
   initialAddresses: Address[];
@@ -36,7 +41,7 @@ const EMPTY_FORM: FormState = {
   city: "",
   state: "",
   postal_code: "",
-  country: process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "",
+  country: getDefaultCountry().name,
   phone: "",
   is_default: false,
 };
@@ -68,6 +73,9 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const supportedCountries = useMemo(() => getSupportedCountries(), []);
+  const addressFormat = useMemo(() => getCountryFormat(form.country), [form.country]);
 
   const field = (key: keyof FormState) => ({
     value: form[key] as string,
@@ -148,7 +156,7 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-xl font-bold text-slate-900">Saved addresses</h1>
+        <h1 className="font-heading text-xl font-bold text-brand-ink">Saved addresses</h1>
         {!showForm && (
           <Button
             size="sm"
@@ -165,16 +173,16 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="space-y-5 rounded-brand-xl border border-slate-200 bg-white p-5 shadow-subtle sm:p-6"
+          className="space-y-5 rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle sm:p-6"
         >
           <div className="flex items-center justify-between">
-            <h2 className="font-heading text-base font-bold text-slate-900">
+            <h2 className="font-heading text-base font-bold text-brand-ink">
               {editingId ? "Edit address" : "New address"}
             </h2>
             <button
               type="button"
               onClick={resetForm}
-              className="text-slate-400 hover:text-slate-700"
+              className="text-brand-faint-ink hover:text-brand-ink"
               aria-label="Cancel"
             >
               <X className="h-4 w-4" />
@@ -208,36 +216,108 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Input label="City" autoComplete="address-level2" required {...field("city")} />
-            <Input
-              label="State / Emirate"
-              autoComplete="address-level1"
-              required
-              {...field("state")}
-            />
-            <Input label="Postal code" autoComplete="postal-code" {...field("postal_code")} />
+
+            {/* Region label and options follow the country — the UAE has
+                emirates, not states. See lib/config/regions.ts. */}
+            {addressFormat.regions ? (
+              <div className="w-full space-y-1.5 text-left">
+                <label
+                  htmlFor="address-region"
+                  className="block text-xs font-semibold uppercase tracking-wider text-brand-ink"
+                >
+                  {addressFormat.regionLabel}
+                </label>
+                <select
+                  id="address-region"
+                  autoComplete="address-level1"
+                  required
+                  value={form.state}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, state: event.target.value }))
+                  }
+                  className="block w-full rounded-brand border border-brand-border-strong bg-white px-3.5 py-2.5 text-sm text-brand-ink focus:border-brand-ink focus:outline-none"
+                >
+                  <option value="">Select {addressFormat.regionLabel.toLowerCase()}</option>
+                  {addressFormat.regions.map((region) => (
+                    <option key={region} value={region}>
+                      {region}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <Input
+                label={addressFormat.regionLabel}
+                autoComplete="address-level1"
+                required
+                {...field("state")}
+              />
+            )}
+
+            {addressFormat.postalCode !== "none" && (
+              <Input
+                label={addressFormat.postalCodeLabel}
+                autoComplete="postal-code"
+                required={addressFormat.postalCode === "required"}
+                {...field("postal_code")}
+              />
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input label="Country" autoComplete="country-name" required {...field("country")} />
+            <div className="w-full space-y-1.5 text-left">
+              <label
+                htmlFor="address-country"
+                className="block text-xs font-semibold uppercase tracking-wider text-brand-ink"
+              >
+                Country
+              </label>
+              <select
+                id="address-country"
+                autoComplete="country-name"
+                required
+                value={form.country}
+                onChange={(event) =>
+                  setForm((current) => {
+                    const next = event.target.value;
+                    if (next === current.country) return current;
+
+                    // Clear the region and postal code on a real change: both
+                    // are country-specific, and a stale emirate on a UK address
+                    // is worse than a blank. Guarded so that reselecting the
+                    // same country does not silently wipe a chosen region.
+                    return { ...current, country: next, state: "", postal_code: "" };
+                  })
+                }
+                className="block w-full rounded-brand border border-brand-border-strong bg-white px-3.5 py-2.5 text-sm text-brand-ink focus:border-brand-ink focus:outline-none"
+              >
+                {supportedCountries.map((entry) => (
+                  <option key={entry.code} value={entry.name}>
+                    {entry.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <Input
               label="Phone"
               type="tel"
               autoComplete="tel"
               inputMode="tel"
-              placeholder="For delivery updates"
+              placeholder={addressFormat.phoneExample || "For delivery updates"}
               required
               {...field("phone")}
             />
           </div>
 
-          <label className="flex items-center gap-2.5 text-sm text-slate-700">
+          <label className="flex items-center gap-2.5 text-sm text-brand-muted-ink">
             <input
               type="checkbox"
               checked={form.is_default}
               onChange={(event) =>
                 setForm((current) => ({ ...current, is_default: event.target.checked }))
               }
-              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="h-4 w-4 rounded border-brand-border-strong text-brand-primary focus:ring-brand-primary"
             />
             Use this as my default delivery address
           </label>
@@ -254,10 +334,10 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
       )}
 
       {addresses.length === 0 && !showForm ? (
-        <div className="rounded-brand-xl border border-dashed border-slate-300 bg-white p-10 text-center">
-          <MapPin className="mx-auto h-10 w-10 text-slate-300" />
-          <h2 className="mt-3 text-sm font-semibold text-slate-900">No saved addresses</h2>
-          <p className="mt-1 text-xs text-slate-500">
+        <div className="rounded-brand-xl border border-dashed border-brand-border-strong bg-white p-10 text-center">
+          <MapPin className="mx-auto h-10 w-10 text-brand-faint-ink" />
+          <h2 className="mt-3 text-sm font-semibold text-brand-ink">No saved addresses</h2>
+          <p className="mt-1 text-xs text-brand-muted-ink">
             Save one now and checkout becomes a single tap next time.
           </p>
         </div>
@@ -267,17 +347,17 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
             <div
               key={address.id}
               className={`relative rounded-brand-xl border bg-white p-5 shadow-subtle transition-colors ${
-                address.is_default ? "border-emerald-300 ring-1 ring-emerald-100" : "border-slate-200"
+                address.is_default ? "border-brand-success ring-1 ring-brand-success/20" : "border-brand-border"
               }`}
             >
               {address.is_default && (
-                <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+                <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-brand-success/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-primary">
                   <Star className="h-3 w-3 fill-current" /> Default
                 </span>
               )}
 
-              <address className="space-y-0.5 pr-20 text-xs not-italic leading-relaxed text-slate-600">
-                <p className="text-sm font-semibold text-slate-900">
+              <address className="space-y-0.5 pr-20 text-xs not-italic leading-relaxed text-brand-muted-ink">
+                <p className="text-sm font-semibold text-brand-ink">
                   {address.first_name} {address.last_name}
                 </p>
                 {address.company && <p>{address.company}</p>}
@@ -288,10 +368,10 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
                   {address.state ? `, ${address.state}` : ""} {address.postal_code}
                 </p>
                 <p>{address.country}</p>
-                <p className="pt-1 text-slate-500">{address.phone}</p>
+                <p className="pt-1 text-brand-muted-ink">{address.phone}</p>
               </address>
 
-              <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 text-xs">
+              <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-brand-border pt-3 text-xs">
                 <button
                   type="button"
                   onClick={() => {
@@ -299,7 +379,7 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
                     setEditingId(address.id);
                     setIsCreating(false);
                   }}
-                  className="flex items-center gap-1 font-semibold text-slate-600 hover:text-slate-900"
+                  className="flex items-center gap-1 font-semibold text-brand-muted-ink hover:text-brand-ink"
                 >
                   <Pencil className="h-3.5 w-3.5" /> Edit
                 </button>
@@ -307,7 +387,7 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
                   <button
                     type="button"
                     onClick={() => handleSetDefault(address.id)}
-                    className="flex items-center gap-1 font-semibold text-slate-600 hover:text-emerald-600"
+                    className="flex items-center gap-1 font-semibold text-brand-muted-ink hover:text-brand-primary"
                   >
                     <Star className="h-3.5 w-3.5" /> Make default
                   </button>
@@ -315,7 +395,7 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
                 <button
                   type="button"
                   onClick={() => handleDelete(address.id)}
-                  className="ml-auto flex items-center gap-1 font-semibold text-slate-400 hover:text-rose-600"
+                  className="ml-auto flex items-center gap-1 font-semibold text-brand-faint-ink hover:text-rose-600"
                 >
                   <Trash2 className="h-3.5 w-3.5" /> Remove
                 </button>

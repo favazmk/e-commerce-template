@@ -34,9 +34,9 @@ export function LegalPage({ title, lastUpdated, intro, children }: LegalPageProp
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-      <header className="border-b border-slate-100 pb-6">
-        <h1 className="font-heading text-3xl font-bold text-slate-900">{title}</h1>
-        <p className="mt-2 text-xs text-slate-400">
+      <header className="border-b border-brand-border pb-6">
+        <h1 className="font-heading text-3xl font-bold text-brand-ink">{title}</h1>
+        <p className="mt-2 text-xs text-brand-faint-ink">
           Last updated:{" "}
           {new Date(lastUpdated).toLocaleDateString(undefined, {
             day: "numeric",
@@ -44,21 +44,21 @@ export function LegalPage({ title, lastUpdated, intro, children }: LegalPageProp
             year: "numeric",
           })}
         </p>
-        <p className="mt-4 text-sm leading-relaxed text-slate-600">{intro}</p>
+        <p className="mt-4 text-sm leading-relaxed text-brand-muted-ink">{intro}</p>
       </header>
 
-      <div className="legal-prose mt-8 space-y-6 text-sm leading-relaxed text-slate-600">
+      <div className="legal-prose mt-8 space-y-6 text-sm leading-relaxed text-brand-muted-ink">
         {children}
       </div>
 
-      <footer className="mt-12 rounded-brand-xl border border-slate-200 bg-slate-50 p-5">
-        <h2 className="text-sm font-bold text-slate-900">Questions about this policy?</h2>
-        <p className="mt-1.5 text-xs leading-relaxed text-slate-600">
+      <footer className="mt-12 rounded-brand-xl border border-brand-border bg-brand-subtle p-5">
+        <h2 className="text-sm font-bold text-brand-ink">Questions about this policy?</h2>
+        <p className="mt-1.5 text-xs leading-relaxed text-brand-muted-ink">
           Contact {storeName}
           {contact.email && (
             <>
               {" at "}
-              <a href={`mailto:${contact.email}`} className="font-semibold text-emerald-600 hover:underline">
+              <a href={`mailto:${contact.email}`} className="font-semibold text-brand-primary hover:underline">
                 {contact.email}
               </a>
             </>
@@ -66,7 +66,7 @@ export function LegalPage({ title, lastUpdated, intro, children }: LegalPageProp
           {contact.phone && (
             <>
               {" or call "}
-              <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="font-semibold text-emerald-600 hover:underline">
+              <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="font-semibold text-brand-primary hover:underline">
                 {contact.phone}
               </a>
             </>
@@ -74,7 +74,7 @@ export function LegalPage({ title, lastUpdated, intro, children }: LegalPageProp
           {!contact.email && !contact.phone && (
             <>
               {" through our "}
-              <Link href="/contact" className="font-semibold text-emerald-600 hover:underline">
+              <Link href="/contact" className="font-semibold text-brand-primary hover:underline">
                 contact page
               </Link>
             </>
@@ -82,7 +82,7 @@ export function LegalPage({ title, lastUpdated, intro, children }: LegalPageProp
           .
         </p>
         {(contact.streetAddress || contact.addressLocality) && (
-          <address className="mt-3 text-xs not-italic leading-relaxed text-slate-500">
+          <address className="mt-3 text-xs not-italic leading-relaxed text-brand-muted-ink">
             {contact.streetAddress && (
               <>
                 {contact.streetAddress}
@@ -117,7 +117,7 @@ export function LegalSection({
 }) {
   return (
     <section id={id} className="scroll-mt-24">
-      <h2 className="mt-8 font-heading text-lg font-bold text-slate-900">{title}</h2>
+      <h2 className="mt-8 font-heading text-lg font-bold text-brand-ink">{title}</h2>
       <div className="mt-3 space-y-3">{children}</div>
     </section>
   );

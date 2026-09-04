@@ -11,6 +11,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { ProductRail } from "@/components/storefront/ProductRail";
 import { FrequentlyBoughtTogether } from "@/components/storefront/FrequentlyBoughtTogether";
 import { RecentlyViewed } from "@/components/storefront/RecentlyViewed";
+import { ProductReviews } from "@/components/storefront/ProductReviews";
 import { ProductDetailClient } from "./ProductDetailClient";
 
 export interface ProductPageProps {
@@ -104,18 +105,30 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
       <ProductDetailClient product={product} stats={stats} commerce={commerce} />
 
+      {/*
+        Section order is load-bearing, not cosmetic.
+
+        Scroll-depth data on product pages is consistent across every large
+        retailer: attention falls off sharply below the fold, and reviews are
+        sought deliberately by a minority who scroll for them. Putting
+        recommendations after a long review list therefore buries the highest
+        commercial-intent modules on the page — which is exactly what was
+        happening here, and why they read as missing.
+
+        Recommendations first, reviews second, recently viewed last.
+      */}
       <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
         {bundle.length > 0 && (
-          <div className="border-t border-slate-100 pt-10">
+          <div className="border-t border-brand-border pt-10">
             <FrequentlyBoughtTogether anchor={product} companions={bundle} />
           </div>
         )}
 
         {similar.length > 0 && (
-          <div className="border-t border-slate-100">
+          <div className="border-t border-brand-border">
             <ProductRail
-              title="You may also like"
-              subtitle="Picked from the same collection and price range"
+              title="Similar products"
+              subtitle="From the same collection and price range"
               products={similar}
               href="/products"
               hrefLabel="Browse all"
@@ -123,7 +136,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
         )}
 
-        <div className="border-t border-slate-100">
+        <div id="reviews" className="scroll-mt-24 border-t border-brand-border pt-10">
+          <ProductReviews productId={product.id} productName={product.name} />
+        </div>
+
+        <div className="border-t border-brand-border">
           <RecentlyViewed excludeIds={[product.id]} />
         </div>
       </div>

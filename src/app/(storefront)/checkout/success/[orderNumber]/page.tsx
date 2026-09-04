@@ -46,36 +46,36 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
       />
       {/* Top Success Banner */}
       <div className="text-center space-y-4 mb-12">
-        <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-2 shadow-sm">
+        <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-success/15 text-brand-primary mb-2 shadow-sm">
           <CheckCircle2 className="h-10 w-10" />
         </div>
-        <span className="text-xs uppercase font-bold tracking-widest text-emerald-600 block">
+        <span className="text-xs uppercase font-bold tracking-widest text-brand-primary block">
           Order Successfully Confirmed
         </span>
-        <h1 className="text-3xl sm:text-4xl font-bold font-heading text-slate-900">
+        <h1 className="text-3xl sm:text-4xl font-bold font-heading text-brand-ink">
           Thank you for your order
         </h1>
         {/* Generic by design: the MASTER template ships to every client, so
             product-category wording ("garments", "fragrances") belongs in the
             client repository, never here (AGENTS.md sections 9 and 25). */}
-        <p className="text-sm text-slate-500 max-w-md mx-auto">
+        <p className="text-sm text-brand-muted-ink max-w-md mx-auto">
           We have emailed your receipt to{" "}
-          <span className="font-semibold text-slate-900">{order.guest_email || "your email address"}</span>.
+          <span className="font-semibold text-brand-ink">{order.guest_email || "your email address"}</span>.
           Your order is being prepared and you will get tracking details as soon as it ships.
         </p>
       </div>
 
       {/* Main Order Card */}
-      <div className="rounded-brand-xl border border-slate-200 bg-white shadow-subtle overflow-hidden">
+      <div className="rounded-brand-xl border border-brand-border bg-white shadow-subtle overflow-hidden">
         {/* Card Header with Order Number and Date */}
-        <div className="bg-slate-50 border-b border-slate-200 p-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-brand-subtle border-b border-brand-border p-6 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <span className="text-xs text-slate-400 uppercase font-semibold">Order Number</span>
-            <p className="text-lg font-bold text-slate-900 font-heading">#{order.order_number}</p>
+            <span className="text-xs text-brand-faint-ink uppercase font-semibold">Order Number</span>
+            <p className="text-lg font-bold text-brand-ink font-heading">#{order.order_number}</p>
           </div>
           <div>
-            <span className="text-xs text-slate-400 uppercase font-semibold">Order Date</span>
-            <p className="text-sm font-medium text-slate-800">
+            <span className="text-xs text-brand-faint-ink uppercase font-semibold">Order Date</span>
+            <p className="text-sm font-medium text-brand-ink">
               {new Date(order.created_at).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
@@ -84,38 +84,38 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
             </p>
           </div>
           <div>
-            <span className="text-xs text-slate-400 uppercase font-semibold">Payment Status</span>
-            <p className="text-sm font-bold text-emerald-600 uppercase tracking-wider">
+            <span className="text-xs text-brand-faint-ink uppercase font-semibold">Payment Status</span>
+            <p className="text-sm font-bold text-brand-primary uppercase tracking-wider">
               {order.payment_status}
             </p>
           </div>
         </div>
 
         {/* Order Items */}
-        <div className="p-6 divide-y divide-slate-100">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 pb-4">
+        <div className="p-6 divide-y divide-brand-border">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-brand-ink pb-4">
             Purchased Items ({order.items?.length || 0})
           </h3>
           {order.items?.map((item) => (
             <div key={item.id} className="py-4 flex gap-4 items-center">
-              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-brand bg-slate-100 border border-slate-100">
+              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-brand bg-brand-subtle border border-brand-border">
                 {item.image_snapshot ? (
                   <ProductImage src={item.image_snapshot} seed={item.product_name_snapshot} alt="" sizes="64px" compact className="object-cover" />
                 ) : (
-                  <div className="h-full w-full bg-slate-200" />
+                  <div className="h-full w-full bg-brand-border" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-semibold text-slate-900">{item.product_name_snapshot}</h4>
-                <p className="text-xs text-slate-500">SKU: {item.sku_snapshot} • Qty: {item.quantity}</p>
+                <h4 className="text-sm font-semibold text-brand-ink">{item.product_name_snapshot}</h4>
+                <p className="text-xs text-brand-muted-ink">SKU: {item.sku_snapshot} • Qty: {item.quantity}</p>
                 {item.attributes_snapshot && (
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-brand-faint-ink">
                     {Object.entries(item.attributes_snapshot).map(([k, v]) => `${k}: ${v}`).join(", ")}
                   </p>
                 )}
               </div>
               <div className="text-right">
-                <span className="text-sm font-bold text-slate-900">
+                <span className="text-sm font-bold text-brand-ink">
                   {formatPrice(item.total_price, order.currency)}
                 </span>
               </div>
@@ -124,13 +124,13 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
         </div>
 
         {/* Financial Summary & Delivery Address */}
-        <div className="border-t border-slate-200 p-6 bg-slate-50/50 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="border-t border-brand-border p-6 bg-brand-subtle/50 grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Shipping Address */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-brand-ink mb-2">
               Delivery Destination
             </h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-brand-muted-ink leading-relaxed">
               {order.shipping_address.first_name} {order.shipping_address.last_name}
               <br />
               {order.shipping_address.address_1}
@@ -146,27 +146,27 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
 
           {/* Math breakdown */}
           <div className="space-y-2 text-xs">
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between text-brand-muted-ink">
               <span>Subtotal</span>
-              <span className="font-semibold text-slate-900">{formatPrice(order.subtotal, order.currency)}</span>
+              <span className="font-semibold text-brand-ink">{formatPrice(order.subtotal, order.currency)}</span>
             </div>
             {order.discount_amount > 0 && (
-              <div className="flex justify-between text-emerald-600 font-semibold">
+              <div className="flex justify-between text-brand-primary font-semibold">
                 <span>Coupon Discount</span>
                 <span>-{formatPrice(order.discount_amount, order.currency)}</span>
               </div>
             )}
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between text-brand-muted-ink">
               <span>Shipping ({order.shipping_method?.title || "Courier"})</span>
-              <span className="font-semibold text-slate-900">
+              <span className="font-semibold text-brand-ink">
                 {order.shipping_amount === 0 ? "FREE" : formatPrice(order.shipping_amount, order.currency)}
               </span>
             </div>
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between text-brand-muted-ink">
               <span>Tax</span>
-              <span className="font-semibold text-slate-900">{formatPrice(order.tax_amount, order.currency)}</span>
+              <span className="font-semibold text-brand-ink">{formatPrice(order.tax_amount, order.currency)}</span>
             </div>
-            <div className="border-t border-slate-200 pt-2 flex justify-between text-base font-bold text-slate-900">
+            <div className="border-t border-brand-border pt-2 flex justify-between text-base font-bold text-brand-ink">
               <span>Total Paid</span>
               <span>{formatPrice(order.total_amount, order.currency)}</span>
             </div>

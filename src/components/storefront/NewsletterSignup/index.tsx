@@ -52,7 +52,7 @@ export function NewsletterSignup({ source = "footer", compact = false }: Newslet
 
   if (status === "done") {
     return (
-      <p className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
+      <p className="flex items-center gap-2 text-xs font-semibold text-brand-primary">
         <Check className="h-4 w-4" /> You are on the list. Check your inbox.
       </p>
     );
@@ -73,19 +73,19 @@ export function NewsletterSignup({ source = "footer", compact = false }: Newslet
           autoComplete="email"
           inputMode="email"
           required
-          className="min-w-0 flex-1 rounded-brand border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+          className="min-w-0 flex-1 rounded-brand border border-brand-ink/50 bg-brand-ink px-3 py-2 text-xs text-white placeholder-brand-faint-ink focus:border-brand-primary focus:outline-none"
         />
         <button
           type="submit"
           disabled={status === "saving"}
-          className="flex flex-shrink-0 items-center gap-1.5 rounded-brand bg-emerald-600 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-60"
+          className="flex flex-shrink-0 items-center gap-1.5 rounded-brand bg-brand-primary px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-primary-hover disabled:opacity-60"
         >
           <Send className="h-3.5 w-3.5" />
           {status === "saving" ? "…" : "Join"}
         </button>
       </div>
       {error && <p className="text-xs text-rose-400">{error}</p>}
-      <p className="text-[11px] leading-relaxed text-slate-500">
+      <p className="text-[11px] leading-relaxed text-brand-muted-ink">
         New arrivals and offers. Unsubscribe in one click, any time.
       </p>
     </form>

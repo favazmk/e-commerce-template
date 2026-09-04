@@ -130,29 +130,29 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       />
 
       <nav aria-label="Breadcrumb" className="mb-5">
-        <ol className="flex flex-wrap items-center gap-1 text-xs text-slate-500">
+        <ol className="flex flex-wrap items-center gap-1 text-xs text-brand-muted-ink">
           <li>
-            <Link href="/" className="transition-colors hover:text-slate-900">
+            <Link href="/" className="transition-colors hover:text-brand-ink">
               Home
             </Link>
           </li>
-          <ChevronRight className="h-3 w-3 text-slate-300" aria-hidden="true" />
+          <ChevronRight className="h-3 w-3 text-brand-faint-ink" aria-hidden="true" />
           <li>
-            <Link href="/products" className="transition-colors hover:text-slate-900">
+            <Link href="/products" className="transition-colors hover:text-brand-ink">
               Products
             </Link>
           </li>
-          <ChevronRight className="h-3 w-3 text-slate-300" aria-hidden="true" />
-          <li className="font-semibold text-slate-900">{category.name}</li>
+          <ChevronRight className="h-3 w-3 text-brand-faint-ink" aria-hidden="true" />
+          <li className="font-semibold text-brand-ink">{category.name}</li>
         </ol>
       </nav>
 
-      <header className="mb-8 border-b border-slate-100 pb-6">
-        <h1 className="font-heading text-2xl font-bold text-slate-900 sm:text-4xl">
+      <header className="mb-8 border-b border-brand-border pb-6">
+        <h1 className="font-heading text-2xl font-bold text-brand-ink sm:text-4xl">
           {category.name}
         </h1>
         {category.description && (
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-500">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-brand-muted-ink">
             {category.description}
           </p>
         )}

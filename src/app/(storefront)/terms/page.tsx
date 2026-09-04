@@ -76,7 +76,7 @@ export default function TermsOfServicePage() {
         <p>
           Delivery estimates are estimates, not guarantees, and depend on the courier. Risk in the
           goods passes to you on delivery. Full details are in our{" "}
-          <Link href="/shipping-policy" className="font-semibold text-emerald-600 hover:underline">
+          <Link href="/shipping-policy" className="font-semibold text-brand-primary hover:underline">
             shipping policy
           </Link>
           .
@@ -86,7 +86,7 @@ export default function TermsOfServicePage() {
       <LegalSection id="returns" title="5. Returns and cancellation">
         <p>
           Your rights to return an item and get a refund are set out in our{" "}
-          <Link href="/refund-policy" className="font-semibold text-emerald-600 hover:underline">
+          <Link href="/refund-policy" className="font-semibold text-brand-primary hover:underline">
             returns and refunds policy
           </Link>
           , which forms part of these terms. Nothing in these terms limits any statutory right you
@@ -99,7 +99,7 @@ export default function TermsOfServicePage() {
           You are responsible for keeping your password confidential and for activity carried out
           under your account. Tell us immediately if you believe someone else has access to it. You
           can sign out of every device from{" "}
-          <Link href="/account/security" className="font-semibold text-emerald-600 hover:underline">
+          <Link href="/account/security" className="font-semibold text-brand-primary hover:underline">
             Login &amp; security
           </Link>
           .

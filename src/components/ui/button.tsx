@@ -24,25 +24,31 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles =
       "inline-flex items-center justify-center font-medium rounded-brand transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
 
+    /**
+     * `primary` is the hot brand colour and `accent` is the deep neutral, which
+     * is the pairing marketplaces use for "Add to bag" next to "Buy now": two
+     * strong buttons that are still visually ranked. Making both the same
+     * colour would leave the shopper choosing between identical options.
+     */
     const variantStyles = {
       primary:
-        "bg-brand-primary text-white hover:bg-slate-800 focus:ring-brand-primary shadow-sm",
+        "bg-brand-primary text-white hover:bg-brand-primary-hover focus:ring-brand-primary shadow-sm",
       secondary:
-        "bg-slate-100 text-slate-900 hover:bg-slate-200 focus:ring-slate-400",
+        "bg-brand-subtle text-brand-ink hover:bg-brand-border focus:ring-brand-border-strong",
       outline:
-        "border border-slate-300 bg-transparent text-slate-800 hover:bg-slate-50 focus:ring-slate-400",
+        "border border-brand-border-strong bg-white text-brand-ink hover:border-brand-ink focus:ring-brand-border-strong",
       ghost:
-        "bg-transparent text-slate-700 hover:bg-slate-100 hover:text-slate-900",
+        "bg-transparent text-brand-muted-ink hover:bg-brand-subtle hover:text-brand-ink",
       accent:
-        "bg-brand-accent text-white hover:bg-emerald-600 focus:ring-emerald-400 shadow-sm",
+        "bg-brand-ink text-white hover:bg-brand-ink/90 focus:ring-brand-ink shadow-sm",
       danger:
-        "bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500 shadow-sm",
+        "bg-brand-danger text-white hover:brightness-95 focus:ring-brand-danger shadow-sm",
     };
 
     const sizeStyles = {
       sm: "text-xs px-3 py-1.5 gap-1.5",
       md: "text-sm px-4 py-2.5 gap-2",
-      lg: "text-base px-6 py-3.5 gap-2.5 font-semibold",
+      lg: "text-sm px-6 py-3.5 gap-2.5 font-bold uppercase tracking-wide",
       icon: "p-2 rounded-full",
     };
 

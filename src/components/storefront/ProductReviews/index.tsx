@@ -34,7 +34,7 @@ function Stars({
           >
             <Star
               className={`${dimension} ${
-                star <= value ? "fill-amber-400 text-amber-400" : "text-slate-300"
+                star <= value ? "fill-amber-400 text-amber-400" : "text-brand-faint-ink"
               }`}
             />
           </button>
@@ -42,7 +42,7 @@ function Stars({
           <Star
             key={star}
             className={`${dimension} ${
-              star <= Math.round(value) ? "fill-amber-400 text-amber-400" : "text-slate-200"
+              star <= Math.round(value) ? "fill-amber-400 text-amber-400" : "text-brand-border"
             }`}
           />
         )
@@ -136,24 +136,24 @@ export function ProductReviews({
   const total = summary?.count ?? 0;
 
   return (
-    <section className="border-t border-slate-200 pt-10" aria-labelledby="reviews-heading">
+    <section className="border-t border-brand-border pt-10" aria-labelledby="reviews-heading">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 id="reviews-heading" className="text-xl font-bold font-heading text-slate-900">
+          <h2 id="reviews-heading" className="text-xl font-bold font-heading text-brand-ink">
             Customer Reviews
           </h2>
           {total > 0 ? (
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <Stars value={summary!.average} />
-              <span className="text-sm font-bold text-slate-900">
+              <span className="text-sm font-bold text-brand-ink">
                 {summary!.average.toFixed(1)}
               </span>
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-brand-muted-ink">
                 from {total} review{total === 1 ? "" : "s"}
               </span>
             </div>
           ) : (
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-brand-muted-ink">
               No reviews yet. Be the first to write one.
             </p>
           )}
@@ -176,7 +176,7 @@ export function ProductReviews({
       </div>
 
       {thankYou && (
-        <p className="mt-4 rounded-brand border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800">
+        <p className="mt-4 rounded-brand border border-brand-success/30 bg-brand-success/10 p-3 text-xs font-semibold text-brand-success">
           {thankYou}
         </p>
       )}
@@ -190,12 +190,12 @@ export function ProductReviews({
 
             return (
               <div key={star} className="flex items-center gap-2 text-xs">
-                <span className="w-3 text-right font-semibold text-slate-600 tabular-nums">
+                <span className="w-3 text-right font-semibold text-brand-muted-ink tabular-nums">
                   {star}
                 </span>
                 <Star className="h-3 w-3 flex-shrink-0 fill-amber-400 text-amber-400" />
                 <span
-                  className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"
+                  className="h-1.5 flex-1 overflow-hidden rounded-full bg-brand-subtle"
                   role="presentation"
                 >
                   <span
@@ -203,7 +203,7 @@ export function ProductReviews({
                     style={{ width: `${percent}%` }}
                   />
                 </span>
-                <span className="w-6 text-right text-slate-400 tabular-nums">{count}</span>
+                <span className="w-6 text-right text-brand-faint-ink tabular-nums">{count}</span>
               </div>
             );
           })}
@@ -214,14 +214,14 @@ export function ProductReviews({
       {isFormOpen && (
         <form
           onSubmit={handleSubmit}
-          className="mt-6 space-y-4 rounded-brand-xl border border-slate-200 bg-slate-50 p-4 sm:p-6"
+          className="mt-6 space-y-4 rounded-brand-xl border border-brand-border bg-brand-subtle p-4 sm:p-6"
         >
-          <p className="text-sm font-semibold text-slate-900">
+          <p className="text-sm font-semibold text-brand-ink">
             Reviewing <span className="font-bold">{productName}</span>
           </p>
 
           <div className="space-y-1.5">
-            <span className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+            <span className="block text-xs font-semibold uppercase tracking-wider text-brand-muted-ink">
               Your rating
             </span>
             <Stars value={rating} size="lg" onRate={setRating} />
@@ -246,7 +246,7 @@ export function ProductReviews({
           <div className="space-y-1.5">
             <label
               htmlFor="reviewComment"
-              className="block text-xs font-semibold uppercase tracking-wider text-slate-700"
+              className="block text-xs font-semibold uppercase tracking-wider text-brand-muted-ink"
             >
               Your review
             </label>
@@ -258,10 +258,10 @@ export function ProductReviews({
               maxLength={2000}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="w-full rounded-brand border border-slate-300 p-3 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              className="w-full rounded-brand border border-brand-border-strong p-3 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
               placeholder="How does it fit? How does it wear? What would you tell a friend?"
             />
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-brand-muted-ink">
               Reviews are read before they are published, so yours will not appear straight away.
             </p>
           </div>
@@ -294,24 +294,24 @@ export function ProductReviews({
       {/* The reviews themselves */}
       <div className="mt-8">
         {isLoading ? (
-          <p className="flex items-center gap-2 text-xs text-slate-400">
+          <p className="flex items-center gap-2 text-xs text-brand-faint-ink">
             <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading reviews…
           </p>
         ) : reviews.length === 0 ? null : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-brand-border">
             {reviews.map((review) => (
               <li key={review.id} className="py-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <Stars value={review.rating} />
-                  <span className="text-sm font-bold text-slate-900">{review.customer_name}</span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-sm font-bold text-brand-ink">{review.customer_name}</span>
+                  <span className="text-xs text-brand-faint-ink">
                     {new Date(review.created_at).toLocaleDateString()}
                   </span>
                 </div>
                 {review.title && (
-                  <p className="mt-1.5 text-sm font-semibold text-slate-900">{review.title}</p>
+                  <p className="mt-1.5 text-sm font-semibold text-brand-ink">{review.title}</p>
                 )}
-                <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-brand-muted-ink">
                   {review.comment}
                 </p>
               </li>
