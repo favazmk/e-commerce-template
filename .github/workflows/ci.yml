@@ -36,6 +36,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Brand token check
+        run: npm run lint:tokens
+
       - name: Type check
         run: npm run type-check
 
