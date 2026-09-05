@@ -20,8 +20,38 @@ This guide outlines step-by-step instructions for deploying the e-commerce platf
    - `Project URL`
    - `anon public key`
    - `service_role secret key`
-3. Open **SQL Editor** in Supabase and execute the migration file:
-   - [`supabase/migrations/20260101000000_init_schema.sql`](../supabase/migrations/20260101000000_init_schema.sql)
+3. Apply **every** migration in `supabase/migrations/`, in filename order.
+   Filename order is the dependency order — later files alter tables the
+   earlier ones create, so a run out of order fails.
+
+   | # | File | What it adds |
+   |---|---|---|
+   | 1 | `20260101000000_init_schema.sql` | Tables, enums, base RLS |
+   | 2 | `20260102000000_rls_hardening.sql` | Tightened row-level policies |
+   | 3 | `20260103000000_currency_aed.sql` | Currency default and backfill |
+   | 4 | `20260104000000_admin_change_log.sql` | Admin audit trail |
+   | 5 | `20260105000000_privilege_escalation_fix.sql` | Role-escalation fix |
+   | 6 | `20260106000000_merchandising_and_growth.sql` | Merchandising tables |
+   | 7 | `20260107000000_product_badges_and_swatches.sql` | Badges and swatches |
+
+   Either paste each file into the Supabase **SQL Editor** in this order, or,
+   with `DATABASE_URL` set, run them from a shell:
+
+   ```bash
+   for f in supabase/migrations/*.sql; do npm run db:migrate "$f" || break; done
+   ```
+
+   > Applying only the first file leaves a store with no RLS hardening, an
+   > unpatched privilege-escalation path, the wrong currency default and no
+   > merchandising tables. The storefront will still boot, which is what makes
+   > this worth stating: the failure is silent.
+
+   Verify before continuing — this should report 25:
+
+   ```bash
+   npm run db:query "select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE'"
+   ```
+
 4. Create a public storage bucket named `ecommerce-assets` under **Storage**.
 
 ### Step 2: Configure Vercel Project
