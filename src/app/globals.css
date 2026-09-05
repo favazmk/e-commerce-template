@@ -55,6 +55,18 @@
   /* Scarcity: "Only 2 left". Distinct from discount on purpose. */
   --brand-urgent: #ff5a5a;
   --brand-danger: #e5343d;
+  /* Caution that is not failure: an expiring coupon, a slow-delivery notice. */
+  --brand-warning: #b26b00;
+
+  /* Tinted panels and hairlines for the two message states.
+     Their absence is what drove components to hardcode bg-rose-50 and
+     border-rose-200: naming a text colour but not the panel it sits on leaves
+     the panel to be invented per component, and an invented colour does not
+     re-theme with the brand. */
+  --brand-danger-surface: #fdf0f0;
+  --brand-danger-border: #f6d6d8;
+  --brand-warning-surface: #fdf6e8;
+  --brand-warning-border: #f2e2c2;
 
   /* --- Surfaces -------------------------------------------------------- */
   --brand-surface: #ffffff;

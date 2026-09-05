@@ -98,7 +98,7 @@ export default function ResetPasswordPage() {
         subtitle="Reset links work once and expire quickly, for your protection."
       >
         <div className="space-y-5 text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-warning-surface text-brand-warning">
             <AlertCircle className="h-7 w-7" />
           </span>
           <p className="text-sm text-brand-muted-ink">Request a new link and try again.</p>
@@ -137,7 +137,7 @@ export default function ResetPasswordPage() {
       {error && (
         <div
           role="alert"
-          className="mb-5 flex gap-2 rounded-brand border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"
+          className="mb-5 flex gap-2 rounded-brand border border-brand-danger-border bg-brand-danger-surface p-3 text-sm text-brand-danger"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
           <span>{error}</span>

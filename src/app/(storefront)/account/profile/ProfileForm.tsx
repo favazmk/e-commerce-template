@@ -56,7 +56,7 @@ export function ProfileForm({ user }: { user: User }) {
         className="space-y-5 rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle sm:p-6"
       >
         {error && (
-          <p role="alert" className="rounded-brand bg-rose-50 p-3 text-sm text-rose-700">
+          <p role="alert" className="rounded-brand bg-brand-danger-surface p-3 text-sm text-brand-danger">
             {error}
           </p>
         )}

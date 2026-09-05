@@ -130,7 +130,7 @@ export function Header({ categories = [] }: HeaderProps) {
               >
                 <Heart className="h-5 w-5" />
                 {totalWishlistCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-primary text-[10px] font-bold text-white">
                     {totalWishlistCount}
                   </span>
                 )}
