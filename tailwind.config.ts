@@ -37,6 +37,14 @@ const config: Config = {
           discount: "var(--brand-discount, #ff690f)",
           urgent: "var(--brand-urgent, #ff5a5a)",
           danger: "var(--brand-danger, #e5343d)",
+          warning: "var(--brand-warning, #b26b00)",
+
+          // Tinted panels and hairlines for message states, so an alert box
+          // never has to reach for a raw palette class.
+          "danger-surface": "var(--brand-danger-surface, #fdf0f0)",
+          "danger-border": "var(--brand-danger-border, #f6d6d8)",
+          "warning-surface": "var(--brand-warning-surface, #fdf6e8)",
+          "warning-border": "var(--brand-warning-border, #f2e2c2)",
 
           // Surfaces
           surface: "var(--brand-surface, #ffffff)",
