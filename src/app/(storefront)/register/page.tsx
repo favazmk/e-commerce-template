@@ -136,7 +136,7 @@ function RegisterForm() {
       {error && (
         <div
           role="alert"
-          className="mb-5 flex gap-2 rounded-brand border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"
+          className="mb-5 flex gap-2 rounded-brand border border-brand-danger-border bg-brand-danger-surface p-3 text-sm text-brand-danger"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
           <span>{error}</span>

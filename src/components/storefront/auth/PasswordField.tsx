@@ -71,7 +71,17 @@ export function PasswordField({
   const password = typeof value === "string" ? value : "";
   const strength = useMemo(() => ratePassword(password), [password]);
 
-  const barColors = ["bg-brand-border", "bg-rose-500", "bg-amber-500", "bg-lime-500", "bg-brand-primary"];
+  // A red-to-green ramp built from semantic tokens. Two of these were raw
+  // palette classes, and the strongest step was the brand colour — which on a
+  // monochrome brand renders "weak" and "strongest" as the same swatch, so the
+  // meter conveyed nothing.
+  const barColors = [
+    "bg-brand-border",
+    "bg-brand-danger",
+    "bg-brand-warning",
+    "bg-brand-rating",
+    "bg-brand-success",
+  ];
 
   return (
     <div className="space-y-2">

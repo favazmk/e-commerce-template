@@ -263,9 +263,9 @@ export default function CheckoutPage() {
       {errorMessage && (
         <div
           role="alert"
-          className="mb-6 flex items-center gap-3 rounded-brand bg-rose-50 p-4 text-xs font-medium text-rose-800 border border-rose-200"
+          className="mb-6 flex items-center gap-3 rounded-brand bg-brand-danger-surface p-4 text-xs font-medium text-brand-danger border border-brand-danger-border"
         >
-          <AlertCircle className="h-5 w-5 flex-shrink-0 text-rose-600" />
+          <AlertCircle className="h-5 w-5 flex-shrink-0 text-brand-danger" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -286,7 +286,7 @@ export default function CheckoutPage() {
                 letting the customer fill in the whole form and be refused at
                 the end. The server enforces the rule regardless. */}
             {!guestCheckout && (
-              <p className="rounded-brand border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-800">
+              <p className="rounded-brand border border-brand-warning-border bg-brand-warning-surface p-3 text-xs font-semibold text-brand-warning">
                 An account is required to place an order.{" "}
                 <Link href="/login" className="underline">
                   Sign in or create one
@@ -588,7 +588,7 @@ export default function CheckoutPage() {
                       </p>
                     </div>
                   </div>
-                  <span className="text-xs uppercase font-bold text-amber-600">Demo</span>
+                  <span className="text-xs uppercase font-bold text-brand-warning">Demo</span>
                 </label>
               )}
             </div>

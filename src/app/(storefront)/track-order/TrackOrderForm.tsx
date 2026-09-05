@@ -66,7 +66,7 @@ export function TrackOrderForm() {
         className="space-y-5 rounded-brand-xl border border-brand-border bg-white p-5 shadow-subtle sm:p-6"
       >
         {error && (
-          <p role="alert" className="flex gap-2 rounded-brand bg-rose-50 p-3 text-sm text-rose-700">
+          <p role="alert" className="flex gap-2 rounded-brand bg-brand-danger-surface p-3 text-sm text-brand-danger">
             <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
             {error}
           </p>
