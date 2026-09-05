@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, ShoppingBag, SlidersHorizontal } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, ShoppingBag, SlidersHorizontal, X } from "lucide-react";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RecommendationService } from "@/services/recommendation.service";
@@ -38,6 +38,73 @@ const SORT_OPTIONS = [
   { label: "Price: high to low", value: "price_desc" },
   { label: "Name A–Z", value: "name_asc" },
 ];
+
+/**
+ * One filter row.
+ *
+ * Rendered with a visible box rather than as a bare text link, for two reasons.
+ * The control communicates "this toggles" before the label is read — a column
+ * of plain links reads as navigation, not as filters. And the previous active
+ * state was `font-bold text-brand-primary`, which on a monochrome brand is the
+ * same colour as the inactive text: weight was carrying the entire signal.
+ * A filled box survives any palette.
+ *
+ * `aria-current` carries the state programmatically, which weight alone never
+ * did for a screen reader.
+ */
+function FilterOption({
+  href,
+  active,
+  label,
+}: {
+  href: string;
+  active: boolean;
+  label: string;
+}) {
+  return (
+    <li>
+      <Link
+        href={href}
+        aria-current={active ? "true" : undefined}
+        className={`group flex items-center gap-2.5 py-1.5 text-sm transition-colors ${
+          active ? "font-semibold text-brand-ink" : "text-brand-muted-ink hover:text-brand-ink"
+        }`}
+      >
+        <span
+          aria-hidden="true"
+          className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-brand-sm border transition-colors ${
+            active
+              ? "border-brand-ink bg-brand-ink"
+              : "border-brand-border-strong group-hover:border-brand-ink"
+          }`}
+        >
+          {active && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+        </span>
+        {label}
+      </Link>
+    </li>
+  );
+}
+
+/** A titled block in the filter rail. Hairline separated, not boxed. */
+function FilterGroup({
+  title,
+  children,
+  first = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  first?: boolean;
+}) {
+  return (
+    <div className={first ? "" : "border-t border-brand-border pt-4"}>
+      <h2 className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-ink">
+        {title}
+      </h2>
+      <ul>{children}</ul>
+    </div>
+  );
+}
 
 /**
  * Shared catalog grid used by /products and every category page.
@@ -94,12 +161,59 @@ export async function CatalogListing({
   const priceBandActive = (band: { min?: number; max?: number }) =>
     filters.minPrice === band.min && filters.maxPrice === band.max;
 
+  /**
+   * What is currently narrowing the results, and how to undo each one.
+   *
+   * Rendered as removable chips. Without this a shopper can see that fewer
+   * products are showing but not what caused it, and can only reset everything
+   * at once — the difference between "drop the price band" and "start over".
+   *
+   * Category removal goes to /products rather than through buildHref, because
+   * on a category page the category lives in the path, not the query string.
+   */
+  const appliedFilters: { label: string; removeHref: string }[] = [];
+
+  if (filters.category) {
+    const name =
+      categories.find((c) => c.slug === filters.category)?.name ?? filters.category;
+    appliedFilters.push({ label: name, removeHref: "/products" });
+  }
+
+  const activeBand = priceBands.find((band) => priceBandActive(band));
+  if (activeBand) {
+    appliedFilters.push({
+      label: activeBand.label,
+      removeHref: buildHref({ minPrice: undefined, maxPrice: undefined, page: null }),
+    });
+  }
+
+  if (filters.brand) {
+    appliedFilters.push({
+      label: filters.brand,
+      removeHref: buildHref({ brand: undefined, page: null }),
+    });
+  }
+
+  if (filters.inStock) {
+    appliedFilters.push({
+      label: "In stock only",
+      removeHref: buildHref({ inStock: false, page: null }),
+    });
+  }
+
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-4 lg:gap-10">
       {/* Filters. A <details> element gives a working accordion on phones with
           no JavaScript, so the filter panel is usable before hydration. */}
       <aside className="lg:col-span-1">
-        <details className="group rounded-brand-xl border border-brand-border bg-white lg:open" open>
+        {/* Boxed on phones, where it is a collapsible panel that needs an edge.
+            Borderless on desktop: a card around a permanently-open sidebar adds
+            a frame the eye has to cross for no information, which is a large
+            part of why the rail read as a generic widget. */}
+        <details
+          className="group rounded-brand-xl border border-brand-border bg-white lg:open lg:rounded-none lg:border-0 lg:bg-transparent"
+          open
+        >
           <summary className="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-bold text-brand-ink lg:hidden">
             <span className="flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4" /> Filters
@@ -112,122 +226,95 @@ export async function CatalogListing({
             <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
           </summary>
 
-          <div className="space-y-6 border-t border-brand-border p-4 lg:border-t-0 lg:p-0">
-            {hasActiveFilters && (
-              <Link
-                href={basePath}
-                className="inline-block text-xs font-bold text-rose-600 hover:underline"
-              >
-                Clear all filters
-              </Link>
+          <div className="space-y-4 border-t border-brand-border p-4 lg:border-t-0 lg:p-0">
+            {/* Applied filters, each individually removable.
+                Previously the only affordance was a red "Clear all filters"
+                link, which forced an all-or-nothing reset and gave no summary
+                of what was actually applied. */}
+            {appliedFilters.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 pb-1">
+                {appliedFilters.map((applied) => (
+                  <Link
+                    key={applied.label}
+                    href={applied.removeHref}
+                    className="inline-flex items-center gap-1.5 rounded-brand border border-brand-ink bg-brand-ink px-2.5 py-1 text-[11px] font-semibold text-white transition-opacity hover:opacity-80"
+                  >
+                    {applied.label}
+                    <X className="h-3 w-3" aria-hidden="true" />
+                    <span className="sr-only">Remove filter</span>
+                  </Link>
+                ))}
+                {appliedFilters.length > 1 && (
+                  <Link
+                    href={filters.category ? "/products" : basePath}
+                    className="px-1 text-[11px] font-semibold text-brand-muted-ink underline underline-offset-2 hover:text-brand-ink"
+                  >
+                    Clear all
+                  </Link>
+                )}
+              </div>
             )}
 
             {categories.length > 0 && (
-              <div>
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-brand-ink">
-                  Category
-                </h2>
-                <ul className="space-y-1.5 text-sm">
-                  <li>
-                    <Link
-                      href="/products"
-                      className={`block py-1 transition-colors ${
-                        !filters.category
-                          ? "font-bold text-brand-primary"
-                          : "text-brand-muted-ink hover:text-brand-ink"
-                      }`}
-                    >
-                      All products
-                    </Link>
-                  </li>
-                  {categories.map((category) => (
-                    <li key={category.id}>
-                      <Link
-                        href={`/categories/${category.slug}`}
-                        className={`block py-1 transition-colors ${
-                          filters.category === category.slug
-                            ? "font-bold text-brand-primary"
-                            : "text-brand-muted-ink hover:text-brand-ink"
-                        }`}
-                      >
-                        {category.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <FilterGroup title="Category" first={appliedFilters.length === 0}>
+                <FilterOption
+                  href="/products"
+                  active={!filters.category}
+                  label="All products"
+                />
+                {categories.map((category) => (
+                  <FilterOption
+                    key={category.id}
+                    href={`/categories/${category.slug}`}
+                    active={filters.category === category.slug}
+                    label={category.name}
+                  />
+                ))}
+              </FilterGroup>
             )}
 
             {priceBands.length > 0 && (
-              <div className="border-t border-brand-border pt-5">
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-brand-ink">
-                  Price
-                </h2>
-                <ul className="space-y-1.5 text-sm">
-                  {priceBands.map((band) => (
-                    <li key={band.label}>
-                      <Link
-                        href={buildHref({
-                          minPrice: priceBandActive(band) ? undefined : band.min,
-                          maxPrice: priceBandActive(band) ? undefined : band.max,
-                          page: null,
-                        })}
-                        className={`block py-1 transition-colors ${
-                          priceBandActive(band)
-                            ? "font-bold text-brand-primary"
-                            : "text-brand-muted-ink hover:text-brand-ink"
-                        }`}
-                      >
-                        {band.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <FilterGroup title="Price">
+                {priceBands.map((band) => (
+                  <FilterOption
+                    key={band.label}
+                    href={buildHref({
+                      minPrice: priceBandActive(band) ? undefined : band.min,
+                      maxPrice: priceBandActive(band) ? undefined : band.max,
+                      page: null,
+                    })}
+                    active={priceBandActive(band)}
+                    label={band.label}
+                  />
+                ))}
+              </FilterGroup>
             )}
 
             {brands.length > 1 && (
-              <div className="border-t border-brand-border pt-5">
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-brand-ink">
-                  Brand
-                </h2>
-                <ul className="max-h-56 space-y-1.5 overflow-y-auto text-sm">
+              <FilterGroup title="Brand">
+                <div className="max-h-56 overflow-y-auto">
                   {brands.map((brand) => (
-                    <li key={brand}>
-                      <Link
-                        href={buildHref({
-                          brand: filters.brand === brand ? undefined : brand,
-                          page: null,
-                        })}
-                        className={`block py-1 transition-colors ${
-                          filters.brand === brand
-                            ? "font-bold text-brand-primary"
-                            : "text-brand-muted-ink hover:text-brand-ink"
-                        }`}
-                      >
-                        {brand}
-                      </Link>
-                    </li>
+                    <FilterOption
+                      key={brand}
+                      href={buildHref({
+                        brand: filters.brand === brand ? undefined : brand,
+                        page: null,
+                      })}
+                      active={filters.brand === brand}
+                      label={brand}
+                    />
                   ))}
-                </ul>
-              </div>
+                </div>
+              </FilterGroup>
             )}
 
-            <div className="border-t border-brand-border pt-5">
-              <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-brand-ink">
-                Availability
-              </h2>
-              <Link
+            <FilterGroup title="Availability">
+              <FilterOption
                 href={buildHref({ inStock: !filters.inStock, page: null })}
-                className={`block py-1 text-sm transition-colors ${
-                  filters.inStock
-                    ? "font-bold text-brand-primary"
-                    : "text-brand-muted-ink hover:text-brand-ink"
-                }`}
-              >
-                {filters.inStock ? "✓ In stock only" : "In stock only"}
-              </Link>
-            </div>
+                active={Boolean(filters.inStock)}
+                label="In stock only"
+              />
+            </FilterGroup>
           </div>
         </details>
       </aside>
