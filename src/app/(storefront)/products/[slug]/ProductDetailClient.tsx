@@ -457,7 +457,7 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                     onClick={() => toggleWishlist(product)}
                     className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-brand border transition-all hover:bg-brand-subtle ${
                       isInWishlist(product.id)
-                        ? "border-brand-danger-border bg-brand-danger-surface/40 text-brand-danger"
+                        ? "border-brand-ink bg-brand-subtle text-brand-ink"
                         : "border-brand-border text-brand-muted-ink"
                     }`}
                     aria-label={
