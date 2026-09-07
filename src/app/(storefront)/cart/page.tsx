@@ -411,7 +411,7 @@ export default function CartPage() {
               href="/wishlist"
               className="flex items-center justify-center gap-2 rounded-brand-xl border border-brand-border bg-white p-3 text-xs font-semibold text-brand-muted-ink shadow-subtle transition-colors hover:border-brand-border-strong hover:text-brand-ink"
             >
-              <Heart className="h-4 w-4 text-brand-danger" /> View your wishlist
+              <Heart className="h-4 w-4 text-brand-muted-ink" /> View your wishlist
             </Link>
           </div>
         </div>
