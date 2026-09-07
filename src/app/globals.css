@@ -124,8 +124,15 @@
        scroll sideways on a phone. Wide content still scrolls in its own
        overflow-x container. */
     overflow-x: hidden;
-    /* Slightly tighter than the browser default; marketplace copy is dense. */
-    letter-spacing: -0.005em;
+    /* Figtree is already tightly fitted; negative tracking on top of it
+       degrades legibility at the 11-13px sizes product metadata lives at.
+       Large marketplaces ship `letter-spacing: normal` on body copy. */
+    letter-spacing: normal;
+    /* 14px, not the browser default of 16px. Marketplace listing pages run
+       a size down from the web default, and the type scale below is built
+       for that density. */
+    font-size: 14px;
+    line-height: 1.45;
   }
 
   h1, h2, h3, h4, h5, h6 {
