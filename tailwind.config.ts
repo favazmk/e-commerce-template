@@ -79,6 +79,9 @@ const config: Config = {
       fontFamily: {
         heading: ["var(--font-heading, 'Figtree', 'Inter', sans-serif)"],
         body: ["var(--font-body, 'Figtree', 'Inter', sans-serif)"],
+        // The logotype only. Kept separate so a client can run conventional
+        // marketplace interface type without giving up its own wordmark.
+        wordmark: ["var(--font-wordmark, 'Figtree', 'Inter', sans-serif)"],
       },
       fontSize: {
         // Dense marketplace scale: product metadata lives between 11 and 14px.

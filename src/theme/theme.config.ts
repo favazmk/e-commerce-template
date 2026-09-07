@@ -17,6 +17,19 @@ export interface ThemeConfig {
     logoUrl?: string;
     faviconUrl?: string;
     tagline?: string;
+    /**
+     * Optional two-line wordmark lockup for the header, for a brand whose
+     * logotype is set differently from its plain name. `name` stays the
+     * canonical identity used for SEO, schema.org and page titles; this only
+     * changes how the header draws it. Omitted, the header falls back to
+     * name over tagline, which is the behaviour every existing store has.
+     */
+    wordmark?: {
+      primary: string;
+      secondary?: string;
+      /** Letter-spacing for the secondary line, e.g. "0.5em". */
+      secondaryTracking?: string;
+    };
   };
   colors: {
     /** Primary action colour. One hot accent, reserved for CTAs. */
@@ -43,6 +56,13 @@ export interface ThemeConfig {
   typography: {
     fontHeading: string;
     fontBody: string;
+    /**
+     * Typeface for the header wordmark only. A store can run a conventional
+     * marketplace typeface for every control and label while keeping its own
+     * logotype - the logo is brand identity, the interface is convention.
+     * Omitted, the wordmark falls back to `fontHeading`.
+     */
+    fontWordmark?: string;
   };
   /**
    * Storefront navigation. Category slugs differ per client, so this belongs
