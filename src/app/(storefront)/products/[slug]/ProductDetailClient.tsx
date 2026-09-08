@@ -422,12 +422,12 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
             {(backordered || minQuantity > 1 || product.max_purchase_quantity || saleEndsAt) && (
               <ul className="space-y-1 text-xs text-brand-muted-ink">
                 {backordered && (
-                  <li className="font-semibold text-amber-700">
+                  <li className="font-semibold text-brand-warning">
                     On backorder — order now and it ships as soon as it is restocked.
                   </li>
                 )}
                 {saleEndsAt && (
-                  <li className="font-semibold text-rose-700">
+                  <li className="font-semibold text-brand-danger">
                     Sale price until {saleEndsAt.toLocaleDateString()}.
                   </li>
                 )}
