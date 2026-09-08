@@ -4,6 +4,12 @@ import { CartCalculationResult } from "@/types/commerce";
 import { CouponService } from "./coupon.service";
 import { ShippingService } from "./shipping.service";
 import { TaxService } from "./tax.service";
+import {
+  cartRequiresShipping,
+  checkAvailability,
+  effectivePrice,
+  isPublished,
+} from "@/lib/commerce/selling-rules";
 
 export interface CartItemInput {
   productId: string;
@@ -30,13 +36,15 @@ export class CartService {
     let subtotal = 0;
     let listSubtotal = 0;
     const productIds: string[] = [];
+    /** One entry per priced line, for deciding whether delivery applies at all. */
+    const shippableLines: Array<{ requires_shipping?: boolean | null }> = [];
 
     const productRepo = RepositoryFactory.getProductRepository();
 
     for (const item of items) {
       // Quantity is client supplied: coerce to a sane positive integer before
       // it reaches pricing or stock arithmetic.
-      const quantity = Math.floor(Number(item.quantity));
+      let quantity = Math.floor(Number(item.quantity));
       if (!Number.isFinite(quantity) || quantity <= 0) continue;
       if (quantity > MAX_QUANTITY_PER_LINE) {
         validationErrors.push(
@@ -46,40 +54,55 @@ export class CartService {
       }
 
       const product = await productRepo.findById(item.productId);
-      if (!product || product.status !== "active") {
+      // A product scheduled for a future launch is `active` but not yet
+      // purchasable, so status alone is no longer the visibility test.
+      if (!product || !isPublished(product)) {
         validationErrors.push(`An item in your cart is no longer available`);
         continue;
       }
 
       productIds.push(product.id);
 
-      let unitPrice = Number(product.price);
-      let listPrice = product.compare_at_price != null ? Number(product.compare_at_price) : null;
-      let availableStock = product.stock_quantity;
-      let sku = product.sku;
-      let attributes: Record<string, string> | undefined;
-      let image = product.images?.[0]?.url;
+      const variant = item.variantId
+        ? product.variants?.find((v) => v.id === item.variantId) ?? null
+        : null;
 
-      if (item.variantId) {
-        const variant = product.variants?.find((v) => v.id === item.variantId);
-        if (variant && variant.is_active) {
-          unitPrice = Number(variant.price);
-          listPrice = variant.compare_at_price != null ? Number(variant.compare_at_price) : null;
-          availableStock = variant.stock;
-          sku = variant.sku;
-          attributes = variant.attributes;
-          if (variant.image_url) image = variant.image_url;
-        } else {
-          validationErrors.push(`Selected variant for "${product.name}" is no longer active`);
-        }
+      if (item.variantId && !variant) {
+        validationErrors.push(`Selected variant for "${product.name}" is no longer available`);
+        continue;
       }
 
-      const inStock = availableStock >= quantity;
-      if (!inStock) {
-        validationErrors.push(
-          `Insufficient stock for "${product.name}". Available: ${availableStock}, in cart: ${quantity}`
-        );
+      // Sale windows, backorder policy and purchase limits are all decided in
+      // one place, so the cart can never disagree with the product page about
+      // what something costs or whether it can be bought.
+      const pricing = effectivePrice(product, variant);
+      const availability = checkAvailability(product, variant, quantity, product.name);
+
+      if (!availability.purchasable) {
+        validationErrors.push(availability.reason || `"${product.name}" is unavailable.`);
+        continue;
       }
+
+      // A quantity below a minimum or above a per-order limit is corrected
+      // rather than refused — but the shopper is always told, because a basket
+      // that silently changes itself is worse than one that argues.
+      if (availability.adjustedQuantity !== quantity && availability.reason) {
+        validationErrors.push(availability.reason);
+      }
+      quantity = availability.adjustedQuantity;
+
+      const unitPrice = pricing.price;
+      const listPrice = pricing.compareAtPrice;
+      const availableStock = variant ? variant.stock : product.stock_quantity;
+      const sku = variant ? variant.sku : product.sku;
+      const attributes = variant?.attributes;
+      const image = variant?.image_url || product.images?.[0]?.url;
+
+      // Backordered lines are in stock as far as checkout is concerned; the
+      // reason string above is what tells the shopper they will wait for it.
+      const inStock = availability.backordered || availableStock >= quantity;
+
+      shippableLines.push({ requires_shipping: product.requires_shipping });
 
       const itemTotal = unitPrice * quantity;
       subtotal += itemTotal;
@@ -119,8 +142,19 @@ export class CartService {
 
     const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount);
 
-    // Calculate Shipping
-    const shippingCalc = await ShippingService.calculateShipping(subtotalAfterDiscount, shippingMethodId);
+    // Calculate Shipping. A cart holding only virtual products — downloads,
+    // services, gift cards — has nothing to deliver, so charging a delivery fee
+    // for it is simply wrong, and asking the shopper to pick a courier for a PDF
+    // is how a checkout loses its credibility.
+    const needsShipping = cartRequiresShipping(shippableLines);
+    const shippingCalc = needsShipping
+      ? await ShippingService.calculateShipping(subtotalAfterDiscount, shippingMethodId)
+      : {
+          selectedMethod: { id: "no-shipping", name: "No delivery required", rate: 0 },
+          shippingAmount: 0,
+          isFree: true,
+          availableMethods: [],
+        };
 
     // Calculate Taxes
     const taxCalc = await TaxService.calculateTax(subtotalAfterDiscount, shippingCalc.shippingAmount);

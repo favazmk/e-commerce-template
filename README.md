@@ -53,7 +53,19 @@ is configuration. Nothing in this repository hard-codes a client identity.
 
 ### Merchant admin
 - **Analytics overview** — revenue, order volume, AOV, low-stock alerts.
-- **Product management** — variant matrix generator, media manager, SKU tracking.
+- **Product editor** — Shopify-style option sets (up to three axes) whose combinations generate the
+  variant grid, with per-variant SKU, price, sale price, stock, barcode and colour swatch, plus
+  bulk edits across the grid. Regenerating preserves the rows that still apply.
+- **Selling rules** — scheduled sales that start and end on their own, scheduled publishing,
+  backorders ("keep selling at zero stock"), untracked inventory for services and downloads,
+  virtual products that are never charged delivery, and per-order minimum and maximum quantities.
+  All enforced server-side in `CartService`, never only in the UI.
+- **Catalogue operations** — duplicate a product as a draft, bulk publish/archive/feature/recategorise
+  and bulk reprice a selection, and export the catalogue to a spreadsheet the importer reads back.
+- **Media manager** — reorderable gallery with per-image alt text and a chosen main photo.
+- **Curated recommendations** — pick related, upsell and bought-together products; used as the
+  cold-start fallback until real co-purchase data exists.
+- **Spreadsheet import** — preview-then-commit, matched by SKU, covering every selling rule above.
 - **Nested categories**, **inventory ledger** with an immutable `inventory_transactions` history.
 - **Order lifecycle** — frozen price snapshots and status transitions.
 - **Coupons** — percentage/fixed rules, minimum spend, discount caps, usage limits.

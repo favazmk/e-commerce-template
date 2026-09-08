@@ -13,6 +13,7 @@ import { FrequentlyBoughtTogether } from "@/components/storefront/FrequentlyBoug
 import { RecentlyViewed } from "@/components/storefront/RecentlyViewed";
 import { ProductReviews } from "@/components/storefront/ProductReviews";
 import { ProductDetailClient } from "./ProductDetailClient";
+import { scheduledPublishAt } from "@/lib/commerce/selling-rules";
 
 export interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const product =
     (await ProductService.getProductBySlug(slug)) || (await ProductService.getProductById(slug));
 
-  if (!product) {
+  if (!product || scheduledPublishAt(product)) {
     return { title: "Product not found", robots: { index: false, follow: false } };
   }
 
@@ -69,6 +70,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     (await ProductService.getProductBySlug(slug)) || (await ProductService.getProductById(slug));
 
   if (!product) notFound();
+
+  // A product with a future launch time is active, saved and approved — and
+  // must not be reachable by anyone who guesses the URL, or the schedule is
+  // decorative and the drop leaks. Drafts keep their existing preview
+  // behaviour (rendered, but noindex).
+  if (scheduledPublishAt(product)) notFound();
 
   // Fetched in parallel: each is independent, and the page should not pay for
   // four sequential round trips before its first byte.

@@ -41,6 +41,26 @@ export const IMPORT_COLUMNS: ImportColumn[] = [
   { key: "size_attribute", header: "size_attribute", required: false, help: "What the sizes vary by. Defaults to Size.", example: "Size" },
   { key: "seo_title", header: "seo_title", required: false, help: "Custom Google title.", example: "Cashmere Overcoat | Aura" },
   { key: "seo_description", header: "seo_description", required: false, help: "Custom Google description.", example: "Handcrafted double-faced cashmere." },
+
+  // --- Selling rules -------------------------------------------------------
+  // Everything below is optional and defaults to today's behaviour, so a sheet
+  // written against the old template still imports unchanged.
+  { key: "product_type", header: "product_type", required: false, help: "Merchandising label beside the category, e.g. Outerwear or Gift.", example: "Outerwear" },
+  { key: "barcode", header: "barcode", required: false, help: "GTIN, UPC or EAN. Required by Google Shopping for branded goods.", example: "5012345678900" },
+  { key: "tags", header: "tags", required: false, help: "Search and filter keywords, separated by commas.", example: "winter, wool, gift" },
+  { key: "sale_price", header: "sale_price", required: false, help: "Scheduled markdown. Must be below the price. The price itself is never overwritten.", example: "999" },
+  { key: "sale_starts_at", header: "sale_starts_at", required: false, help: "When the markdown begins. Blank means immediately.", example: "2026-11-27" },
+  { key: "sale_ends_at", header: "sale_ends_at", required: false, help: "When the markdown ends and the price returns on its own.", example: "2026-12-01" },
+  { key: "publish_at", header: "publish_at", required: false, help: "Launch date and time. Blank publishes as soon as the status is active.", example: "2026-11-27 09:00" },
+  { key: "track_inventory", header: "track_inventory", required: false, help: "no for services, downloads and made-to-order lines that never run out.", example: "yes" },
+  { key: "allow_backorders", header: "allow_backorders", required: false, help: "yes keeps the product buyable at zero stock and tells the shopper it is on backorder.", example: "no" },
+  { key: "requires_shipping", header: "requires_shipping", required: false, help: "no for downloads, services and gift cards — no delivery is charged for them.", example: "yes" },
+  { key: "min_quantity", header: "min_quantity", required: false, help: "Smallest quantity a customer may buy. Defaults to 1.", example: "1" },
+  { key: "max_quantity", header: "max_quantity", required: false, help: "Per-order limit, for protecting a small drop. Blank means no limit.", example: "5" },
+  { key: "weight_grams", header: "weight_grams", required: false, help: "Shipping weight in grams.", example: "1400" },
+  { key: "length_cm", header: "length_cm", required: false, help: "Packed length in centimetres.", example: "40" },
+  { key: "width_cm", header: "width_cm", required: false, help: "Packed width in centimetres.", example: "30" },
+  { key: "height_cm", header: "height_cm", required: false, help: "Packed height in centimetres.", example: "12" },
 ];
 
 export interface ParsedVariant {
@@ -124,6 +144,43 @@ function toSlug(value: string): string {
 
 function parseBoolean(value: string): boolean {
   return ["yes", "y", "true", "1", "featured"].includes(value.trim().toLowerCase());
+}
+
+/**
+ * A three-state boolean: yes, no, or "the sheet did not say".
+ *
+ * The distinction matters on an update row. `parseBoolean` reads a blank cell
+ * as false, which is correct for `featured` (blank means not featured) and
+ * wrong for `requires_shipping` (blank means leave it alone) — reading it as
+ * false there would turn every physical product in the catalogue into a
+ * download that ships for free.
+ */
+function parseOptionalBoolean(value: string): boolean | null {
+  const trimmed = (value || "").trim().toLowerCase();
+  if (!trimmed) return null;
+  if (["yes", "y", "true", "1"].includes(trimmed)) return true;
+  if (["no", "n", "false", "0"].includes(trimmed)) return false;
+  return null;
+}
+
+/**
+ * Read a date cell into an ISO timestamp.
+ *
+ * Spreadsheet dates arrive as real Date objects, as "2026-11-27", or as
+ * whatever the merchant's locale produced. An unparseable value is an error
+ * rather than a silent null: a sale that quietly never starts is worse than a
+ * row the merchant is asked to fix.
+ */
+function parseDateCell(value: string, label: string, errors: string[]): string | null {
+  const trimmed = (value || "").trim();
+  if (!trimmed) return null;
+
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) {
+    errors.push(`${label} is not a date I can read: "${trimmed}". Use YYYY-MM-DD.`);
+    return null;
+  }
+  return parsed.toISOString();
 }
 
 /**
@@ -407,6 +464,55 @@ export class ProductImportService {
         warnings.push("No images in this row — the product keeps the photos it already has.");
       }
 
+      // -- selling rules
+      const salePrice = numberOrNull(values.sale_price, "Sale price");
+      if (salePrice !== null && Number.isFinite(price) && salePrice >= price) {
+        errors.push(
+          `Sale price ${salePrice} must be below the price ${price}, or the shopper is shown a saving of nothing.`
+        );
+      }
+
+      const saleStartsAt = parseDateCell(values.sale_starts_at, "Sale start", errors);
+      const saleEndsAt = parseDateCell(values.sale_ends_at, "Sale end", errors);
+      if (saleStartsAt && saleEndsAt && new Date(saleEndsAt) <= new Date(saleStartsAt)) {
+        errors.push("The sale must end after it starts.");
+      }
+      if ((saleStartsAt || saleEndsAt) && salePrice === null) {
+        errors.push("Sale dates were given with no sale_price, so nothing would be discounted.");
+      }
+
+      const publishAt = parseDateCell(values.publish_at, "Publish date", errors);
+      if (publishAt && status !== "active") {
+        warnings.push("A publish date only takes effect once the status is active.");
+      }
+
+      const minQuantity = numberOrNull(values.min_quantity, "Minimum quantity");
+      const maxQuantity = numberOrNull(values.max_quantity, "Maximum quantity");
+      if (minQuantity !== null && minQuantity < 1) {
+        errors.push("Minimum quantity must be at least 1.");
+      }
+      if (maxQuantity !== null && maxQuantity < (minQuantity ?? 1)) {
+        errors.push("Maximum quantity must be at least the minimum quantity.");
+      }
+
+      const trackInventory = parseOptionalBoolean(values.track_inventory);
+      const allowBackorders = parseOptionalBoolean(values.allow_backorders);
+      const requiresShipping = parseOptionalBoolean(values.requires_shipping);
+
+      if (trackInventory === false && (stockColumn ?? 0) > 0) {
+        warnings.push("Stock is ignored because track_inventory is no — this product never runs out.");
+      }
+
+      const weightGrams = numberOrNull(values.weight_grams, "Weight");
+      const lengthCm = numberOrNull(values.length_cm, "Length");
+      const widthCm = numberOrNull(values.width_cm, "Width");
+      const heightCm = numberOrNull(values.height_cm, "Height");
+
+      const tags = (values.tags || "")
+        .split(/[,\n]/)
+        .map((t) => t.trim())
+        .filter(Boolean);
+
       const display = {
         name: name || "(no name)",
         sku: sku || "(no SKU)",
@@ -440,7 +546,29 @@ export class ProductImportService {
         featured: parseBoolean(values.featured || ""),
         seo_title: values.seo_title || name,
         seo_description: values.seo_description || values.short_description || "",
+        product_type: values.product_type || null,
+        barcode: values.barcode || null,
+        sale_price: salePrice,
+        sale_starts_at: saleStartsAt,
+        sale_ends_at: saleEndsAt,
+        published_at: publishAt,
+        min_purchase_quantity: minQuantity === null ? 1 : Math.trunc(minQuantity),
+        max_purchase_quantity: maxQuantity === null ? null : Math.trunc(maxQuantity),
+        weight_grams: weightGrams === null ? null : Math.trunc(weightGrams),
+        length_cm: lengthCm,
+        width_cm: widthCm,
+        height_cm: heightCm,
       } as Partial<Product>;
+
+      // Booleans and tags are only sent when the sheet actually says something.
+      // An update row that leaves these blank must keep what the product has,
+      // rather than silently resetting it to the column default.
+      if (trackInventory !== null) (payload as any).track_inventory = trackInventory;
+      if (allowBackorders !== null) {
+        (payload as any).inventory_policy = allowBackorders ? "continue" : "deny";
+      }
+      if (requiresShipping !== null) (payload as any).requires_shipping = requiresShipping;
+      if (tags.length > 0) (payload as any).tags = tags;
 
       // Images and sizes are only sent when the row supplies them, so an update
       // row that leaves those columns blank does not wipe what is already there.
@@ -528,6 +656,106 @@ export class ProductImportService {
    * valid import rather than an error. A template whose own example the
    * importer rejects teaches the wrong shape.
    */
+  /**
+   * Export the catalogue as a spreadsheet in the *import* format.
+   *
+   * The round trip is the whole point, and it is the half WooCommerce and
+   * Shopify both get right: export, edit 400 prices in Excel, re-import. An
+   * export whose columns do not match the importer is a report, not a tool —
+   * it can be read but never fed back.
+   *
+   * Every value is therefore written in the form the parser above accepts:
+   * booleans as yes/no, sizes as "Name:stock:price", dates as ISO.
+   */
+  static async buildExport(products: Product[]): Promise<Buffer> {
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "Store Admin";
+    workbook.created = new Date();
+
+    const sheet = workbook.addWorksheet("Products");
+    sheet.columns = IMPORT_COLUMNS.map((column) => ({
+      header: column.header,
+      key: column.key,
+      width: Math.min(38, Math.max(14, column.header.length + 6)),
+    }));
+    sheet.getRow(1).font = { bold: true };
+    sheet.getRow(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFE8F0EC" },
+    };
+    sheet.views = [{ state: "frozen", ySplit: 1 }];
+
+    const yesNo = (value: boolean | null | undefined, fallback: boolean): string =>
+      (value ?? fallback) ? "yes" : "no";
+    const date = (value: string | null | undefined): string =>
+      value ? new Date(value).toISOString().slice(0, 16).replace("T", " ") : "";
+
+    for (const product of products) {
+      // Variants are flattened back into the same "Name:stock:price" grammar
+      // the importer reads. Only the first option axis survives that format,
+      // which is why a multi-option product is flagged in the notes column.
+      const variants = product.variants || [];
+      const firstAxis = Object.keys(variants[0]?.attributes || {})[0] || "Size";
+      const sizes = variants
+        .filter((v) => v.attributes?.[firstAxis])
+        .map((v) => `${v.attributes[firstAxis]}:${v.stock}:${v.price}`)
+        .join(", ");
+
+      sheet.addRow({
+        name: product.name,
+        sku: product.sku,
+        price: product.price,
+        slug: product.slug,
+        brand: product.brand || "",
+        category: product.category?.name || "",
+        short_description: product.short_description || "",
+        description: product.description || "",
+        compare_at_price: product.compare_at_price ?? "",
+        cost_price: product.cost_price ?? "",
+        stock: product.stock_quantity,
+        low_stock_threshold: product.low_stock_threshold,
+        status: product.status,
+        featured: product.featured ? "yes" : "no",
+        image_urls: (product.images || []).map((i) => i.url).join(", "),
+        sizes,
+        size_attribute: sizes ? firstAxis : "",
+        seo_title: product.seo_title || "",
+        seo_description: product.seo_description || "",
+        product_type: product.product_type || "",
+        barcode: product.barcode || "",
+        tags: (product.tags || []).join(", "),
+        sale_price: product.sale_price ?? "",
+        sale_starts_at: date(product.sale_starts_at),
+        sale_ends_at: date(product.sale_ends_at),
+        publish_at: date(product.published_at),
+        track_inventory: yesNo(product.track_inventory, true),
+        allow_backorders: product.inventory_policy === "continue" ? "yes" : "no",
+        requires_shipping: yesNo(product.requires_shipping, true),
+        min_quantity: product.min_purchase_quantity ?? 1,
+        max_quantity: product.max_purchase_quantity ?? "",
+        weight_grams: product.weight_grams ?? "",
+        length_cm: product.length_cm ?? "",
+        width_cm: product.width_cm ?? "",
+        height_cm: product.height_cm ?? "",
+      });
+    }
+
+    const notes = workbook.addWorksheet("Read me first");
+    notes.columns = [{ header: "Note", key: "note", width: 110 }];
+    notes.getRow(1).font = { bold: true };
+    [
+      "Edit this file and upload it under Products > Import to apply your changes.",
+      "Rows are matched by SKU: an existing SKU updates that product, a new one creates it.",
+      "Delete rows you do not want to touch. Nothing is deleted from the store by removing a row here.",
+      "The sizes column carries only the first option axis (for example Size). A product with Size AND Colour keeps its other options untouched by an import, but re-importing its sizes column will not recreate the second axis - edit those products in the admin instead.",
+      "Prices are in the store currency, with no symbol. Dates are YYYY-MM-DD HH:MM.",
+    ].forEach((note) => notes.addRow({ note }));
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
   static async buildTemplate(): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
     workbook.creator = "Store Admin";

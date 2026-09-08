@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ProductService } from "@/services/product.service";
 import { absoluteUrl, isIndexable, getStoreDescription } from "@/lib/seo/site";
 import { getDefaultCurrency, getStoreDisplayName } from "@/lib/config/store.config";
+import { effectivePrice } from "@/lib/commerce/selling-rules";
 import type { Product, ProductVariant } from "@/types/database";
 
 /**
@@ -87,7 +88,16 @@ function buildOffer(product: Product, offer: OfferInput, currency: string): stri
     `<description>${xmlEscape(description)}</description>`,
     `<link>${xmlEscape(link)}</link>`,
     `<g:condition>new</g:condition>`,
-    `<g:availability>${offer.stock > 0 ? "in_stock" : "out_of_stock"}</g:availability>`,
+    // Google distinguishes "we have none" from "we will still take the order".
+    // Reporting a backorderable line as out_of_stock suppresses an ad for a
+    // product that is genuinely still for sale.
+    `<g:availability>${
+      offer.stock > 0
+        ? "in_stock"
+        : product.track_inventory === false || product.inventory_policy === "continue"
+          ? "backorder"
+          : "out_of_stock"
+    }</g:availability>`,
     `<g:price>${listPrice.toFixed(2)} ${xmlEscape(currency)}</g:price>`,
   ];
 
@@ -176,8 +186,11 @@ export async function GET() {
               title: [product.name, Object.values(variant.attributes || {}).join(" / ")]
                 .filter(Boolean)
                 .join(" - "),
-              price: Number(variant.price),
-              compareAtPrice: variant.compare_at_price,
+              // A live scheduled markdown has to reach the feed, or Google
+              // shows a price the shopper will not be charged — which is a
+              // policy violation, not just a stale number.
+              price: effectivePrice(product, variant).price,
+              compareAtPrice: effectivePrice(product, variant).compareAtPrice,
               stock: variant.stock,
               sku: variant.sku,
               image: variant.image_url || images[0],
@@ -195,8 +208,8 @@ export async function GET() {
           {
             offerId: product.sku || product.id,
             title: product.name,
-            price: Number(product.price),
-            compareAtPrice: product.compare_at_price,
+            price: effectivePrice(product).price,
+            compareAtPrice: effectivePrice(product).compareAtPrice,
             stock: product.stock_quantity,
             sku: product.sku,
             image: images[0],

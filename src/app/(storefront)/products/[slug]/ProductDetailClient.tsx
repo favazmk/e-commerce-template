@@ -25,6 +25,7 @@ import {
 } from "@/components/storefront/DeliveryEstimate";
 import { formatPrice } from "@/lib/config/store.config";
 import { priceBreakdown, salesProof, stockSignal } from "@/lib/commerce/merchandising";
+import { effectivePrice, isSaleWindowActive } from "@/lib/commerce/selling-rules";
 import { AnalyticsService, toAnalyticsItem } from "@/services/analytics.service";
 import type { Product, ProductVariant } from "@/types/database";
 import type { ProductStats } from "@/repositories/interfaces/merchandising.repository.interface";
@@ -114,20 +115,38 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
   }, [variants, axes, selection]);
 
   const images = product.images || [];
-  const price = selectedVariant ? selectedVariant.price : product.price;
-  const compareAt = selectedVariant?.compare_at_price ?? product.compare_at_price;
   const stock = selectedVariant ? selectedVariant.stock : product.stock_quantity;
   const sku = selectedVariant ? selectedVariant.sku : product.sku;
 
-  const pricing = priceBreakdown(price, compareAt);
+  // One pricing authority, shared with CartService: a scheduled markdown that
+  // the product page honoured and the cart did not would be a bait and switch,
+  // whichever way round the disagreement fell.
+  const effective = effectivePrice(product, selectedVariant);
+  const price = effective.price;
+  const onSale = isSaleWindowActive(product);
+
+  const pricing = priceBreakdown(price, effective.compareAtPrice);
   const scarcity = stockSignal({ stock_quantity: stock, low_stock_threshold: product.low_stock_threshold });
   const proof = salesProof(stats);
-  const soldOut = stock <= 0;
 
-  // Clamp quantity when the shopper switches to a lower-stocked variant.
+  // Purchase limits, and the backorder policy that decides whether zero stock
+  // is the end of the sale or merely a wait.
+  const untracked = product.track_inventory === false;
+  const backorderable = untracked || product.inventory_policy === "continue";
+  const minQuantity = Math.max(1, product.min_purchase_quantity ?? 1);
+  const maxQuantity = Math.min(
+    product.max_purchase_quantity ?? Infinity,
+    backorderable ? Infinity : Math.max(minQuantity, stock)
+  );
+  const soldOut = !untracked && stock <= 0 && !backorderable;
+  const backordered = !untracked && stock <= 0 && backorderable;
+  const saleEndsAt = onSale && product.sale_ends_at ? new Date(product.sale_ends_at) : null;
+
+  // Clamp quantity when the shopper switches to a lower-stocked variant, and
+  // never below a minimum the merchant set.
   useEffect(() => {
-    setQuantity((current) => Math.min(Math.max(1, current), Math.max(1, stock)));
-  }, [stock]);
+    setQuantity((current) => Math.min(Math.max(minQuantity, current), Math.max(minQuantity, maxQuantity)));
+  }, [minQuantity, maxQuantity]);
 
   /** Is any in-stock variant reachable if this axis value were chosen? */
   const isValueAvailable = (axisName: string, value: string): boolean =>
@@ -398,6 +417,27 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
               </div>
             ))}
 
+            {/* The rules the shopper is actually subject to, stated before they
+                reach the button rather than discovered at checkout. */}
+            {(backordered || minQuantity > 1 || product.max_purchase_quantity || saleEndsAt) && (
+              <ul className="space-y-1 text-xs text-brand-muted-ink">
+                {backordered && (
+                  <li className="font-semibold text-amber-700">
+                    On backorder — order now and it ships as soon as it is restocked.
+                  </li>
+                )}
+                {saleEndsAt && (
+                  <li className="font-semibold text-rose-700">
+                    Sale price until {saleEndsAt.toLocaleDateString()}.
+                  </li>
+                )}
+                {minQuantity > 1 && <li>Sold in minimum quantities of {minQuantity}.</li>}
+                {product.max_purchase_quantity ? (
+                  <li>Limited to {product.max_purchase_quantity} per order.</li>
+                ) : null}
+              </ul>
+            )}
+
             {/* Purchase controls */}
             {soldOut ? (
               <BackInStockForm
@@ -411,8 +451,8 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                   <div className="flex items-center rounded-brand border border-brand-border-strong bg-white">
                     <button
                       type="button"
-                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      disabled={quantity <= 1}
+                      onClick={() => setQuantity((q) => Math.max(minQuantity, q - 1))}
+                      disabled={quantity <= minQuantity}
                       className="p-2.5 text-brand-muted-ink transition-colors hover:text-brand-ink disabled:opacity-40"
                       aria-label="Decrease quantity"
                     >
@@ -426,8 +466,8 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                     </span>
                     <button
                       type="button"
-                      onClick={() => setQuantity((q) => Math.min(stock, q + 1))}
-                      disabled={quantity >= stock}
+                      onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
+                      disabled={quantity >= maxQuantity}
                       className="p-2.5 text-brand-muted-ink transition-colors hover:text-brand-ink disabled:opacity-40"
                       aria-label="Increase quantity"
                     >

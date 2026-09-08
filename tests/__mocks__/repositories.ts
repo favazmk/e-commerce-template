@@ -121,6 +121,11 @@ export class MockProductRepository implements IProductRepository {
   async create(data: Partial<Product>): Promise<Product> { throw new Error("Mock not implemented"); }
   async update(id: string, data: Partial<Product>): Promise<Product | null> { throw new Error("Mock not implemented"); }
   async delete(id: string): Promise<boolean> { return true; }
+  async duplicate(id: string): Promise<Product | null> { throw new Error("Mock not implemented"); }
+  async bulkUpdate(ids: string[]): Promise<number> { return ids.length; }
+  async getRelations(): Promise<Array<{ related_product_id: string; relation_type: string; display_order: number }>> {
+    return [];
+  }
 }
 
 export class MockCartRepository implements ICartRepository {

@@ -3,6 +3,7 @@ import { ProductService } from "@/services/product.service";
 import { revalidateProduct } from "@/lib/cache/revalidate";
 import { requireAdmin } from "@/lib/auth/session";
 import { ChangeLogService } from "@/services/changelog.service";
+import { scheduledPublishAt } from "@/lib/commerce/selling-rules";
 
 export async function GET(
   request: NextRequest,
@@ -12,7 +13,10 @@ export async function GET(
     const { slug } = await params;
     const product = (await ProductService.getProductBySlug(slug)) || (await ProductService.getProductById(slug));
 
-    if (!product) {
+    // Public endpoint, so a product waiting for its launch time is treated as
+    // not existing. The admin editor reads through the service directly and is
+    // unaffected.
+    if (!product || scheduledPublishAt(product)) {
       return NextResponse.json(
         { success: false, error: { code: "NOT_FOUND", message: "Product not found" } },
         { status: 404 }

@@ -300,4 +300,28 @@ describe("Integration: Reviews and bulk import", () => {
     expect(preview.totals.total).toBe(1);
     expect(preview.rows[0].errors).toHaveLength(0);
   });
+
+  it("exports a catalogue the importer reads back as clean updates", async () => {
+    // The export exists so a merchant can edit 400 prices in Excel and upload
+    // the file again. That only works if the two halves agree on every column,
+    // so the loop is tested as a loop: export, re-import, expect zero errors
+    // and zero rows the importer thinks are new.
+    const products = await ProductService.getAllAdminProducts();
+    expect(products.length).toBeGreaterThan(0);
+
+    const workbook = await ProductImportService.buildExport(products.slice(0, 5));
+    const preview = await ProductImportService.parseAndValidate(workbook, "export.xlsx");
+
+    expect(preview.missingColumns).toHaveLength(0);
+    expect(preview.unknownColumns).toHaveLength(0);
+    expect(preview.totals.invalid).toBe(0);
+    // Every row matched an existing SKU, so nothing round-trips as a new
+    // product — a re-import that duplicated the catalogue would be a disaster.
+    expect(preview.totals.create).toBe(0);
+    expect(preview.totals.update).toBe(preview.totals.total);
+
+    for (const row of preview.rows) {
+      expect(row.errors).toHaveLength(0);
+    }
+  });
 });

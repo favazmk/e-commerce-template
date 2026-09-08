@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Edit3, ExternalLink, Trash2 } from "lucide-react";
+import { Copy, Edit3, ExternalLink, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 
@@ -25,7 +25,30 @@ export function ProductRowActions({
   const router = useRouter();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
   const [error, setError] = useState("");
+
+  /**
+   * Duplicate, the way Shopify does it: the copy opens straight in the editor
+   * as a draft. The merchant duplicated it in order to change something, so
+   * landing back on the list would just mean finding it again.
+   */
+  const handleDuplicate = async () => {
+    setIsDuplicating(true);
+    setError("");
+
+    try {
+      const res = await fetch(`/api/admin/products/${productId}/duplicate`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error?.message || "Could not duplicate this product.");
+      }
+      router.push(`/admin/products/${data.data.id}/edit`);
+    } catch (err: any) {
+      setError(err.message);
+      setIsDuplicating(false);
+    }
+  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -67,6 +90,20 @@ export function ProductRowActions({
         </Link>
         <button
           type="button"
+          onClick={handleDuplicate}
+          disabled={isDuplicating}
+          className="rounded-brand p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
+          title="Duplicate as a draft"
+          aria-label={`Duplicate ${productName}`}
+        >
+          {isDuplicating ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Copy className="h-4 w-4" />
+          )}
+        </button>
+        <button
+          type="button"
           onClick={() => setIsConfirmOpen(true)}
           className="rounded-brand p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
           title="Delete product"
@@ -75,6 +112,10 @@ export function ProductRowActions({
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
+
+      {error && !isConfirmOpen && (
+        <p className="mt-1 text-right text-[11px] font-semibold text-rose-600">{error}</p>
+      )}
 
       <Modal
         isOpen={isConfirmOpen}

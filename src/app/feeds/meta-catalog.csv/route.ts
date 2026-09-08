@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ProductService } from "@/services/product.service";
 import { absoluteUrl, isIndexable } from "@/lib/seo/site";
 import { getDefaultCurrency, getStoreDisplayName } from "@/lib/config/store.config";
+import { effectivePrice } from "@/lib/commerce/selling-rules";
 import type { Product, ProductVariant } from "@/types/database";
 
 /**
@@ -96,7 +97,16 @@ export async function GET() {
         csvField(
           plainText(product.description) || plainText(product.short_description) || product.name
         ),
-        csvField(offer.stock > 0 ? "in stock" : "out of stock"),
+        // Meta accepts "available for order" for a line that is out of stock
+        // but still sellable. Calling it out of stock would pull the ad for a
+        // product that is genuinely still on sale.
+        csvField(
+          offer.stock > 0
+            ? "in stock"
+            : product.track_inventory === false || product.inventory_policy === "continue"
+              ? "available for order"
+              : "out of stock"
+        ),
         csvField("new"),
         csvField(`${listPrice.toFixed(2)} ${currency}`),
         csvField(hasSale ? `${offer.price.toFixed(2)} ${currency}` : ""),
@@ -130,8 +140,8 @@ export async function GET() {
           title: [product.name, Object.values(variant.attributes || {}).join(" / ")]
             .filter(Boolean)
             .join(" - "),
-          price: Number(variant.price),
-          compareAtPrice: variant.compare_at_price,
+          price: effectivePrice(product, variant).price,
+          compareAtPrice: effectivePrice(product, variant).compareAtPrice,
           stock: variant.stock,
           image: variant.image_url || images[0],
           extraImages: images.slice(1),
@@ -141,8 +151,8 @@ export async function GET() {
       pushRow(product, {
         id: product.sku || product.id,
         title: product.name,
-        price: Number(product.price),
-        compareAtPrice: product.compare_at_price,
+        price: effectivePrice(product).price,
+        compareAtPrice: effectivePrice(product).compareAtPrice,
         stock: product.stock_quantity,
         image: images[0],
         extraImages: images.slice(1),

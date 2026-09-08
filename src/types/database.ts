@@ -68,6 +68,9 @@ export interface ProductImage {
 
 export type ProductBadgeTone = "primary" | "success" | "discount" | "urgent" | "neutral";
 
+/** What happens when stock reaches zero. Shopify calls this the inventory policy. */
+export type InventoryPolicy = "deny" | "continue";
+
 export interface ProductVariant {
   id: string;
   product_id: string;
@@ -76,9 +79,13 @@ export interface ProductVariant {
   compare_at_price?: number | null;
   cost_price?: number | null;
   stock: number;
+  /** Live only while the parent product's sale window is open. */
+  sale_price?: number | null;
   image_url?: string | null;
   barcode?: string | null;
   is_active: boolean;
+  /** Explicit picker order, so sizes read S, M, L rather than by creation time. */
+  position?: number;
   /** Hex drawn as a colour swatch on the product card, e.g. "#1B2A4A". */
   swatch_hex?: string | null;
   /** The variant the card previews. Exactly one per product. */
@@ -109,14 +116,58 @@ export interface Product {
   category_id?: string | null;
   category?: Category | null;
   brand?: string | null;
+  /** Shopify's "Product type": a merchandising label beside the category tree. */
+  product_type?: string | null;
+  /** GTIN / UPC / EAN for a product with no variants. */
+  barcode?: string | null;
   tags: string[];
+
+  // --- Selling rules (see src/lib/commerce/selling-rules.ts) ---------------
+  /** False for made-to-order, services and downloads: stock is not counted. */
+  track_inventory?: boolean;
+  /** 'deny' refuses a sale at zero stock; 'continue' accepts it as a backorder. */
+  inventory_policy?: InventoryPolicy;
+  /** False for virtual products — no delivery charge, nothing to dispatch. */
+  requires_shipping?: boolean;
+  min_purchase_quantity?: number;
+  max_purchase_quantity?: number | null;
+  /** Scheduled markdown; `price` always stays the regular price. */
+  sale_price?: number | null;
+  sale_starts_at?: string | null;
+  sale_ends_at?: string | null;
+  /** Scheduled availability: active with a future date is saved but not live. */
+  published_at?: string | null;
+
+  // --- Shipping properties -------------------------------------------------
+  weight_grams?: number | null;
+  length_cm?: number | null;
+  width_cm?: number | null;
+  height_cm?: number | null;
+
   seo_title?: string | null;
   seo_description?: string | null;
   metadata?: Record<string, any>;
   images?: ProductImage[];
   variants?: ProductVariant[];
+  /** Named option sets whose combinations generate the variants. Max 3. */
+  options?: ProductOption[];
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * A named axis of variation — "Size" with values S, M, L.
+ *
+ * The variants are the cartesian product of these; the option set is what makes
+ * that product regenerable, and what tells a storefront picker that "Size"
+ * should render as pills and "Colour" as swatches.
+ */
+export interface ProductOption {
+  id?: string;
+  product_id?: string;
+  name: string;
+  values: string[];
+  position: number;
 }
 
 export interface InventoryTransaction {

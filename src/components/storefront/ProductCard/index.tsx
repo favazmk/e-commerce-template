@@ -19,6 +19,7 @@ import {
   sizeOptions,
   stockSignal,
 } from "@/lib/commerce/merchandising";
+import { effectivePrice } from "@/lib/commerce/selling-rules";
 import { toAnalyticsItem } from "@/services/analytics.service";
 import { ProductImage } from "../ProductImage";
 import { ColourPicker, SizePicker } from "./VariantPicker";
@@ -80,9 +81,11 @@ export function ProductCard({
   const sizes = useMemo(() => sizeOptions(activeVariants), [activeVariants]);
   const colours = useMemo(() => colourSwatches(activeVariants), [activeVariants]);
 
-  const price = selectedVariant?.price ?? product.price;
-  const compareAt = selectedVariant?.compare_at_price ?? product.compare_at_price;
-  const pricing = priceBreakdown(price, compareAt);
+  // Same pricing authority as the product page and the cart, so a scheduled
+  // markdown is live everywhere at once or nowhere.
+  const effective = effectivePrice(product, selectedVariant);
+  const price = effective.price;
+  const pricing = priceBreakdown(price, effective.compareAtPrice);
 
   const badge = resolveBadge(product, stats);
   const scarcity = stockSignal(product);
