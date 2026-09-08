@@ -25,11 +25,11 @@ export interface OrderTimelineProps {
 export function OrderTimeline({ order }: OrderTimelineProps) {
   if (isTerminalFailure(order.status)) {
     return (
-      <div className="flex items-center gap-3 rounded-brand border border-rose-200 bg-rose-50 p-4">
-        <CircleSlash className="h-5 w-5 flex-shrink-0 text-rose-500" />
+      <div className="flex items-center gap-3 rounded-brand border border-brand-danger-border bg-brand-danger-surface p-4">
+        <CircleSlash className="h-5 w-5 flex-shrink-0 text-brand-danger" />
         <div>
-          <p className="text-sm font-semibold text-rose-800">{orderStatusLabel(order.status)}</p>
-          <p className="text-xs text-rose-600">
+          <p className="text-sm font-semibold text-brand-danger">{orderStatusLabel(order.status)}</p>
+          <p className="text-xs text-brand-danger">
             {order.status === "refunded"
               ? "The refund has been issued to your original payment method."
               : "Nothing has been charged. Contact support if you believe this is a mistake."}

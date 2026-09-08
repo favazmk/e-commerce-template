@@ -84,7 +84,7 @@ export function NewsletterSignup({ source = "footer", compact = false }: Newslet
           {status === "saving" ? "…" : "Join"}
         </button>
       </div>
-      {error && <p className="text-xs text-rose-400">{error}</p>}
+      {error && <p className="text-xs text-brand-danger">{error}</p>}
       <p className="text-[11px] leading-relaxed text-brand-muted-ink">
         New arrivals and offers. Unsubscribe in one click, any time.
       </p>

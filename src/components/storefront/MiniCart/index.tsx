@@ -90,7 +90,7 @@ export function MiniCart() {
                       <h4 className="text-sm font-semibold text-brand-ink line-clamp-1">{item.name}</h4>
                       <button
                         onClick={() => removeItem(item.productId, item.variantId)}
-                        className="text-brand-faint-ink hover:text-rose-500 transition-colors p-1"
+                        className="text-brand-faint-ink hover:text-brand-danger transition-colors p-1"
                         aria-label="Remove item"
                       >
                         <Trash2 className="h-4 w-4" />

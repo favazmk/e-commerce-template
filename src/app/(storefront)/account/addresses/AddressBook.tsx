@@ -190,7 +190,7 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
           </div>
 
           {error && (
-            <p role="alert" className="rounded-brand bg-rose-50 p-3 text-sm text-rose-700">
+            <p role="alert" className="rounded-brand bg-brand-danger-surface p-3 text-sm text-brand-danger">
               {error}
             </p>
           )}
@@ -395,7 +395,7 @@ export function AddressBook({ initialAddresses }: AddressBookProps) {
                 <button
                   type="button"
                   onClick={() => handleDelete(address.id)}
-                  className="ml-auto flex items-center gap-1 font-semibold text-brand-faint-ink hover:text-rose-600"
+                  className="ml-auto flex items-center gap-1 font-semibold text-brand-faint-ink hover:text-brand-danger"
                 >
                   <Trash2 className="h-3.5 w-3.5" /> Remove
                 </button>

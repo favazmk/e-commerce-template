@@ -76,7 +76,7 @@ export function StarRating({
                   style={{ width: `${fill * 100}%` }}
                 >
                   <Star
-                    className={`${SIZE_CLASSES[size]} text-amber-400`}
+                    className={`${SIZE_CLASSES[size]} text-brand-rating`}
                     fill="currentColor"
                   />
                 </span>

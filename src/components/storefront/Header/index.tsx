@@ -84,13 +84,22 @@ export function Header({ categories = [] }: HeaderProps) {
             {/* Brand Logo */}
             <div className="flex items-center min-w-0">
               <Link href="/" className="group flex flex-col min-w-0">
-                <span className="truncate text-lg sm:text-2xl font-bold tracking-widest font-heading text-brand-ink group-hover:text-brand-primary transition-colors">
-                  {theme.brand.name}
+                <span className="truncate text-lg sm:text-2xl font-bold tracking-widest font-wordmark text-brand-ink group-hover:text-brand-primary transition-colors">
+                  {theme.brand.wordmark?.primary ?? theme.brand.name}
                 </span>
-                {theme.brand.tagline && (
-                  <span className="hidden sm:block truncate text-[9px] uppercase tracking-widest text-brand-faint-ink font-medium">
-                    {theme.brand.tagline}
+                {theme.brand.wordmark?.secondary ? (
+                  <span
+                    className="hidden sm:block truncate text-[10px] uppercase text-brand-muted-ink font-medium"
+                    style={{ letterSpacing: theme.brand.wordmark.secondaryTracking ?? "0.3em" }}
+                  >
+                    {theme.brand.wordmark.secondary}
                   </span>
+                ) : (
+                  theme.brand.tagline && (
+                    <span className="hidden sm:block truncate text-[9px] uppercase tracking-widest text-brand-faint-ink font-medium">
+                      {theme.brand.tagline}
+                    </span>
+                  )
                 )}
               </Link>
             </div>
@@ -130,7 +139,7 @@ export function Header({ categories = [] }: HeaderProps) {
               >
                 <Heart className="h-5 w-5" />
                 {totalWishlistCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-primary text-[10px] font-bold text-white">
                     {totalWishlistCount}
                   </span>
                 )}

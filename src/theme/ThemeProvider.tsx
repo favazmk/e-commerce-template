@@ -44,6 +44,10 @@ export function ThemeProvider({
     root.style.setProperty("--brand-radius", theme.styling.borderRadius);
     root.style.setProperty("--font-heading", theme.typography.fontHeading);
     root.style.setProperty("--font-body", theme.typography.fontBody);
+    root.style.setProperty(
+      "--font-wordmark",
+      theme.typography.fontWordmark ?? theme.typography.fontHeading
+    );
   }, [theme]);
 
   const updateThemeColors = (colors: Partial<ThemeConfig["colors"]>) => {

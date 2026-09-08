@@ -137,7 +137,7 @@ export function SecurityPanel({ email }: { email: string }) {
         {passwordError && (
           <p
             role="alert"
-            className="flex gap-2 rounded-brand bg-rose-50 p-3 text-sm text-rose-700"
+            className="flex gap-2 rounded-brand bg-brand-danger-surface p-3 text-sm text-brand-danger"
           >
             <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
             {passwordError}
@@ -194,7 +194,7 @@ export function SecurityPanel({ email }: { email: string }) {
         </p>
 
         {emailError && (
-          <p role="alert" className="rounded-brand bg-rose-50 p-3 text-sm text-rose-700">
+          <p role="alert" className="rounded-brand bg-brand-danger-surface p-3 text-sm text-brand-danger">
             {emailError}
           </p>
         )}

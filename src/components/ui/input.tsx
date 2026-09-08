@@ -36,7 +36,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 leftIcon && "pl-10",
                 rightIcon && "pr-10",
                 error
-                  ? "border-rose-300 text-rose-900 focus:border-rose-500 focus:ring-rose-500"
+                  ? "border-brand-danger-border text-brand-danger focus:border-brand-danger focus:ring-brand-danger"
                   : "border-brand-border-strong hover:border-brand-ink",
                 className
               )
@@ -50,7 +50,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error ? (
-          <p className="text-xs text-rose-600 font-medium">{error}</p>
+          <p className="text-xs text-brand-danger font-medium">{error}</p>
         ) : helperText ? (
           <p className="text-xs text-brand-muted-ink">{helperText}</p>
         ) : null}

@@ -272,7 +272,7 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                 className="object-cover object-center"
               />
               {pricing.hasDiscount && pricing.discountPercent >= 5 && (
-                <span className="absolute left-4 top-4 rounded-brand-sm bg-rose-600 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
+                <span className="absolute left-4 top-4 rounded-brand-sm bg-brand-discount px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
                   {pricing.discountPercent}% off
                 </span>
               )}
@@ -321,7 +321,7 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                     <span className="text-lg text-brand-faint-ink line-through">
                       {formatPrice(pricing.compareAtPrice!)}
                     </span>
-                    <span className="text-sm font-bold text-rose-600">
+                    <span className="text-sm font-bold text-brand-danger">
                       {pricing.discountPercent}% off
                     </span>
                   </>
@@ -341,8 +341,8 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                 <p
                   className={`mt-3 inline-flex items-center rounded-brand-sm px-2.5 py-1 text-xs font-bold ${
                     scarcity.tone === "danger"
-                      ? "bg-rose-50 text-rose-700 ring-1 ring-rose-200"
-                      : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                      ? "bg-brand-danger-surface text-brand-danger ring-1 ring-brand-danger-border"
+                      : "bg-brand-warning-surface text-brand-warning ring-1 ring-brand-warning-border"
                   }`}
                 >
                   {scarcity.message}
@@ -497,7 +497,7 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                     onClick={() => toggleWishlist(product)}
                     className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-brand border transition-all hover:bg-brand-subtle ${
                       isInWishlist(product.id)
-                        ? "border-rose-200 bg-rose-50/40 text-rose-500"
+                        ? "border-brand-ink bg-brand-subtle text-brand-ink"
                         : "border-brand-border text-brand-muted-ink"
                     }`}
                     aria-label={
@@ -506,7 +506,7 @@ export function ProductDetailClient({ product, stats, commerce }: ProductDetailC
                     aria-pressed={isInWishlist(product.id)}
                   >
                     <Heart
-                      className={`h-5 w-5 ${isInWishlist(product.id) ? "fill-rose-500" : ""}`}
+                      className={`h-5 w-5 ${isInWishlist(product.id) ? "fill-brand-primary" : ""}`}
                     />
                   </button>
                 </div>

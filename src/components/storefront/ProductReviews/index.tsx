@@ -34,7 +34,7 @@ function Stars({
           >
             <Star
               className={`${dimension} ${
-                star <= value ? "fill-amber-400 text-amber-400" : "text-brand-faint-ink"
+                star <= value ? "fill-brand-rating text-brand-rating" : "text-brand-faint-ink"
               }`}
             />
           </button>
@@ -42,7 +42,7 @@ function Stars({
           <Star
             key={star}
             className={`${dimension} ${
-              star <= Math.round(value) ? "fill-amber-400 text-amber-400" : "text-brand-border"
+              star <= Math.round(value) ? "fill-brand-rating text-brand-rating" : "text-brand-border"
             }`}
           />
         )
@@ -193,13 +193,13 @@ export function ProductReviews({
                 <span className="w-3 text-right font-semibold text-brand-muted-ink tabular-nums">
                   {star}
                 </span>
-                <Star className="h-3 w-3 flex-shrink-0 fill-amber-400 text-amber-400" />
+                <Star className="h-3 w-3 flex-shrink-0 fill-brand-rating text-brand-rating" />
                 <span
                   className="h-1.5 flex-1 overflow-hidden rounded-full bg-brand-subtle"
                   role="presentation"
                 >
                   <span
-                    className="block h-full rounded-full bg-amber-400"
+                    className="block h-full rounded-full bg-brand-rating"
                     style={{ width: `${percent}%` }}
                   />
                 </span>
@@ -267,7 +267,7 @@ export function ProductReviews({
           </div>
 
           {formError && (
-            <p className="rounded-brand border border-rose-200 bg-rose-50 p-2.5 text-xs font-semibold text-rose-700">
+            <p className="rounded-brand border border-brand-danger-border bg-brand-danger-surface p-2.5 text-xs font-semibold text-brand-danger">
               {formError}
             </p>
           )}

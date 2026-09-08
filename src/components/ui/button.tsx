@@ -3,7 +3,7 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "accent";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "accent" | "inverse";
   size?: "sm" | "md" | "lg" | "icon";
   isLoading?: boolean;
 }
@@ -41,6 +41,15 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         "bg-transparent text-brand-muted-ink hover:bg-brand-subtle hover:text-brand-ink",
       accent:
         "bg-brand-ink text-white hover:bg-brand-ink/90 focus:ring-brand-ink shadow-sm",
+      /**
+       * For controls sitting on a dark surface. Every other variant assumes the
+       * brand colour contrasts with the page ink; a monochrome brand, where
+       * primary and ink are the same value, renders those invisible on a dark
+       * panel. This one is defined against the surface rather than the palette,
+       * so it holds whatever the brand colour is.
+       */
+      inverse:
+        "bg-white text-brand-ink hover:bg-white/90 focus:ring-white shadow-sm",
       danger:
         "bg-brand-danger text-white hover:brightness-95 focus:ring-brand-danger shadow-sm",
     };
